@@ -1,0 +1,58 @@
+<!-- Add Project Modal -->
+<div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProjectModalLabel">Adicionar Projeto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="projectForm" method="post" action="{% url 'home:adicionar_projeto' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="projectName">Nome do Projeto</label>
+                        <input type="text" class="form-control" id="projectName" name="name" placeholder="Digite o nome do projeto">
+                    </div>
+                    <div class="form-group">
+                        <label for="projectStatus">Status</label>
+                        <select class="form-control" id="projectStatus" name="status">
+                            {% for status in status_projetos %}
+                            <option value="{{ status.id }}">{{ status.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectClient">Cliente</label>
+                        <select class="form-control" id="projectClient" name="client">
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectPriority">Prioridade</label>
+                        <select class="form-control" id="projectPriority" name="priority">
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média">Média</option>
+                            <option value="Alta">Alta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectResponsavel">Responsável</label>
+                        <input type="text" class="form-control" id="projectResponsavel" name="responsavel" placeholder="Digite o nome do responsável">
+                    </div>
+                    <div class="form-group">
+                        <label for="projectDataEntrega">Data de Entrega</label>
+                        <input type="datetime-local" class="form-control" id="projectDataEntrega" name="data_entrega">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveProjectBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>

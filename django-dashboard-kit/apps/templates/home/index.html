@@ -1,0 +1,360 @@
+{% extends "layouts/base.html" %}
+
+{% load static %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block content %}
+    <div class="pc-container">
+        <div class="pcoded-content">
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Paínel de controle</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'home:home' %}"><i class="fas fa-home"></i> Home</a></li>
+                                <li class="breadcrumb-item"><i class="fas fa-tachometer-alt"></i> Paínel de controle</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Quantidade de Clientes</h5>
+                            <p class="card-text text-white font-weight-bold display-6">{{ total_clientes }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card bg-danger">
+                        <div class="card-body">
+                            <h5 class="card-title">Total de serviços</h5>
+                            <p class="card-text text-white font-weight-bold display-6">{{ total_servicos }}</p>
+                        </div>                     
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Quantide de Mensagens</h5>
+                            <p class="card-text text-white font-weight-bold display-6">1869</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Chatbots Ativos</h5>
+                            <p class="card-text text-white font-weight-bold display-6">6</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos lado a lado -->
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Serviços por Cliente</h5>
+                            <canvas id="chart-servicos-por-cliente" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Distribuição de Serviços por Tipo</h5>
+                            <div style="position: relative; height:300px; width:300px; margin: 0 auto;">
+                                <canvas id="chart-servicos-por-tipo"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+            <!-- Tabela de Clientes e Serviços -->
+            <div class="row">
+                <div class="col-lg-12 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">Lista de Clientes</h5>
+                                <button id="exportExcel" class="btn btn-sm btn-success">Exportar para Excel</button>
+                            </div>
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Quantidade de Serviços</th>
+                                            <th>Tipo de Serviço</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cliente, total, tipo in clientes_servicos %}
+                                            <tr>
+                                                <td>{{ cliente }}</td>
+                                                <td>{{ total }}</td>
+                                                <td>{{ tipo }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            
+            
+            <!-- [ Main Content ] end -->
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+
+    <!-- Carregar Chart.js de um CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dados completos dos clientes e serviços passados do contexto Django
+            const clientes = {{ clientes|safe }};
+            const servicosPorCliente = {{ servicos_por_cliente|safe }};
+            
+            // Função para abreviar os nomes com uma quantidade limitada de caracteres
+            const abreviarNome = (nome) => {
+                if (nome.length > 10) {
+                    return nome.slice(0, 8) + '...';  // Abrevia nomes muito longos
+                }
+                return nome;
+            };
+        
+            // Configuração do gráfico
+            const ctx = document.getElementById('chart-servicos-por-cliente').getContext('2d');
+            const chartServicosPorCliente = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: clientes.map(abreviarNome),  // Aplica a abreviação para as labels
+                    datasets: [{
+                        label: 'Serviços por Cliente',
+                        data: servicosPorCliente,
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',  // Cor azul sólida para as barras
+                        borderColor: 'rgba(255, 255, 255, 0.7)',  // Cor da borda
+                        borderWidth: 2  // Espessura da borda
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const index = tooltipItems[0].dataIndex;
+                                    return clientes[index];  // Nome completo do cliente
+                                },
+                                label: function(tooltipItem) {
+                                    const total = servicosPorCliente.reduce((a, b) => a + b, 0);
+                                    const valor = tooltipItem.raw;
+                                    const porcentagem = ((valor / total) * 100).toFixed(2);
+                                    return `${valor} serviços (${porcentagem}%)`;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false  // Ocultar a legenda
+                        },
+                        datalabels: {
+                            color: 'black',
+                            align: 'end',
+                            anchor: 'end',
+                            formatter: function(value) {
+                                return value;
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false  // Remove a grade do eixo X
+                            },
+                            ticks: {
+                                callback: function(value, index, ticks) {
+                                    return abreviarNome(clientes[index]);  // Aplica a abreviação nas labels
+                                },
+                                maxRotation: 45,
+                                minRotation: 45,
+                                color: 'rgba(0, 0, 0, 0.8)'  // Cor dos rótulos no eixo X
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false  // Remove a grade do eixo Y
+                            },
+                            ticks: {
+                                stepSize: 1,  // Define o incremento do eixo Y como 1
+                                callback: function(value) {
+                                    if (Number.isInteger(value)) {
+                                        return value;
+                                    }
+                                },
+                                color: 'rgba(0, 0, 0, 0.8)'  // Cor dos rótulos no eixo Y
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 0,
+                            right: 0,
+                            top: 10,
+                            bottom: 0
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutCubic'  // Animação suave
+                    }
+                }
+            });
+        });
+    </script>
+    
+    <script>
+        const ctxDoughnut = document.getElementById('chart-servicos-por-tipo').getContext('2d');
+        const doughnutChart = new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: {{ porcentagem_por_tipo_labels|safe }},
+                datasets: [{
+                    data: {{ porcentagem_por_tipo_values|safe }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)'
+                    ],
+                    borderColor: 'rgba(255, 255, 255, 0.7)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'center'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                const total = tooltipItem.dataset.data.reduce((sum, value) => sum + value, 0);
+                                const value = tooltipItem.raw;
+                                const percentage = ((value / total) * 100).toFixed(1); // Limitar para 1 casa decimal
+                                return `${tooltipItem.label}: ${percentage}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    <script>
+        document.getElementById('exportExcel').addEventListener('click', function() {
+            // Seleciona a tabela HTML
+            var table = document.querySelector('.table');
+            
+            // Converte a tabela para uma planilha Excel
+            var wb = XLSX.utils.table_to_book(table, {sheet: "Clientes"});
+            
+            // Inicia o download do arquivo Excel
+            XLSX.writeFile(wb, 'clientes_servicos.xlsx');
+        });
+    </script>
+    
+    
+{% endblock javascripts %}
+
+{% block stylesheets %}
+    <style>
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .breadcrumb {
+            font-size: 1rem;
+            padding: 10px 0;
+        }
+
+        .breadcrumb-item a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .breadcrumb-item i {
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                margin-bottom: 20px;
+            }
+            .page-header-title h5 {
+                font-size: 1.2rem;
+            }
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .table-responsive {
+            margin-top: 15px;
+        }
+        
+        .d-flex.justify-content-between.align-items-center {
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e3e3e3;
+        }
+        
+        @media (max-width: 768px) {
+            .d-flex.justify-content-between.align-items-center {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .d-flex.justify-content-between.align-items-center button {
+                margin-top: 10px;
+            }
+        }        
+        
+    </style>
+{% endblock stylesheets %}

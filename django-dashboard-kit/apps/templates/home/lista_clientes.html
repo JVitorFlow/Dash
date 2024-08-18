@@ -1,0 +1,76 @@
+{% extends "layouts/base.html" %}
+
+{% load custom_filters %}
+
+{% load static %}
+
+{% block title %} Lista de Clientes {% endblock %}
+
+{% block content %}
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+    <div class="pcoded-content">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-6 col-12">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">Clientes</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home:home' %}">Home</a></li>
+                            <li class="breadcrumb-item">Clientes</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 col-12 text-right add-button-container">
+                        <a href="{% url 'home:adicionar_cliente' %}" class="btn btn-primary btn-icon" aria-label="Adicionar Cliente">
+                            <i class="material-icons" aria-hidden="true">add</i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário de Filtro -->
+        <div class="row mb-4 justify-content-center">
+            <div class="col-md-10">
+                <form method="get" class="form-row">
+                    <div class="col-md-3 mb-3">
+                        {{ filter_form.nome.label_tag }}
+                        {{ filter_form.nome|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        {{ filter_form.descricao.label_tag }}
+                        {{ filter_form.descricao|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        {{ filter_form.servico.label_tag }}
+                        {{ filter_form.servico|add_class:"form-control" }}
+                    </div>
+                    <div class="col-md-3 text-right align-self-end">
+                        <button type="submit" class="btn btn-primary">Filtrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <link rel="stylesheet" href="{% static 'assets/css/client_list.css' %}">
+        <div class="card-container">
+            {% for cliente in clientes %}
+            <div class="card">
+                {% if cliente.foto %}
+                    <img src="{{ cliente.foto.url }}" class="card-img-top" alt="Foto de {{ cliente.nome }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ cliente.nome }}</h5>
+                    <p class="card-text">{{ cliente.descricao }}</p>
+                    <a href="{% url 'home:detalhe_cliente' cliente.id %}" class="btn btn-primary" aria-label="Ver detalhes de {{ cliente.nome }}">Ver Detalhes</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% include 'includes/pagination.html' %}
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock %}

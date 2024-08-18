@@ -1,0 +1,229 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Atividades de {{ cliente.nome }} {% endblock %}
+
+{% block content %}
+<style>
+    .activity-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .activity-item:nth-child(odd) {
+        background-color: #f1f1f1;
+    }
+    
+    .activity-pendente {
+        border-left: 5px solid #ff6b6b;
+    }
+    
+    .activity-concluida {
+        border-left: 5px solid #4caf50;
+    }
+    
+    .activity-aguardando_usuario {
+        border-left: 5px solid #ffeb3b;
+    }
+    
+    .activity-details {
+        flex-grow: 1;
+    }
+    
+    .activity-status {
+        font-weight: bold;
+        margin-left: 10px;
+        color: #333;
+        padding: 2px 5px;
+        border-radius: 3px;
+    }
+    
+    .status-pendente {
+        background-color: #ff6b6b;
+        color: #fff;
+    }
+    
+    .status-concluida {
+        background-color: #4caf50;
+        color: #fff;
+    }
+    
+    .status-aguardando_usuario {
+        background-color: #ffeb3b;
+        color: #000;
+    }
+    
+    .activity-date {
+        font-size: 0.9em;
+        color: #888;
+    }
+    
+    .activity-actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .delete-btn i.material-icons {
+        vertical-align: middle;
+    }
+
+    .input-icon {
+        cursor: pointer;
+    }
+
+    .form-group.position-relative {
+        width: auto;
+        display: flex;
+        align-items: center;
+    }
+
+    #calendar-icon, #filter-icon {
+        font-size: 24px;
+        color: #000000;
+        margin-right: 10px;
+    }
+
+    .btn-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 40px;
+        padding: 0 10px;
+        background-color: #edf0f3; /* Cor de fundo */
+        border-radius: 5px;
+        color: #fff; /* Cor do texto */
+        border: none;
+        box-shadow: none; /* Remove qualquer sombra */
+        outline: none; /* Remove o contorno */
+        margin: 0; /* Remove margens */
+        background: none; /* Remove fundo padrão */
+    }
+
+    .btn-icon i {
+        font-size: 18px;
+        color: #fff; /* Cor do ícone */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none; /* Remove a borda */
+        box-shadow: none; /* Remove qualquer sombra */
+        outline: none; /* Remove o contorno */
+    }
+
+    .btn-icon:focus, .btn-icon:active {
+        background-color: #a4a3a5; /* Cor de fundo ao focar ou ativar */
+        border: none; /* Remove a borda ao focar ou ativar */
+        box-shadow: none; /* Remove qualquer sombra ao focar ou ativar */
+        outline: none; /* Remove o contorno ao focar ou ativar */
+    }
+
+    .btn-icon:hover {
+        background-color: #a4a3a5; /* Cor de fundo ao passar o mouse */
+    }
+
+    .flatpickr-calendar {
+        z-index: 9999;
+    }
+</style>
+<div class="pc-container">
+    <div class="pcoded-content">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">Atividades de {{ cliente.nome }}</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home:home' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'home:lista_clientes' %}">Clientes</a></li>
+                            <li class="breadcrumb-item">{{ cliente.nome }}</li>
+                            <li class="breadcrumb-item active">Atividades</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h6>Atividades</h6>
+                        <form method="get" action="{% url 'home:lista_atividades' cliente.id %}" class="d-flex align-items-center">
+                            <div class="form-group position-relative mb-0 mr-2">
+                                <input type="text" id="date_range" name="date_range" class="form-control" style="display: none;">
+                                <span class="input-icon" id="calendar-icon-wrapper" style="position: relative; display: inline-block;">
+                                    <i class="fas fa-calendar-alt" id="calendar-icon"></i>
+                                </span>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-icon">
+                                <i class="fas fa-filter" id="filter-icon"></i> Filtrar
+                            </button>
+                        </form>
+                        {% if not atividades_encontradas %}
+                            <div class="alert alert-warning mt-4">
+                                Nenhuma atividade encontrada para o período selecionado.
+                            </div>
+                        {% else %}
+                            <ul class="activity-list mt-4">
+                                {% for atividade in atividades %}
+                                <li class="activity-item activity-{{ atividade.status }}">
+                                    <div class="activity-details">
+                                        <span class="activity-description">{{ atividade.descricao }}</span>
+                                        <span class="activity-status status-{{ atividade.status }}">{{ atividade.get_status_display }}</span>
+                                        <div class="activity-date">{{ atividade.criado_em|date:"d/m/Y H:i" }}</div>
+                                    </div>
+                                    <div class="activity-actions">
+                                        <a href="{% url 'home:editar_atividade' cliente.id atividade.id %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i></a>
+                                        <form method="post" action="{% url 'home:excluir_atividade' cliente.id atividade.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="delete-btn btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <a href="{% url 'home:adicionar_atividade' cliente.id %}" class="add-activity-btn btn btn-primary">Adicionar Atividade</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+<script>
+    // Inicializa o calendário e configura o comportamento de clique fora
+    document.getElementById('calendar-icon').addEventListener('click', function(event) {
+        event.stopPropagation();
+        flatpickr("#date_range", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            locale: "pt",
+            altInput: true,
+            altFormat: "j F, Y",
+            onClose: function(selectedDates, dateStr, instance) {
+                document.getElementById('date_range').style.display = 'block';
+                instance.calendarContainer.style.zIndex = 9999;
+            }
+        }).open();
+    });
+
+    // Fecha o calendário ao clicar fora
+    document.addEventListener('click', function(event) {
+        var calendar = document.querySelector('.flatpickr-calendar');
+        var calendarIcon = document.getElementById('calendar-icon');
+        if (calendar && !calendar.contains(event.target) && event.target !== calendarIcon) {
+            calendar._flatpickr.close();
+            document.getElementById('date_range').style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

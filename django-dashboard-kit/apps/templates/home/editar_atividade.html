@@ -1,0 +1,52 @@
+<!-- home/editar_atividade.html -->
+{% extends "layouts/base.html" %}
+
+{% block title %} Editar Atividade {% endblock %}
+
+{% block content %}
+<div class="pc-container">
+    <div class="pcoded-content">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">Editar Atividade</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home:home' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'home:lista_clientes' %}">Clientes</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'home:lista_atividades' cliente.id %}">Atividades de {{ cliente.nome }}</a></li>
+                            <li class="breadcrumb-item active">Editar Atividade</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" action="{% url 'editar_atividade' cliente.id atividade.id %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="descricao">Descrição</label>
+                                <input type="text" class="form-control" id="descricao" name="descricao" value="{{ atividade.descricao }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select class="form-control" id="status" name="status" required>
+                                    <option value="pendente" {% if atividade.status == 'pendente' %}selected{% endif %}>Pendente</option>
+                                    <option value="concluida" {% if atividade.status == 'concluida' %}selected{% endif %}>Concluída</option>
+                                    <option value="aguardando_usuario" {% if atividade.status == 'aguardando_usuario' %}selected{% endif %}>Aguardando Usuário</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

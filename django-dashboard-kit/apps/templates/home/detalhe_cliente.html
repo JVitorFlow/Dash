@@ -1,0 +1,104 @@
+{% extends "layouts/base.html" %}
+{% block title %}Detalhe do Cliente{% endblock %}
+
+{% block content %}
+<div class="pc-container">
+    <div class="pcoded-content">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">{{ cliente.nome }}</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home:home' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'home:lista_clientes' %}">Clientes</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'home:detalhe_cliente' pk=cliente.id %}">{{ cliente.nome }}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow-lg border-0 rounded-lg">
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <h3 class="card-title">{{ cliente.nome }}</h3>
+                            <p class="text-muted">{{ cliente.descricao }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <h5>Serviços</h5>
+                            <ul class="list-group">
+                                {% for servico in servicos %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ servico.tipo.nome }}:</strong> {{ servico.descricao }}
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'home:editar_servico' servico.id %}" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                        <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirmModal" data-url="{% url 'home:excluir_servico' cliente.id servico.id %}">
+                                            <i class="fas fa-trash-alt"></i> Excluir
+                                        </button>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="text-center">
+                            <a href="{% url 'home:lista_atividades' cliente.id %}" class="btn btn-primary">
+                                <i class="fas fa-tasks"></i> Ver Atividades
+                            </a>
+                            <a href="{% url 'home:adicionar_servico' cliente.id %}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle"></i> Adicionar Serviço
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Confirmar Exclusão</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Tem certeza que deseja excluir este serviço?
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block javascripts %}
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $('#confirmModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var url = button.data('url'); // Extract info from data-* attributes
+            var modal = $(this);
+            modal.find('#deleteForm').attr('action', url);
+        });
+    </script>
+{% endblock javascripts %}
+
+{% endblock %}

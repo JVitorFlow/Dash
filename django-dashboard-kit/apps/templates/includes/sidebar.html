@@ -1,0 +1,95 @@
+	<!-- [ navigation menu ] start -->
+	<nav class="pc-sidebar ">
+		<div class="navbar-wrapper">
+			<div class="m-header">
+				<a href="index.html" class="b-brand">
+					<!-- ========  change your logo here ============ -->
+					<img src="/static/assets/images/logo.svg" alt="" class="logo logo-lg">
+					<img src="/static/assets/images/logo.svg" alt="" class="logo logo-sm">
+				</a>
+			</div>
+			<div class="navbar-content">
+				<ul class="pc-navbar">
+					<li class="pc-item pc-caption">
+						<label>Navegação</label>
+					</li>
+					<li class="pc-item">
+						<a href="/" class="pc-link">
+							<span class="pc-micon"><i class="material-icons-two-tone">dashboard</i></span>
+							<span class="pc-mtext">Dashboard</span>
+						</a>
+					</li>					
+					<li class="pc-item pc-caption">
+						<label>Central de Controle</label>
+					</li>
+					<li class="pc-item">
+						<a href="{% url 'home:lista_clientes' %}" class="pc-link ">
+							<span class="pc-micon"><i class="material-icons-two-tone">business_center</i></span>
+							<span class="pc-mtext">Clientes</span>
+						</a>
+					</li>
+					<li class="pc-item">
+						<a href="{% url 'home:lista_projetos' %}" class="pc-link">
+							<span class="pc-micon"><i class="material-icons-two-tone">assignment</i></span>
+							<span class="pc-mtext">Projetos</span>
+						</a>
+					</li>					
+					<li class="pc-item">
+						<a href="{% url 'ligobots:dashboard_kpi_ura' %}" class="pc-link">
+							<span class="pc-micon"><i class="material-icons-two-tone">headset_mic</i></span>
+							<span class="pc-mtext">URA</span>
+						</a>
+					</li>
+					<li class="pc-item">
+						<a href="#" class="pc-link">
+							<span class="pc-micon"><i class="material-icons-two-tone">chat_bubble</i></span>
+							<span class="pc-mtext">CHATBOTS</span>
+						</a>
+					</li>																									
+					<li class="pc-item pc-caption">
+						<label>table</label>
+					</li>
+					<li class="pc-item">
+						<a href="{% url 'ligobots:tbl_bootstrap' %}" class="pc-link "><span class="pc-micon"><i class="material-icons-two-tone">table_rows</i></span><span class="pc-mtext">Bootstrap table</span></a>
+					</li>
+					<li class="pc-item pc-caption">
+						<label>Chart & Maps</label>
+						<span>Tones of readymade charts</span>
+					</li>
+					<li class="pc-item">
+						<a href="{% url 'ligobots:chart_apex' %}" class="pc-link "><span class="pc-micon"><i class="material-icons-two-tone">bubble_chart</i></span><span class="pc-mtext">Chart</span></a>
+					</li>
+					<li class="pc-item">
+						<a href="{% url 'ligobots:map_google' %}" class="pc-link "><span class="pc-micon"><i class="material-icons-two-tone">my_location</i></span><span class="pc-mtext">Maps</span></a>
+					</li>
+					<li class="pc-item pc-caption">
+						<label>Pages</label>
+						<span>Redymade Pages</span>
+					</li>
+					<li class="pc-item pc-hasmenu">
+						<a href="#!" class="pc-link"><span class="pc-micon"><i class="material-icons-two-tone">https</i></span><span class="pc-mtext">Authentication</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+						<ul class="pc-submenu">
+							<li class="pc-item"><a class="pc-link" href="/auth-signup.html">Sign up</a></li>
+							<li class="pc-item"><a class="pc-link" href="/auth-signin.html">Sign in</a></li>
+						</ul>
+					</li>
+					<li class="pc-item pc-caption">
+						<label>Other</label>
+						<span>Extra more things</span>
+					</li>
+					<li class="pc-item"><a href="sample-page.html" class="pc-link "><span class="pc-micon"><i class="material-icons-two-tone">storefront</i></span><span class="pc-mtext">Sample page</span></a></li>
+
+				</ul>
+				<div class="card text-center">
+					<div class="card-body">
+						<i class="feather icon-rocket f-40"></i>
+						<h6 class="mt-3">Need More?</h6>
+						<a href="https://appseed.us/product/django-dashboard-kit-pro"
+							target="_blank" class="btn btn-primary btn-sm text-white m-0">PRO Version</a> 
+						<p>For more features and components</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</nav>
+	<!-- [ navigation menu ] end -->

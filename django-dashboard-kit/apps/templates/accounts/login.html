@@ -1,0 +1,126 @@
+{% extends "layouts/base-fullscreen.html" %}
+{% load static %}
+
+{% block title %} Login Dashboard Wtime {% endblock %}
+
+{% block stylesheets %}
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Ensures the particles are behind the content */
+        }
+        .auth-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+        }
+        .auth-content {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            z-index: 1; /* Ensures the content is above the particles */
+        }
+        .card-body {
+            text-align: center;
+        }
+        .card-body img {
+            width: 150px;
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        .input-group-text {
+            background-color: #764ba2;
+            color: #fff;
+        }
+        .btn-primary {
+            background-color: #667eea;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #5a67d8;
+        }
+        .form-check-label {
+            color: #333;
+        }
+        .text-muted a {
+            color: #667eea;
+        }
+    </style>
+{% endblock stylesheets %}
+
+{% block content %}
+    <div id="particles-js"></div>
+    <div class="auth-wrapper">
+        <div class="auth-content">
+            <div class="card">
+                <div class="row align-items-center text-center">
+                    <div class="col-md-12">
+                        <div class="card-body">
+                            <img src="/static/assets/images/user/LogoHorizontal_Wtime_CorOficial-1.png" alt="" class="img-fluid mb-4">
+                            <h4 class="mb-3 f-w-400">Login</h4>
+                            <p>
+                                {% if msg %}
+                                    {{ msg | safe }}
+                                {% else %}
+                                    Adicione suas credenciais
+                                {% endif %}
+                            </p>
+                            <form role="form" method="post" action="">
+                                {% csrf_token %}
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text"><i data-feather="user"></i></span>
+                                    {{ form.username }}
+                                </div>
+                                <div class="input-group mb-4">
+                                    <span class="input-group-text"><i data-feather="lock"></i></span>
+                                    {{ form.password }}
+                                </div>
+                                <div class="form-group text-start mt-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" checked>
+                                        <label class="form-check-label" for="flexCheckChecked">
+                                            Salvar credenciais
+                                        </label>
+                                    </div>
+                                </div>
+                                <br />
+                                <button type="submit" name="login" class="btn btn-block btn-primary mb-4">Login</button>
+                            </form>
+                            <p class="mb-0 text-muted">Não tem uma conta? 
+                                <a href="{% url 'authentication:register' %}" class="f-w-400">Inscrever-se</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+    <script>
+        particlesJS.load('particles-js', '/static/assets/particles.json', function() {
+            console.log('particles.js loaded - callback');
+        });
+
+        feather.replace();
+    </script>
+{% endblock javascripts %}

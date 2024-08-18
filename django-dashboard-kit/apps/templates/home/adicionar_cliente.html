@@ -1,0 +1,82 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Adicionar Cliente{% endblock %}
+
+{% block content %}
+<div class="pc-container">
+    <div class="pcoded-content">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">Adicionar Cliente</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'home:home' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'home:lista_clientes' %}">Clientes</a></li>
+                            <li class="breadcrumb-item active">Adicionar Cliente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-lg border-0 rounded-lg">
+                    <div class="card-body">
+                        {% if messages %}
+                            <div class="container mt-4">
+                                {% for message in messages %}
+                                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group mb-3">
+                                <label for="id_company">Empresa:</label>
+                                <select name="company" class="form-control" id="id_company" required>
+                                    <option value="" disabled selected>Selecione a empresa</option>
+                                    {% for company in companies %}
+                                        <option value="{{ company.id }}">{{ company.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="id_nome">Nome:</label>
+                                <input type="text" name="nome" class="form-control" id="id_nome" placeholder="Digite o nome do cliente" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="id_descricao">Descrição:</label>
+                                <textarea name="descricao" class="form-control" id="id_descricao" placeholder="Digite a descrição do cliente" rows="4" required></textarea>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="id_foto">Foto:</label>
+                                <input type="file" name="foto" class="form-control-file" id="id_foto">
+                            </div>
+                            <div class="form-group mb-4">
+                                <label for="id_tipo_servico">Tipo de Serviço:</label>
+                                <select name="tipo_servico" class="form-control" id="id_tipo_servico" required>
+                                    <option value="" disabled selected>Selecione o tipo de serviço</option>
+                                    {% for tipo in tipos_servico %}
+                                        <option value="{{ tipo.id }}">{{ tipo.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group text-center">
+                                <button type="submit" class="btn btn-primary btn-block">Adicionar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+/* Custom CSS */
+.page-header-title {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #4e73df;
+}
+
+.breadcrumb {
+    background: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.card {
+    margin-top: 20px;
+    border-radius: 10px;
+    border: 1px solid #e3e6f0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: #4e73df;
+    color: white;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e3e6f0;
+    border-radius: 10px 10px 0 0;
+}
+
+.card-header h3 {
+    font-size: 1.5rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    color: white; /* Ensure the text is white for readability */
+}
+
+.card-header h3 i {
+    margin-right: 10px;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+.table-responsive {
+    margin-top: 20px;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-bottom: 2px solid #e3e6f0;
+    font-weight: bold;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fc;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f3f6;
+}
+
+.btn {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #3c5ab0;
+    border-color: #3c5ab0;
+}
+
+.btn-secondary {
+    background-color: #858796;
+    border-color: #858796;
+}
+
+.btn-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-danger {
+    background-color: #e74a3b;
+    border-color: #e74a3b;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+}
+
+.text-center {
+    margin-top: 20px;
+}
