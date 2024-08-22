@@ -1,108 +1,120 @@
 	<!-- [ navigation menu ] start -->
-	<nav class="pc-sidebar">
-		<div class="navbar-wrapper">
-			<div class="m-header">
-				<a href="index.html" class="b-brand">
-					<!-- ========  change your logo here ============ -->
-					<img src="/static/assets/images/logo.svg" alt="Logo" class="logo logo-lg">
-					<img src="/static/assets/images/logo.svg" alt="Logo" class="logo logo-sm">
-				</a>
-			</div>
-			<div class="navbar-content">
-				<ul class="pc-navbar">
-					<li class="pc-item pc-caption">
-						<label>Navegação</label>
-					</li>
-					<li class="pc-item">
-						<a href="/" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">dashboard</i></span>
-							<span class="pc-mtext">Dashboard</span>
-						</a>
-					</li>
-					<li class="pc-item pc-caption">
-						<label>Central de Controle</label>
-					</li>
-					<li class="pc-item">
-						<a href="{% url 'home:lista_clientes' %}" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">business_center</i></span>
-							<span class="pc-mtext">Clientes</span>
-						</a>
-					</li>
-					<li class="pc-item">
-						<a href="{% url 'home:lista_projetos' %}" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">assignment</i></span>
-							<span class="pc-mtext">Projetos</span>
-						</a>
-					</li>
-					<li class="pc-item">
-						<a href="{% url 'ligobots:dashboard_kpi_ura' %}" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">headset_mic</i></span>
-							<span class="pc-mtext">URA</span>
-						</a>
-					</li>
-					<li class="pc-item">
-						<a href="#" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">chat_bubble</i></span>
-							<span class="pc-mtext">Chatbots</span>
-						</a>
-					</li>
-					<li class="pc-item pc-caption">
-						<label>Tabela</label>
-					</li>
-					<li class="pc-item">
-						<a href="{% url 'ligobots:tbl_bootstrap' %}" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">table_rows</i></span>
-							<span class="pc-mtext">Bootstrap Table</span>
-						</a>
-					</li>
-					<li class="pc-item pc-caption">
-						<label>Gráficos e Mapas</label>
-					</li>
-					<li class="pc-item">
-						<a href="{% url 'ligobots:chart_apex' %}" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">bubble_chart</i></span>
-							<span class="pc-mtext">Gráficos</span>
-						</a>
-					</li>
-					<li class="pc-item">
-						<a href="{% url 'ligobots:map_google' %}" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">my_location</i></span>
-							<span class="pc-mtext">Mapas</span>
-						</a>
-					</li>
-					<li class="pc-item pc-caption">
-						<label>Páginas</label>
-					</li>
-					<li class="pc-item pc-hasmenu">
-						<a href="#!" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">https</i></span>
-							<span class="pc-mtext">Autenticação</span>
-							<span class="pc-arrow"><i data-feather="chevron-right"></i></span>
-						</a>
-						<ul class="pc-submenu">
-							<li class="pc-item"><a class="pc-link" href="/auth-signup.html">Registrar</a></li>
-							<li class="pc-item"><a class="pc-link" href="/auth-signin.html">Entrar</a></li>
-						</ul>
-					</li>
-					<li class="pc-item pc-caption">
-						<label>Outros</label>
-					</li>
-					<li class="pc-item">
-						<a href="sample-page.html" class="pc-link">
-							<span class="pc-micon"><i class="material-icons-two-tone">storefront</i></span>
-							<span class="pc-mtext">Página Exemplo</span>
-						</a>
-					</li>
-				</ul>
-				<div class="card text-center">
-					<div class="card-body">
-						<i class="feather icon-rocket f-40"></i>
-						<h6 class="mt-3">Precisa de mais?</h6>
-						<a href="https://appseed.us/product/django-dashboard-kit-pro" target="_blank" class="btn btn-primary btn-sm text-white m-0">Versão PRO</a>
-						<p>Para mais recursos e componentes</p>
-					</div>
-				</div>
-			</div>
+	{% load static %}
+	<div class="sidebar close">
+		<i class="bx bx-menu" id="sidebarToggle"></i>
+		<div class="logo-details">
+			<img src="{% static 'assets/images/user/LogoVertical_Wtime_EscritoBranco.png' %}" alt="Wtime Logo" class="logo">
+			<span class="logo_name">time DashboardX</span>
 		</div>
-	</nav>
+
+		<ul class="nav-links">
+			<li>
+				<a href="/" class="active">
+					<i class="material-icons-two-tone">dashboard</i>
+					<span class="link_name">Dashboard</span>
+				</a>
+				<ul class="sub-menu blank">
+					<li><a class="link_name" href="/">Dashboard</a></li>
+				</ul>
+			</li>
+			<li>
+				<div class="iocn-link">
+					<a href="#">
+						<i class="material-icons-two-tone">business_center</i>
+						<span class="link_name">Clientes</span>
+					</a>
+					<i class="bx bxs-chevron-down arrow"></i>
+				</div>
+				<ul class="sub-menu">
+					<li><a href="{% url 'home:lista_clientes' %}">Lista de Clientes</a></li>
+				</ul>
+			</li>
+			<li>
+				<a href="{% url 'home:lista_projetos' %}">
+					<i class="material-icons-two-tone">assignment</i>
+					<span class="link_name">Projetos</span>
+				</a>
+				<ul class="sub-menu blank">
+					<li><a class="link_name" href="{% url 'home:lista_projetos' %}">Projetos</a></li>
+				</ul>
+			</li>
+			<li>
+				<a href="{% url 'ligobots:dashboard_kpi_ura' %}">
+					<i class="material-icons-two-tone">headset_mic</i>
+					<span class="link_name">URA</span>
+				</a>
+				<ul class="sub-menu blank">
+					<li><a class="link_name" href="{% url 'ligobots:dashboard_kpi_ura' %}">URA</a></li>
+				</ul>
+			</li>
+			<li>
+				<a href="#">
+					<i class="material-icons-two-tone">chat_bubble</i>
+					<span class="link_name">Chatbots</span>
+				</a>
+				<ul class="sub-menu blank">
+					<li><a class="link_name" href="#">Chatbots</a></li>
+				</ul>
+			</li>
+			<li>
+				<div class="iocn-link">
+					<a href="#">
+						<i class="material-icons-two-tone">table_rows</i>
+						<span class="link_name">Tabela</span>
+					</a>
+					<i class="bx bxs-chevron-down arrow"></i>
+				</div>
+				<ul class="sub-menu">
+					<li><a href="{% url 'ligobots:tbl_bootstrap' %}">Bootstrap Table</a></li>
+				</ul>
+			</li>
+			<li>
+				<div class="iocn-link">
+					<a href="#">
+						<i class="material-icons-two-tone">bubble_chart</i>
+						<span class="link_name">Gráficos e Mapas</span>
+					</a>
+					<i class="bx bxs-chevron-down arrow"></i>
+				</div>
+				<ul class="sub-menu">
+					<li><a href="{% url 'ligobots:chart_apex' %}">Gráficos</a></li>
+					<li><a href="{% url 'ligobots:map_google' %}">Mapas</a></li>
+				</ul>
+			</li>
+			<li>
+				<div class="iocn-link">
+					<a href="#">
+						<i class="material-icons-two-tone">https</i>
+						<span class="link_name">Autenticação</span>
+					</a>
+					<i class="bx bxs-chevron-down arrow"></i>
+				</div>
+				<ul class="sub-menu">
+					<li><a href="/auth-signup.html">Registrar</a></li>
+					<li><a href="/auth-signin.html">Entrar</a></li>
+				</ul>
+			</li>
+			<li>
+				<a href="sample-page.html">
+					<i class="material-icons-two-tone">storefront</i>
+					<span class="link_name">Página Exemplo</span>
+				</a>
+				<ul class="sub-menu blank">
+					<li><a class="link_name" href="sample-page.html">Página Exemplo</a></li>
+				</ul>
+			</li>
+			<li>
+				<div class="profile-details">
+					<div class="profile-content">
+						<img src="/static/assets/images/profile.jpg" alt="profileImg">
+					</div>
+					<div class="name-job">
+						<div class="profile_name">João Vitor</div>
+						<div class="job">Desenvolvedor</div>
+					</div>
+					<i class="bx bx-log-out"></i>
+				</div>
+			</li>
+		</ul>
+	</div>
 	<!-- [ navigation menu ] end -->

@@ -1,0 +1,397 @@
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+    padding: 1rem;
+}
+
+.card:hover {
+    box-shadow: 0 5px 7px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #343a40;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    font-size: 1rem;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.breadcrumb-item a {
+    text-decoration: none;
+    color: #007bff;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb-item a:hover {
+    color: #0056b3;
+}
+
+.breadcrumb-item i {
+    margin-right: 5px;
+}
+
+#barChart {
+    width: 100%;
+    min-height: 400px;
+    max-height: 500px;
+    height: auto;
+    margin-top: 20px;
+}
+
+/* Card Body e Tabelas */
+.card-body {
+    /* Removi max-height e overflow-y temporariamente */
+    padding: 1rem;
+}
+
+.table-responsive {
+    /* Removi max-height e overflow-y temporariamente */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table {
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    background-color: #fff;
+}
+
+.table td, .table th {
+    padding: 0.5rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Estilo para o seletor de KPI */
+#kpiSelector {
+    width: 100%;
+    padding: 0.5rem 1.5rem 0.5rem 0.75rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.12), inset 0 1px 2px rgba(0,0,0,0.24);
+    border: 1px solid #ced4da;
+    background-color: #fff;
+    appearance: none;
+    position: relative;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="#007bff" d="M2 0L0 2h4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 0.65rem 0.65rem;
+    transition: all 0.3s ease;
+}
+
+/* Estilo ao focar no seletor */
+#kpiSelector:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+/* Estilo das opções no dropdown */
+#kpiSelector option {
+    padding: 8px 12px;
+    white-space: normal;
+    font-size: 1rem;
+}
+
+/* Estilo do container de exibição do KPI */
+#kpiDisplay {
+    margin-top: 1rem;
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+#kpiTitle {
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 0.5rem;
+}
+
+#kpiValue {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* Botões e Feedback Visual */
+.buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28A745 0%, #218838 100%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-width: 150px;
+    text-align: center;
+    margin-left: 10px;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    background-color: #218838;
+}
+
+.btn-success:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #1e7e34;
+}
+
+/* Estilo para os botões */
+.buttons-container .btn {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-width: 150px;
+    margin-left: 10px;
+    text-align: center;
+}
+
+.buttons-container .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    background-color: #0056b3;
+}
+
+.buttons-container .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #004085;
+}
+
+/* Específico para cada botão */
+#exportExcelButton {
+    background: linear-gradient(135deg, #28A745 0%, #218838 100%);
+}
+
+#filterEsperaButton {
+    background: linear-gradient(135deg, #007BFF 0%, #0056B3 100%);
+}
+
+#downloadChart {
+    background: linear-gradient(135deg, #FFC107 0%, #E0A800 100%);
+}
+
+/* Gráficos */
+canvas {
+    max-width: 100%;
+    height: auto !important;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 20px;
+    }
+
+    .card-body {
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .table-responsive {
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .page-header-title h5 {
+        font-size: 1.2rem;
+    }
+
+    .d-flex.justify-content-between {
+        flex-wrap: wrap;
+    }
+
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .buttons-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .buttons-container .btn {
+        min-width: 150px;
+        padding: 10px 20px;
+        margin-left: 10px;
+        text-align: center;
+    }
+}
+
+/* Feedback Visual */
+.loading-spinner {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.alert-info {
+    margin-bottom: 10px;
+}
+
+.alert-success, .alert-danger {
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+/* Outros Estilos */
+.d-flex.justify-content-between.align-items-center {
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #e3e3e3;
+}
+
+#chart-agentes {
+    max-height: none;
+    overflow-y: visible;
+    overflow-x: visible;
+    padding: 20px;
+    background-color: white;
+}
+
+#resultadoAtendente {
+    max-height: none;
+    overflow: visible;
+}
+
+#kpiSelector, #hospitalSelector {
+    width: 100%;
+    padding: 0.5rem 1.5rem 0.5rem 0.75rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.12), inset 0 1px 2px rgba(0,0,0,0.24);
+    border: 1px solid #ced4da;
+    background-color: #fff;
+    appearance: none;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+#kpiSelector:focus, #hospitalSelector:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+.indicator-section button {
+    background-color: #29a3a3;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.indicator-section button:hover {
+    background-color: #238d8d;
+}
+
+#dataTable tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+#dataTable tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+#dataTable tbody tr:hover {
+    background-color: #d9edf7;
+    cursor: pointer;
+}
+
+#dataTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f1f1f1;
+}
+
+#dataTable th {
+    position: relative;
+    padding-right: 25px;
+}
+
+#dataTable th::after {
+    content: "\25B2";
+    position: absolute;
+    right: 8px;
+    opacity: 0.6;
+    font-size: 0.8em;
+    transform: rotate(0);
+    transition: transform 0.2s;
+}
+
+#dataTable th.sorting_desc::after {
+    transform: rotate(180deg);
+}
+
+#dataTable td, #dataTable th {
+    padding: 10px 15px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
+
+#KpiCockpit {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+#KpiCockpit h5 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+#tabelaEspera th, #tabelaEspera td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+#tabelaEspera {
+    margin-top: 20px;
+}
+
+#seriesSelectorContainer {
+    display: none;
+}

@@ -2,20 +2,20 @@
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds } from './utils.js';
 
-// Função principal para buscar o indicador de chamadas abandonadas
-export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
+// Função principal para buscar o indicador de chamadas abandonadas internas
+export function buscarIndicadorChamadasAbandonadasInternas(isManualSearch = false) {
     let startDate, endDate;
 
     // Se for uma busca manual, usa as datas especificadas
     if (isManualSearch) {
-        // console.log("[INFO] Realizando busca manual para KPI 1104");
+        console.log("[INFO] Realizando busca manual para KPI 1204");
 
-        startDate = document.getElementById('startDateAbandonadasKPI1104').value;
-        endDate = document.getElementById('endDateAbandonadasKPI1104').value;
+        startDate = document.getElementById('startDateAbandonadasInternasKPI1204').value;
+        endDate = document.getElementById('endDateAbandonadasInternasKPI1204').value;
 
-        // console.log('[INFO] Datas selecionadas manualmente');
-        // console.log('[DEBUG] Data de Início original:', startDate);
-        // console.log('[DEBUG] Data de Fim original:', endDate);
+        console.log('[INFO] Datas selecionadas manualmente');
+        console.log('[DEBUG] Data de Início original:', startDate);
+        console.log('[DEBUG] Data de Fim original:', endDate);
 
         if (!startDate || !endDate) {
             alert('Por favor, selecione ambas as datas.');
@@ -27,15 +27,15 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
         startDate = formatDateToISOStringWithMilliseconds(startDate);
         endDate = formatDateToISOStringWithMilliseconds(endDate);
 
-        //console.log("[DEBUG] Data de Início convertida para ISO:", startDate);
-        //console.log("[DEBUG] Data de Fim convertida para ISO:", endDate);
+        console.log("[DEBUG] Data de Início convertida para ISO:", startDate);
+        console.log("[DEBUG] Data de Fim convertida para ISO:", endDate);
     } else {
         // Caso contrário, usa mês e ano para gerar as datas automaticamente
         const selectedKPI = document.getElementById('kpiSelector').value;
-        //console.log("[INFO] KPI Selecionado:", selectedKPI);
+        console.log("[INFO] KPI Selecionado:", selectedKPI);
 
-        if (selectedKPI === '1104') {
-            //console.log("[INFO] Realizando busca automática para KPI 1104");
+        if (selectedKPI === '1204') {
+            console.log("[INFO] Realizando busca automática para KPI 1204");
 
             const selectedMes = document.getElementById('mesSelector').value;
             const selectedAno = document.getElementById('anoSelector').value;
@@ -44,9 +44,9 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
                 startDate = `${selectedAno}-${selectedMes}-01T00:00:00`;
                 endDate = new Date(selectedAno, selectedMes, 0).toISOString().replace(/T.*/, 'T23:59:59');
 
-                //console.log("[INFO] Datas geradas para o KPI 11.04");
-                //console.log("[DEBUG] Data de Início:", startDate);
-                //console.log("[DEBUG] Data de Fim:", endDate);
+                console.log("[INFO] Datas geradas para o KPI 12.04");
+                console.log("[DEBUG] Data de Início:", startDate);
+                console.log("[DEBUG] Data de Fim:", endDate);
             } else {
                 alert('Por favor, selecione o mês e o ano.');
                 console.error("[ERROR] Mês ou ano não selecionado.");
@@ -54,23 +54,23 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
                 return;
             }
         } else {
-            // console.log("[INFO] KPI não é 1104, abortando buscarIndicadorChamadasAbandonadas.");
-            toggleButtons(true); // Habilita os botões se o KPI não for 1104
+            console.log("[INFO] KPI não é 1204, abortando buscarIndicadorChamadasAbandonadasInternas.");
+            toggleButtons(true); // Habilita os botões se o KPI não for 1204
             return;
         }
     }
 
-    mostrarLoadingSpinner('loadingSpinnerAbandonadasKPI1104');
+    mostrarLoadingSpinner('loadingSpinnerAbandonadasInternasKPI1204');
 
     const payload = {
         dtStart: startDate,
         dtFinish: endDate
     };
 
-    const urlElement = document.getElementById('tempoChamadasAbandonadasKPI1104');
+    const urlElement = document.getElementById('tempoChamadasAbandonadasInternasKPI1204');
     if (urlElement) {
         const urlApi = urlElement.textContent.trim();
-        //console.log("[INFO] URL da API carregada:", urlApi);
+        console.log("[INFO] URL da API carregada:", urlApi);
 
         fetch(urlApi, {
             method: 'POST',
@@ -82,46 +82,44 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
         })
         .then(response => response.json())
         .then(data => {
-            //console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
+            console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
 
             if (data.errcode === 0) {
-                //console.log('Chamando renderizarTabelaIndicadorAbandonadas');
-                renderizarTabelaIndicadorAbandonadas(data.ura_performance);
-                document.getElementById('exportExcelAbandonadasKP1104').style.display = 'block';
+                console.log('Chamando renderizarTabelaIndicadorAbandonadasInternas');
+                renderizarTabelaIndicadorAbandonadasInternas(data.ura_performance);
+                document.getElementById('exportExcelAbandonadasInternasKPI1204').style.display = 'block';
             } else {
-                //console.error('Erro ao buscar dados:', data.errmsg);
+                console.error('Erro ao buscar dados:', data.errmsg);
             }
         })
         .catch(error => {
-            //console.error('Erro na requisição:', error);
+            console.error('Erro na requisição:', error);
         })
         .finally(() => {
-            esconderLoadingSpinner('loadingSpinnerAbandonadasKPI1104');
+            esconderLoadingSpinner('loadingSpinnerAbandonadasInternasKPI1204');
             toggleButtons(true); // Habilita os botões após a requisição
         });
     } else {
-        //console.error("[ERROR] Elemento 'tempoChamadasAbandonadasKPI1104' não encontrado no documento.");
+        console.error("[ERROR] Elemento 'tempoChamadasAbandonadasInternasKPI1204' não encontrado no documento.");
         toggleButtons(true); // Habilita os botões em caso de erro
     }
 }
 
-
-
 // Função para desabilitar/habilitar botões
 function toggleButtons(enable) {
     const searchButton = document.getElementById('kpiSearchButton');
-    const filterButton = document.getElementById('filterAbandonadasButtonKPI1104');
+    const filterButton = document.getElementById('filterAbandonadasInternasButtonKPI1204');
     searchButton.disabled = !enable;
     filterButton.disabled = !enable;
 }
 
 // Função para renderizar a tabela de resultados
-function renderizarTabelaIndicadorAbandonadas(dados) {
-    const resultado = document.getElementById('resultadoAbandonadasKPI1104');
+function renderizarTabelaIndicadorAbandonadasInternas(dados) {
+    const resultado = document.getElementById('resultadoAbandonadasInternasKPI1204');
 
     // Destrói a tabela existente antes de criar uma nova
-    if ($.fn.DataTable.isDataTable('#resultadoAbandonadasKPI1104 table')) {
-        $('#resultadoAbandonadasKPI1104 table').DataTable().clear().destroy();
+    if ($.fn.DataTable.isDataTable('#resultadoAbandonadasInternasKPI1204 table')) {
+        $('#resultadoAbandonadasInternasKPI1204 table').DataTable().clear().destroy();
     }
 
     resultado.innerHTML = ''; // Limpa o conteúdo anterior
@@ -150,22 +148,19 @@ function renderizarTabelaIndicadorAbandonadas(dados) {
 
     const tbody = table.querySelector('tbody');
 
-    // Filtra e processa apenas ligações externas
+    // Filtra e processa apenas ligações internas
     dados.forEach(item => {
-        if (item.tipo_atendimento === "Externo") {
+        if (item.tipo_atendimento === "Interno") {
             const tr = document.createElement('tr');
             const abandonadasAteUmMinuto = item.abandonadas_cognitiva_ate_um_minuto || 0;
             const abandonadasAcimaUmMinuto = item.abandonadas_cognitiva_acima_um_minuto || 0;
 
-            
-            // Calcula as ligações atendidas e recebidas separadamente
-            const ligacoesAtendidas = item.atendidas_cognitiva || 0;
-            const ligacoesRecebidas = ligacoesAtendidas + (item.abandonadas_cognitiva || 0);
+            // Usa "recebidas" como "ligações recebidas"
+            const totalRecebidas = item.recebidas || 0; // Considerar atentidas cognitiva + aabandonas coginitva 
+            const totalAtendidas = item.atendidas_cognitiva || 0;
 
-            // Calcula o percentual de atendidas
-            const percentualAtendidas = calcularPercentual(ligacoesAtendidas, ligacoesRecebidas);
+            const percentualAtendidas = calcularPercentual(totalAtendidas, totalRecebidas);
             const metaCumprida = cumpreMeta(percentualAtendidas);
-
 
             tr.innerHTML = `
                 <td>${item.ura.replace(' v3', '') || 'N/A'}</td>
@@ -173,7 +168,7 @@ function renderizarTabelaIndicadorAbandonadas(dados) {
                 <td>${item.data || 'N/A'}</td>
                 <td>Abandonadas Sup. 1min: ${abandonadasAcimaUmMinuto}</td>
                 <td>Abandonadas Inf. 1min: ${abandonadasAteUmMinuto}</td>
-                <td>Ligações atendidas: ${ligacoesAtendidas} / Ligações recebidas: ${ligacoesRecebidas} / Atingimento: ${percentualAtendidas}%</td>
+                <td>Ligações atendidas: ${totalAtendidas} / Ligações recebidas: ${totalRecebidas} / Atingimento: ${percentualAtendidas}%</td>
                 <td>${metaCumprida}</td>
             `;
 
@@ -196,29 +191,29 @@ function renderizarTabelaIndicadorAbandonadas(dados) {
 // Adiciona os listeners para os botões de filtro e exportação
 document.addEventListener('DOMContentLoaded', function() {
     const searchButton = document.getElementById('kpiSearchButton');
-    const filterButton = document.getElementById('filterAbandonadasButtonKPI1104');
+    const filterButton = document.getElementById('filterAbandonadasInternasButtonKPI1204');
 
     // Listener para o botão "Aplicar Filtro" (usa datas manuais)
     filterButton.addEventListener('click', function() {
         toggleButtons(false); // Desabilita os botões enquanto a requisição está em andamento
-        buscarIndicadorChamadasAbandonadas(true);
+        buscarIndicadorChamadasAbandonadasInternas(true);
     });
 
     // Listener para o botão "Buscar" (usa mês e ano)
     searchButton.addEventListener('click', function() {
         toggleButtons(false); // Desabilita os botões enquanto a requisição está em andamento
-        buscarIndicadorChamadasAbandonadas(false);
+        buscarIndicadorChamadasAbandonadasInternas(false);
     });
 
     // Listener para exportar a tabela para Excel
-    document.getElementById('exportExcelAbandonadasKP1104').addEventListener('click', function() {
-        const tabela = document.querySelector('#resultadoAbandonadasKPI1104 table');
+    document.getElementById('exportExcelAbandonadasInternasKPI1204').addEventListener('click', function() {
+        const tabela = document.querySelector('#resultadoAbandonadasInternasKPI1204 table');
         const wb = XLSX.utils.table_to_book(tabela, { sheet: "Sheet1" });
-        XLSX.writeFile(wb, 'indicadores_abandonadas.xlsx');
+        XLSX.writeFile(wb, 'indicadores_abandonadas_internas.xlsx');
     });
 
     // Inicializando o Flatpickr para a seleção de datas
-    flatpickr("#startDateAbandonadasKPI1104", {
+    flatpickr("#startDateAbandonadasInternasKPI1204", {
         enableTime: true,
         dateFormat: "d/m/Y H:i",
         time_24hr: true,
@@ -226,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
         locale: "pt"
     });
 
-    flatpickr("#endDateAbandonadasKPI1104", {
+    flatpickr("#endDateAbandonadasInternasKPI1204", {
         enableTime: true,
         dateFormat: "d/m/Y H:i",
         time_24hr: true,
@@ -234,4 +229,3 @@ document.addEventListener('DOMContentLoaded', function() {
         locale: "pt"
     });
 });
-

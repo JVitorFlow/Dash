@@ -1,0 +1,59 @@
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <!-- Indicador de Tempo de Espera para Iniciar Atendimento Inferior a 1 Minuto -->
+                <div class="indicator-section">
+                    <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorEsperaKPI1202" aria-expanded="false" aria-controls="explicacaoIndicadorEsperaKPI1202">
+                        O que é este indicador?
+                    </button>
+                    <div class="collapse" id="explicacaoIndicadorEsperaKPI1202">
+                        <div class="alert alert-info" role="alert">
+                            <strong>CÁLCULO:</strong><br>
+                            <p>(Nº de atendimentos com tempo de espera para iniciar atendimento inferior a 1 minuto) / (Nº total de atendimentos recebidos).</p>
+                            <p>O resultado do cálculo é apresentado na medida de porcentagem (%).</p>
+                            <p>Para calcular o tempo de espera será considerado:</p>
+                            <ul>
+                                <li><strong>Início do tempo de espera:</strong> Quando o interlocutor ligar para a central de telefonia e o sistema de telefonia incluí-lo na fila de atendimento;</li>
+                                <li><strong>Fim do tempo de espera:</strong> Quando o funcionário de telefonia iniciar o atendimento.</li>
+                            </ul>
+                            <strong>Este indicador faz parte do KPI 12.02.</strong>
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+
+                <!-- Filtro de Data para Tempo de Espera -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">12.02 - Indicador de tempo de espera para iniciar atendimento em até 1 minuto</h5>
+                    <div class="buttons-container">
+                        <button id="filterEsperaKPI1202Button" class="btn btn-primary">Aplicar Filtro</button>
+                        <button id="exportExcelEsperaKPI1202" class="btn btn-success" style="display: none;">Exportar para Excel</button>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label for="startDateEsperaKPI1202">Data de Início:</label>
+                        <input type="text" id="startDateEsperaKPI1202" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="endDateEsperaKPI1202">Data de Fim:</label>
+                        <input type="text" id="endDateEsperaKPI1202" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                </div>
+
+                <!-- Spinner de carregamento -->
+                <div id="loadingSpinnerEsperaKPI1202" style="display:none; text-align: center; margin: 10px 0;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                </div>
+
+                <!-- Contêiner onde a tabela de tempo de espera será renderizada -->
+                <div id="resultadoEsperaKPI1202" style="overflow-x: auto;"></div>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,23 @@
 // Importando funções de módulos auxiliares
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds } from './utils.js';
+import { renderizarGraficoColunas } from './kpi_charts.js';
+
+
+
+export function filterSeries() {
+    const selectedSeries = document.getElementById("seriesSelector").value;
+    const chart = Highcharts.charts.find(chart => chart.renderTo.id === 'colunasChartContainer');
+    
+    chart.series.forEach(function(series) {
+        if (selectedSeries === 'all') {
+            series.setVisible(true, false);
+        } else {
+            series.setVisible(series.name.includes(selectedSeries), false);
+        }
+    });
+    chart.redraw();
+}
 
 // Função principal para buscar o indicador de tempo de espera
 export function buscarIndicadorTempoEspera(isManualSearch = false) {
@@ -46,11 +63,13 @@ export function buscarIndicadorTempoEspera(isManualSearch = false) {
     console.log("[DEBUG] Data de Fim:", endDate);
 
     mostrarLoadingSpinner('loadingSpinnerEsperaKPI1102');
-
+    mostrarLoadingSpinner('loadingSpinnerMedidores');
+    
     const payload = {
         dtStart: startDate,
         dtFinish: endDate
     };
+
 
     const urlElement = document.getElementById('tempoEsperaAtendimento1minutoExternoKPI1102');
     if (urlElement) {
@@ -70,9 +89,19 @@ export function buscarIndicadorTempoEspera(isManualSearch = false) {
             console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
 
             if (data.errcode === 0) {
+
+                console.log('Chamando processarDadosParaGrafico');
+                const dadosProcessados = processarDadosParaGrafico(data.ura_performance);
+                console.log('Dados processados para o gráfico:', dadosProcessados);
+
+                
+                renderizarGraficoColunas('1102', dadosProcessados);
+
                 console.log('Chamando renderizarTabelaIndicadorEspera');
                 renderizarTabelaIndicadorEspera(data.ura_performance);
                 document.getElementById('exportExcelEsperaKP1102').style.display = 'block';
+                // Após carregar os dados, mostrar o seletor de séries se necessário
+                seriesSelectorContainer.style.display = 'block';
             } else {
                 console.error('Erro ao buscar dados:', data.errmsg);
             }
@@ -82,6 +111,8 @@ export function buscarIndicadorTempoEspera(isManualSearch = false) {
         })
         .finally(() => {
             esconderLoadingSpinner('loadingSpinnerEsperaKPI1102');
+            esconderLoadingSpinner('loadingSpinnerMedidores');
+            
             toggleButtons(true); // Habilita os botões após a requisição
         });
     } else {
@@ -156,6 +187,49 @@ function renderizarTabelaIndicadorEspera(dados) {
     }
 }
 
+// Função para processar os dados para o gráfico
+function processarDadosParaGrafico(dados) {
+    const resultado = {
+        geral: {
+            ligacoesRecebidas: 0,
+            atendidasInferior1Min: 0,
+            atendidasSuperior1Min: 0
+        },
+        porURA: {}
+    };
+
+    dados.forEach(item => {
+        if (item.tipo_atendimento === "Externo") {
+            const ligacoesRecebidas = (item.atendidas_cognitiva || 0) + (item.abandonadas_cognitiva || 0);
+
+            // Processamento Geral
+            resultado.geral.ligacoesRecebidas += ligacoesRecebidas;
+            resultado.geral.atendidasInferior1Min += item.quantidade_ligacoes_atendidas_ate_um_minuto || 0;
+            resultado.geral.atendidasSuperior1Min += item.quantidade_ligacoes_atendidas_acima_um_minuto || 0;
+
+            // Processamento por URA
+            if (!resultado.porURA[item.ura]) {
+                resultado.porURA[item.ura] = {
+                    ligacoesRecebidas: 0,
+                    atendidasInferior1Min: 0,
+                    atendidasSuperior1Min: 0
+                };
+            }
+
+            resultado.porURA[item.ura].ligacoesRecebidas += ligacoesRecebidas;
+            resultado.porURA[item.ura].atendidasInferior1Min += item.quantidade_ligacoes_atendidas_ate_um_minuto || 0;
+            resultado.porURA[item.ura].atendidasSuperior1Min += item.quantidade_ligacoes_atendidas_acima_um_minuto || 0;
+        }
+    });
+
+    // Debug da estrutura
+    console.log('Estrutura final de dados processados:', JSON.stringify(resultado, null, 2));
+    return resultado;
+}
+
+
+
+
 // Função para habilitar/desabilitar botões
 function toggleButtons(enable = true) {
     const buttons = document.querySelectorAll('#filterEspera1minutoButton');
@@ -165,8 +239,34 @@ function toggleButtons(enable = true) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const filterButton = document.getElementById('filterEspera1minutoButton');
 
+
+    const seriesSelectorContainer = document.getElementById('seriesSelectorContainer');
+
+    // Função para verificar o KPI selecionado e mostrar/esconder o seletor de séries
+    function verificarSeletorSeries() {
+        const selectedKPI = document.getElementById('kpiSelector').value.trim();
+
+        // Sempre esconde o seletor no início
+        seriesSelectorContainer.style.display = 'none';
+
+        // Mostra o seletor apenas se o KPI for o 1102 (ou outros KPIs que necessitem) e após carregar os dados
+        if (selectedKPI === '1102') {
+            seriesSelectorContainer.style.display = 'none'; // Esconde inicialmente
+        }
+
+    }
+
+    // Verifica o KPI selecionado no carregamento da página
+    verificarSeletorSeries();
+    // Adiciona o evento para verificar o KPI selecionado
+    document.getElementById('kpiSelector').addEventListener('change', verificarSeletorSeries);
+
+    // Evento para filtrar as séries
+    document.getElementById('seriesSelector').addEventListener('change', filterSeries);
+
+    // Evento para o botão de buscar
+    const filterButton = document.getElementById('filterEspera1minutoButton');
     filterButton.addEventListener('click', function() {
         toggleButtons(false); // Desabilita os botões enquanto a requisição está em andamento
         buscarIndicadorTempoEspera(true);
@@ -193,4 +293,5 @@ document.addEventListener('DOMContentLoaded', function() {
         allowInput: true,
         locale: "pt"
     });
+
 });

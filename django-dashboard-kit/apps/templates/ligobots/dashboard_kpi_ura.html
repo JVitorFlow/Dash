@@ -2,6 +2,10 @@
 
 {% load static %}
 
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static 'assets/css/kpis.css' %}">
+{% endblock %}
+
 {% block title %} Dashboard KPI URA {% endblock %}
 
 {% block content %}
@@ -23,452 +27,70 @@
                 </div>
             </div>
             <!-- [ breadcrumb ] end -->
-            
+
             <!-- [ Filtros ] start -->
-            <div class="d-flex flex-wrap align-items-center mb-4">
-                <div class="me-2 mb-2 flex-grow-1">
-                    <label for="kpiSelector" class="form-label mb-1" style="font-weight: 500; font-size: 0.85rem;">KPI:</label>
-                    <select id="kpiSelector" class="form-select form-select-sm" style="font-size: 0.85rem; padding: 0.3rem;">
-                        <option value="" disabled selected>Selecione um KPI</option>
-                        <option value="1101">(11.01) % Ocupação por Atendente</option>
-                        <option value="1102">(11.02) Tempo de espera para iniciar atendimento telefônico em até 1 minuto</option>
-                        <option value="1104">(11.04) % Abandono de chamada externas</option>
-                        <option value="1106">(11.06) Avaliação da qualidade e precisão das informações repassadas</option>
-                        <option value="1201">(12.01) Tempo médio de 03 minutos de atendimento por atendente</option>
-                        <option value="1202">(12.02) Tempo de espera para iniciar atendimento telefônico em até 1 minuto</option>
-                        <option value="1204">(12.04) % de abandono de chamadas internas</option>
-                    </select>
-                </div>
-        
-                <div class="me-2 mb-2 flex-grow-1">
-                    <label for="mesSelector" class="form-label mb-1" style="font-weight: 500; font-size: 0.85rem;">Mês:</label>
-                    <select id="mesSelector" class="form-select form-select-sm" style="font-size: 0.85rem; padding: 0.3rem;">
-                        <option value="" disabled selected>Mês</option>
-                        <option value="01">Janeiro</option>
-                        <option value="02">Fevereiro</option>
-                        <option value="03">Março</option>
-                        <option value="04">Abril</option>
-                        <option value="05">Maio</option>
-                        <option value="06">Junho</option>
-                        <option value="07">Julho</option>
-                        <option value="08">Agosto</option>
-                        <option value="09">Setembro</option>
-                        <option value="10">Outubro</option>
-                        <option value="11">Novembro</option>
-                        <option value="12">Dezembro</option>
-                    </select>
-                </div>
-        
-                <div class="me-2 mb-2 flex-grow-1">
-                    <label for="anoSelector" class="form-label mb-1" style="font-weight: 500; font-size: 0.85rem;">Ano:</label>
-                    <select id="anoSelector" class="form-select form-select-sm" style="font-size: 0.85rem; padding: 0.3rem;">
-                        <option value="" disabled selected>Ano</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                    </select>
-                </div>
-        
-                <div class="mb-2">
-                    <label class="form-label mb-1" style="font-weight: 500; font-size: 0.85rem; visibility: hidden;">Buscar:</label>
-                    <button id="kpiSearchButton" class="btn btn-primary w-100" style="font-size: 0.85rem; padding: 0.4rem;">Buscar</button>
-                </div>
-            </div>
+            {% include 'includes/components/filtros_kpis.html' %}
             <!-- [ Filtros ] end -->
-            
-            {% comment %} <div class="row">
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card bg-primary">
-                        <div class="card-body">
-                            <h5 class="card-title">Quantidade de URAs</h5>
-                            <p class="card-text text-white font-weight-bold display-6">{{ total_uras }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card bg-success">
-                        <div class="card-body">
-                            <h5 class="card-title">URAs Ativas</h5>
-                            <p class="card-text text-white font-weight-bold display-6">{{ uras_ativas }}</p>
-                        </div>                     
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card bg-danger">
-                        <div class="card-body">
-                            <h5 class="card-title">URAs Inativas</h5>
-                            <p class="card-text text-white font-weight-bold display-6">{{ uras_inativas }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card bg-warning">
-                        <div class="card-body">
-                            <h5 class="card-title">Agentes</h5>
-                            <p class="card-text text-white font-weight-bold display-6">5</p>
-                        </div>
-                    </div>
-                </div>
-            </div> {% endcomment %}
-
-            <!-- Tabela de URAs e Clientes -->
-            <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <!-- Indicador de Atividade dos Agentes -->
-                            <div class="indicator-section">
-                                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorAgentes" aria-expanded="false" aria-controls="explicacaoIndicadorAgentes">
-                                    O que é este indicador? 
-                                </button>
-                                <div class="collapse" id="explicacaoIndicadorAgentes">
-                                    <div class="alert alert-info" role="alert">
-                                        Este indicador exibe a atividade dos agentes na URA, incluindo o tempo total de login, pausas e o tempo médio de atendimento. Ele ajuda a avaliar a eficiência dos agentes e a otimizar o atendimento.
-
-                                        <strong>Importante:</strong> O Brasil está geralmente 3 horas atrás do horário UTC (UTC-3). Os horários selecionados serão ajustados para UTC ao serem enviados para a API. Por exemplo, se escolher <strong>06:00</strong> no Brasil, o horário enviado será <strong>09:00</strong> UTC.
-                                    </div>
-                                </div>
-                            </div>
-                            <p></p>
-                            <!-- Filtro de Data para a Atividade dos Agentes -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title">11.01 - % Ocupação por atendente</h5>
-                                <div class="buttons-container">
-                                    <button id="filterButton" class="btn btn-primary">Aplicar Filtro</button>
-                                    <button id="exportExcel" class="btn btn-success" style="display: none;">Excel</button>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-5">
-                                    <label for="startDate">Data de Início:</label>
-                                    <input type="text" id="startDate" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                                <div class="col-md-5">
-                                    <label for="endDate">Data de Fim:</label>
-                                    <input type="text" id="endDate" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                            </div>
-                            <div id="loadingSpinner" style="display:none; text-align: center; margin: 10px 0;">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="sr-only">Carregando...</span>
-                                </div>
-                            </div>
-
-
-            
-                            <!-- Tabela -->
-                            <div class="table-responsive">
-                                <table id="tabelaAgentes" class="table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Usuário</th>
-                                            <th>Data</th>
-                                            <th>Tempo de Login Total (horas)</th>
-                                            <th>Tempo de Pausa Total (minutos)</th>
-                                            <th>Quantidade de Pausas</th>
-                                            <th>Horário de Login</th>
-                                            <th>Horário de Logoff</th>
-                                            <th>Detalhes das Pausas</th>
-                                            <th>% Ocupação</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- As linhas da tabela serão preenchidas dinamicamente aqui -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+             
+            <!-- Gráficos -->
+            <div class="row mb-4" id="seriesSelectorContainer">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="seriesSelector">Selecionar Séries:</label>
+                        <select id="seriesSelector" class="form-control" onchange="filterSeries()" style="width: 300px; margin: 0 auto;">
+                            <option value="all">Mostrar Todas</option>
+                            <option value="geral">Mostrar Geral</option>
+                            <option value="HM v3">Mostrar HM v3</option>
+                            <option value="HSJC v3">Mostrar HSJC v3</option>
+                            <option value="HSOR v3">Mostrar HSOR v3</option>
+                            <option value="HSOR">Mostrar HSOR</option>
+                        </select>
                     </div>
                 </div>
             </div>
             
-
-
+            
+            <div class="row">
+                <div id="loadingSpinnerMedidores" style="display:none; text-align: center; margin: 10px 0;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div id="medicaoChartContainer" class="chart-container"></div>
+                </div>
+                <div class="col-md-4">
+                    <div id="colunasChartContainer" class="chart-container"></div>
+                </div>
+                <div class="col-md-4">
+                    <div id="tendenciaChartContainer" class="chart-container"></div>
+                </div>
+            </div>
+            <!-- KPI 1101  -->
+            {% include 'includes/components/kpi11_01.html' %}
+        
             <!-- Indicadores de Desempenho de URA por Fila de Atendimento -->
-            <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                           <!-- Indicador de Desempenho por Fila de URA -->
-                            <div class="indicator-section">
-                                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorFila" aria-expanded="false" aria-controls="explicacaoIndicadorFila">
-                                    O que é este indicador? 
-                                </button>
-                                <div class="collapse" id="explicacaoIndicadorFila">
-                                    <div class="alert alert-info" role="alert">
-                                        Este gráfico exibe os indicadores de desempenho das URAs (Unidades de Resposta Audível) de diferentes hospitais. Ele mostra o número de chamadas recebidas, atendidas e não atendidas, assim como o tempo total e médio de espera e de conversa. Essas métricas ajudam a avaliar a eficiência do atendimento telefônico nas URAs.
-                                    </div>
-                                </div>
-                            </div>
-                            <p></p>
-                            <!-- Filtro de Data para o Indicador de Tempo de Espera -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title">Indicador de Desempenho por Fila de URA</h5>
-                                <div class="buttons-container">
-                                    <button id="exportExcelButton" class="btn btn-success" style="display: none;">Excel</button>
-                                    <button id="filterEsperaButton" class="btn btn-primary">Aplicar Filtro</button>
-                                    <button id="downloadChart" class="btn btn-warning" style="display: none;">Baixar Gráfico</button>
-                                </div>
-                            </div>
-                            
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-5">
-                                    <label for="startDateEspera">Data de Início:</label>
-                                    <input type="text" id="startDateEspera" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                                <div class="col-md-5">
-                                    <label for="endDateEspera">Data de Fim:</label>
-                                    <input type="text" id="endDateEspera" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                            </div>
-                            <div id="loadingSpinnerEspera" style="display:none; text-align: center; margin: 10px 0;">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="sr-only">Carregando...</span>
-                                </div>
-                            </div>
-                            <div id="resultadoEspera">
-                                <!-- Mensagem quando não houver dados -->
-                                <div id="noDataMessage" class="alert alert-warning" style="display: none;">
-                                    Nenhum dado encontrado para o período selecionado.
-                                </div>
-
-                                <!-- Canvas do gráfico -->
-                                <canvas id="barChart"></canvas>
-                                <p></p>
-                                <table id="dataTable" class="display">
-                                    <thead>
-                                        <tr>
-                                            <th>Nome da Fila</th>
-                                            <th>Chamadas Recebidas</th>
-                                            <th>Chamadas Atendidas</th>
-                                            <th>Chamadas Não Atendidas</th>
-                                            <th>Tempo Total de Espera (segundos)</th>
-                                            <th>Tempo Total de Conversa (segundos)</th>
-                                            <th>Tempo Médio de Espera (minutos)</th>
-                                            <th>Tempo Médio de Conversa (minutos)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Dados serão preenchidos dinamicamente -->
-                                    </tbody>
-                                </table>
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            
-
+            {% include 'includes/components/indicador_graficos_ura.html' %}
 
             <!-- Tempo médio de serviços por atendente -->
-            <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Tempo Médio de Serviço por Atendente</h5>
-                            <!-- Inputs para as datas -->
-                            <div class="row mb-3">
-                                <div class="col-md-5">
-                                    <label for="startDateAtendente">Data de Início:</label>
-                                    <input type="text" id="startDateAtendente" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                                <div class="col-md-5">
-                                    <label for="endDateAtendente">Data de Fim:</label>
-                                    <input type="text" id="endDateAtendente" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                                <div class="col-md-2 d-flex align-items-end">
-                                    <button id="filterAtendenteButton" class="btn btn-primary">Aplicar Filtro</button>
-                                </div>
-                            </div>
-                            <div id="loadingSpinnerAtendente" style="display:none; text-align: center; margin: 10px 0;">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="sr-only">Carregando...</span>
-                                </div>
-                            </div>
-                            <!-- Container para a tabela com rolagem horizontal -->
-                            <div id="resultadoAtendente" style="overflow-x: auto;">
-                                <!-- A tabela será inserida aqui dinamicamente -->
-                            </div>
-                            <!-- Canvas para o gráfico polar -->
-                            <!--<canvas id="polarAreaChart" style="max-width: 100%; height: 400px;"></canvas>-->
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include 'includes/components/tempo_medio_servico_por_atendente.html' %}
+            
+            <!-- KPI1102 -->
+            {% include 'includes/components/kpi11_02.html' %}
+            
+            <!-- KPI1104 -->
+            {% include 'includes/components/kpi11_04.html' %}
+            
+            <!-- KPI1201 -->
+            {% include 'includes/components/kpi12_01.html' %}
+            
+            <!-- KPI1202 -->
+            {% include 'includes/components/kpi12_02.html' %}
+            <!-- KPI1204 -->
+            {% include 'includes/components/kpi12_04.html' %}
 
-
-            <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <!-- Indicador de Tempo de Espera para Iniciar Atendimento Telefônico em até 1 minuto -->
-                            <div class="indicator-section">
-                                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorTempoEspera" aria-expanded="false" aria-controls="explicacaoIndicadorTempoEspera">
-                                    O que é este indicador? 
-                                </button>
-                                <div class="collapse" id="explicacaoIndicadorTempoEspera">
-                                    <div class="alert alert-info" role="alert">
-                                        Este indicador exibe a eficiência da URA (Unidade de Resposta Audível) em atender chamadas externas em até 1 minuto. Ele mostra o percentual de ligações atendidas dentro desse tempo em relação ao total de ligações recebidas.
-                                        <strong>Importante:</strong> O cálculo é feito com base nas chamadas que foram atendidas em até 1 minuto, dividido pelo total de chamadas recebidas, e multiplicado por 100 para obter o percentual.
-                                        <strong>Este indicador faz parte do KPI 1102.</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <p></p>
-                            
-                            <!-- Filtro de Data para o Indicador de Tempo de Espera -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title">11.02 - Indicador de Tempo de Espera para Iniciar Atendimento em até 1 minuto</h5>
-                                <div class="buttons-container">
-                                    <button id="filterEspera1minutoButton" class="btn btn-primary">Aplicar Filtro</button>
-                                    <button id="exportExcelEsperaKP1102" class="btn btn-success" style="display: none;">Excel</button>
-                                </div>
-                            </div>
             
-                            <div class="row mb-3">
-                                <div class="col-md-5">
-                                    <label for="startDateEsperaKPI1102">Data de Início:</label>
-                                    <input type="text" id="startDateEsperaKPI1102" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                                <div class="col-md-5">
-                                    <label for="endDateEsperaKPI1102">Data de Fim:</label>
-                                    <input type="text" id="endDateEsperaKPI1102" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                            </div>
-                            
-                            <div id="loadingSpinnerEsperaKPI1102" style="display:none; text-align: center; margin: 10px 0;">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="sr-only">Carregando...</span>
-                                </div>
-                            </div> 
             
-                            <!-- Aqui está o contêiner onde a tabela será renderizada -->
-                            <div id="resultadoEsperaKPI1102" style="overflow-x: auto;"></div> 
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <!-- Indicador de Chamadas Abandonadas -->
-                            <div class="indicator-section">
-                                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorAbandonadas" aria-expanded="false" aria-controls="explicacaoIndicadorAbandonadas">
-                                    O que é este indicador?
-                                </button>
-                                <div class="collapse" id="explicacaoIndicadorAbandonadas">
-                                    <div class="alert alert-info" role="alert">
-                                        Este indicador exibe o número de chamadas abandonadas na URA (Unidade de Resposta Audível). As chamadas são categorizadas por:
-                                        <ul>
-                                            <li><strong>Abandonadas (Cognitiva):</strong> Total de chamadas abandonadas.</li>
-                                            <li><strong>Abandonadas até 1 min:</strong> Chamadas abandonadas em até 1 minuto.</li>
-                                            <li><strong>Abandonadas acima de 1 min:</strong> Chamadas abandonadas com mais de 1 minuto.</li>
-                                        </ul>
-                                        <strong>Este indicador faz parte do KPI 11.04.</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <p></p>
-            
-                            <!-- Filtro de Data para Chamadas Abandonadas -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title">11.04 - Indicador de % de abandono de chamadas externas </h5>
-                                <div class="buttons-container">
-                                    <button id="filterAbandonadasButtonKPI1104" class="btn btn-primary">Aplicar Filtro</button>
-                                    <button id="exportExcelAbandonadasKP1104" class="btn btn-success" style="display: none;">Exportar para Excel</button>
-                                </div>
-                            </div>
-            
-                            <div class="row mb-3">
-                                <div class="col-md-5">
-                                    <label for="startDateAbandonadasKPI1104">Data de Início:</label>
-                                    <input type="text" id="startDateAbandonadasKPI1104" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                                <div class="col-md-5">
-                                    <label for="endDateAbandonadasKPI1104">Data de Fim:</label>
-                                    <input type="text" id="endDateAbandonadasKPI1104" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                            </div>
-            
-                            <!-- Spinner de carregamento -->
-                            <div id="loadingSpinnerAbandonadasKPI1104" style="display:none; text-align: center; margin: 10px 0;">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="sr-only">Carregando...</span>
-                                </div>
-                            </div>
-            
-                            <!-- Contêiner onde a tabela de chamadas abandonadas será renderizada -->
-                            <div id="resultadoAbandonadasKPI1104" style="overflow-x: auto;"></div>
-            
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <!-- Indicador de Tempo Médio de Atendimento por Atendente -->
-                            <div class="indicator-section">
-                                <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorTempoMedio" aria-expanded="false" aria-controls="explicacaoIndicadorTempoMedio">
-                                    O que é este indicador?
-                                </button>
-                                <div class="collapse" id="explicacaoIndicadorTempoMedio">
-                                    <div class="alert alert-info" role="alert">
-                                        <strong>MÉDIA PONDERADA DO TEMPO DE ATENDIMENTO:</strong> O indicador exibe a média ponderada do tempo de atendimento de chamadas por atendente. 
-                                        <ul>
-                                            <li>O tempo de atendimento é calculado como: <code>(Fim do Atendimento) - (Início do Atendimento)</code>.</li>
-                                            <li><strong>Início do Atendimento:</strong> Quando o funcionário inicia o atendimento com o interlocutor.</li>
-                                            <li><strong>Fim do Atendimento:</strong> Quando a ligação é finalizada.</li>
-                                        </ul>
-                                        <strong>Este indicador faz parte do KPI 12.01.</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <p></p>
-            
-                            <!-- Filtro de Data para Tempo Médio de Atendimento por Atendente -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="card-title">12.01 - Indicador de tempo médio de 03 minutos de atendimento por atendente</h5>
-                                <div class="buttons-container">
-                                    <button id="filterTempoMedioButtonKPI1201" class="btn btn-primary">Aplicar Filtro</button>
-                                    <button id="exportExcelKPI1201" class="btn btn-success" style="display: none;">Exportar para Excel</button>
-                                </div>
-                            </div>
-            
-                            <div class="row mb-3">
-                                <div class="col-md-5">
-                                    <label for="startDateKPI1201">Data de Início:</label>
-                                    <input type="text" id="startDateKPI1201" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                                <div class="col-md-5">
-                                    <label for="endDateKPI1201">Data de Fim:</label>
-                                    <input type="text" id="endDateKPI1201" class="form-control" placeholder="dd/mm/aaaa hh:mm">
-                                </div>
-                            </div>
-            
-                            <!-- Spinner de carregamento -->
-                            <div id="loadingSpinnerKPI1201" style="display:none; text-align: center; margin: 10px 0;">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="sr-only">Carregando...</span>
-                                </div>
-                            </div>
-            
-                            <!-- Contêiner onde a tabela de tempo médio de atendimento será renderizada -->
-                            <div id="resultadoTempoMedioKPI1201" style="overflow-x: auto;"></div>
-            
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- [ Main Content ] end -->
         </div>
     </div>
@@ -485,7 +107,9 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-gauge"></script>
+    <!-- Remova ou comente o script do chartjs-gauge -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chartjs-gauge"></script> -->
+
 
     <script id="clientesLabelsData" type="application/json">
         {{ clientes_labels|safe }}
@@ -513,9 +137,16 @@
     <script id="tempoChamadasAbandonadasKPI1104" type="application/json">
         {{ indicador_de_desempenho_url }}
     </script>
+    <script id="tempoChamadasAbandonadasInternasKPI1204" type="application/json">
+        {{ indicador_de_desempenho_url }}
+    </script>
+    <script id="tempoEsperaAtendimento1minutoInternoKPI1202" type="application/json">
+        {{ indicador_de_desempenho_url }}
+    </script>
+
 
     <!-- Scripts personalizados - ordem correta -->
-    <script src="{% static 'assets/js/grafico_ura_por_cliente.js' %}"></script>
+    <!-- <script src="{% static 'assets/js/grafico_ura_por_cliente.js' %}"></script> -->
 
     <!-- Script de abandono de chamadas - deve ser carregado antes de qualquer chamada à sua função -->
     <script type="module" src="{% static 'assets/js/abandono_de_chamadas_externas.js' %}"></script>
@@ -530,6 +161,9 @@
     <script src="{% static 'assets/js/tempo_medio_servico_por_atendente.js' %}"></script>
     <script type="module" src="{% static 'assets/js/tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js' %}"></script>
     <script type="module" src="{% static 'assets/js/Kpi1201.js' %}"></script>
+    <script type="module" src="{% static 'assets/js/Kpi1204.js' %}"></script>
+    <script type="module" src="{% static 'assets/js/Kpi1202.js' %}"></script>
+    <script type="module" src="{% static 'assets/js/kpi_charts.js' %}"></script>
 
     <!-- Script principal que chama as funções -->
     <script type="module">
@@ -537,7 +171,8 @@
         import { buscarDadosAgentes } from '{% static "assets/js/atividade_agentes.js" %}';
         import { buscarIndicadorTempoEspera } from '{% static "assets/js/tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js" %}';
         import { buscarIndicadorTempoMedio } from '{% static "assets/js/Kpi1201.js" %}';
-
+        import {buscarIndicadorChamadasAbandonadasInternas} from '{% static "assets/js/Kpi1204.js" %}';
+        import {buscarIndicadorTempoEsperaKPI1202} from '{% static "assets/js/Kpi1202.js" %}';
 
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('kpiSearchButton').addEventListener('click', function() {
@@ -570,6 +205,14 @@
                         console.log('Entrou no case 1201');
                         buscarIndicadorTempoMedio(); // Função específica para este KPI
                         break;
+                    case '1204':
+                        console.log('Entrou no case 1204');
+                        buscarIndicadorChamadasAbandonadasInternas(); // Função específica para este KPI
+                        break;
+                    case '1202':
+                        console.log('Entrou no case 1202');
+                        buscarIndicadorTempoEsperaKPI1202(); // Função específica para este KPI
+                        break;
                     default:
                         console.error('KPI não reconhecido:', selectedKPI);
                         break;
@@ -579,409 +222,4 @@
     </script>
     
 {% endblock javascripts %}
-
-
-
-{% block stylesheets %}
-    <style>
-        /* Layout Principal */
-        .card {
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.2s ease;
-            padding: 1rem;
-        }
-
-        .card:hover {
-            box-shadow: 0 5px 7px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #343a40;
-        }
-
-        /* Breadcrumb */
-        .breadcrumb {
-            font-size: 1rem;
-            padding: 10px 0;
-            margin-bottom: 20px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-
-        .breadcrumb-item a {
-            text-decoration: none;
-            color: #007bff;
-            transition: color 0.3s ease;
-        }
-
-        .breadcrumb-item a:hover {
-            color: #0056b3;
-        }
-
-        .breadcrumb-item i {
-            margin-right: 5px;
-        }
-
-        #barChart {
-            width: 100%;
-            min-height: 400px;
-            max-height: 500px;
-            height: auto;
-            margin-top: 20px;
-        }
-
-        /* Card Body e Tabelas */
-        .card-body {
-            /* Removi max-height e overflow-y temporariamente */
-            padding: 1rem;
-        }
-
-        .table-responsive {
-            /* Removi max-height e overflow-y temporariamente */
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .table {
-            margin-bottom: 0;
-            font-size: 0.875rem;
-            background-color: #fff;
-        }
-
-        .table td, .table th {
-            padding: 0.5rem;
-            vertical-align: middle;
-            white-space: nowrap;
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: #f5f5f5;
-        }
-
-        /* Estilo para o seletor de KPI */
-        #kpiSelector {
-            width: 100%;
-            padding: 0.5rem 1.5rem 0.5rem 0.75rem;
-            border-radius: 5px;
-            font-size: 1rem;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.12), inset 0 1px 2px rgba(0,0,0,0.24);
-            border: 1px solid #ced4da;
-            background-color: #fff;
-            appearance: none;
-            position: relative;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="#007bff" d="M2 0L0 2h4z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 0.75rem center;
-            background-size: 0.65rem 0.65rem;
-            transition: all 0.3s ease;
-        }
-
-        /* Estilo ao focar no seletor */
-        #kpiSelector:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-            outline: none;
-        }
-
-        /* Estilo das opções no dropdown */
-        #kpiSelector option {
-            padding: 8px 12px;
-            white-space: normal;
-            font-size: 1rem;
-        }
-
-        /* Estilo do container de exibição do KPI */
-        #kpiDisplay {
-            margin-top: 1rem;
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-radius: 5px;
-            border: 1px solid #ced4da;
-        }
-
-        #kpiTitle {
-            font-weight: 600;
-            color: #343a40;
-            margin-bottom: 0.5rem;
-        }
-
-        #kpiValue {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: #007bff;
-        }
-
-        /* Botões e Feedback Visual */
-        .buttons-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28A745 0%, #218838 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            min-width: 150px;
-            text-align: center;
-            margin-left: 10px;
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-            background-color: #218838;
-        }
-
-        .btn-success:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            background-color: #1e7e34;
-        }
-
-        /* Estilo para os botões */
-        .buttons-container .btn {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            min-width: 150px;
-            margin-left: 10px;
-            text-align: center;
-        }
-
-        .buttons-container .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-            background-color: #0056b3;
-        }
-
-        .buttons-container .btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            background-color: #004085;
-        }
-
-        /* Específico para cada botão */
-        #exportExcelButton {
-            background: linear-gradient(135deg, #28A745 0%, #218838 100%);
-        }
-
-        #filterEsperaButton {
-            background: linear-gradient(135deg, #007BFF 0%, #0056B3 100%);
-        }
-
-        #downloadChart {
-            background: linear-gradient(135deg, #FFC107 0%, #E0A800 100%);
-        }
-
-        /* Gráficos */
-        canvas {
-            max-width: 100%;
-            height: auto !important;
-            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .card {
-                margin-bottom: 20px;
-            }
-
-            .card-body {
-                max-height: none;
-                overflow-y: visible;
-            }
-
-            .table-responsive {
-                max-height: none;
-                overflow-y: visible;
-            }
-
-            .page-header-title h5 {
-                font-size: 1.2rem;
-            }
-
-            .d-flex.justify-content-between {
-                flex-wrap: wrap;
-            }
-
-            .d-flex.justify-content-between.align-items-center {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .buttons-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .buttons-container .btn {
-                min-width: 150px;
-                padding: 10px 20px;
-                margin-left: 10px;
-                text-align: center;
-            }
-        }
-
-        /* Feedback Visual */
-        .loading-spinner {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .alert-info {
-            margin-bottom: 10px;
-        }
-
-        .alert-success, .alert-danger {
-            font-size: 0.875rem;
-            padding: 0.75rem 1rem;
-            margin-top: 10px;
-            border-radius: 5px;
-        }
-
-        /* Outros Estilos */
-        .d-flex.justify-content-between.align-items-center {
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #e3e3e3;
-        }
-
-        #chart-agentes {
-            max-height: none;
-            overflow-y: visible;
-            overflow-x: visible;
-            padding: 20px;
-            background-color: white;
-        }
-
-        #resultadoAtendente {
-            max-height: none;
-            overflow: visible;
-        }
-
-        #kpiSelector, #hospitalSelector {
-            width: 100%;
-            padding: 0.5rem 1.5rem 0.5rem 0.75rem;
-            border-radius: 5px;
-            font-size: 1rem;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.12), inset 0 1px 2px rgba(0,0,0,0.24);
-            border: 1px solid #ced4da;
-            background-color: #fff;
-            appearance: none;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        #kpiSelector:focus, #hospitalSelector:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-            outline: none;
-        }
-
-        .indicator-section button {
-            background-color: #29a3a3;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 5px 15px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
-        }
-
-        .indicator-section button:hover {
-            background-color: #238d8d;
-        }
-
-        #dataTable tbody tr:nth-child(odd) {
-            background-color: #f9f9f9;
-        }
-
-        #dataTable tbody tr:nth-child(even) {
-            background-color: #ffffff;
-        }
-
-        #dataTable tbody tr:hover {
-            background-color: #d9edf7;
-            cursor: pointer;
-        }
-
-        #dataTable thead th {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background-color: #f1f1f1;
-        }
-
-        #dataTable th {
-            position: relative;
-            padding-right: 25px;
-        }
-
-        #dataTable th::after {
-            content: "\25B2";
-            position: absolute;
-            right: 8px;
-            opacity: 0.6;
-            font-size: 0.8em;
-            transform: rotate(0);
-            transition: transform 0.2s;
-        }
-
-        #dataTable th.sorting_desc::after {
-            transform: rotate(180deg);
-        }
-
-        #dataTable td, #dataTable th {
-            padding: 10px 15px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 0.875rem;
-        }
-
-        #KpiCockpit {
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        #KpiCockpit h5 {
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-            color: #333;
-        }
-
-        #tabelaEspera th, #tabelaEspera td {
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        #tabelaEspera {
-            margin-top: 20px;
-        }
-
-    </style>
-
-
-{% endblock stylesheets %}
-
 

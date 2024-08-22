@@ -1,0 +1,56 @@
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <!-- Indicador de Chamadas Abandonadas Internas -->
+                <div class="indicator-section">
+                    <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorAbandonadasInternas" aria-expanded="false" aria-controls="explicacaoIndicadorAbandonadasInternas">
+                        O que é este indicador?
+                    </button>
+                    <div class="collapse" id="explicacaoIndicadorAbandonadasInternas">
+                        <div class="alert alert-info" role="alert">
+                            Este indicador exibe a porcentagem de abandono de chamadas internas na URA (Unidade de Resposta Audível) com base na fórmula:
+                            <ul>
+                                <li><strong>Total de ligações abandonadas:</strong> Número de chamadas abandonadas na fila do skill com tempo de espera superior a 1 minuto.</li>
+                                <li><strong>Ligações internas recebidas:</strong> Número de chamadas internas recebidas.</li>
+                                <li><strong>Ligações abandonadas inferior a 1 minuto:</strong> Número de chamadas abandonadas com tempo de espera inferior a 1 minuto.</li>
+                            </ul>
+                            <strong>Este indicador faz parte do KPI 12.04.</strong> O resultado é apresentado em porcentagem (%).
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+
+                <!-- Filtro de Data para Chamadas Abandonadas Internas -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">12.04 - Indicador de % de abandono de chamadas internas</h5>
+                    <div class="buttons-container">
+                        <button id="filterAbandonadasInternasButtonKPI1204" class="btn btn-primary">Aplicar Filtro</button>
+                        <button id="exportExcelAbandonadasInternasKPI1204" class="btn btn-success" style="display: none;">Exportar para Excel</button>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label for="startDateAbandonadasInternasKPI1204">Data de Início:</label>
+                        <input type="text" id="startDateAbandonadasInternasKPI1204" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="endDateAbandonadasInternasKPI1204">Data de Fim:</label>
+                        <input type="text" id="endDateAbandonadasInternasKPI1204" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                </div>
+
+                <!-- Spinner de carregamento -->
+                <div id="loadingSpinnerAbandonadasInternasKPI1204" style="display:none; text-align: center; margin: 10px 0;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                </div>
+
+                <!-- Contêiner onde a tabela de chamadas abandonadas internas será renderizada -->
+                <div id="resultadoAbandonadasInternasKPI1204" style="overflow-x: auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>

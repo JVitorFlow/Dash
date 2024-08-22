@@ -1,0 +1,57 @@
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <!-- Indicador de Tempo Médio de Atendimento por Atendente -->
+                <div class="indicator-section">
+                    <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorTempoMedio" aria-expanded="false" aria-controls="explicacaoIndicadorTempoMedio">
+                        O que é este indicador?
+                    </button>
+                    <div class="collapse" id="explicacaoIndicadorTempoMedio">
+                        <div class="alert alert-info" role="alert">
+                            <strong>MÉDIA PONDERADA DO TEMPO DE ATENDIMENTO:</strong> O indicador exibe a média ponderada do tempo de atendimento de chamadas por atendente. 
+                            <ul>
+                                <li>O tempo de atendimento é calculado como: <code>(Fim do Atendimento) - (Início do Atendimento)</code>.</li>
+                                <li><strong>Início do Atendimento:</strong> Quando o funcionário inicia o atendimento com o interlocutor.</li>
+                                <li><strong>Fim do Atendimento:</strong> Quando a ligação é finalizada.</li>
+                            </ul>
+                            <strong>Este indicador faz parte do KPI 12.01.</strong>
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+
+                <!-- Filtro de Data para Tempo Médio de Atendimento por Atendente -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">12.01 - Indicador de tempo médio de 03 minutos de atendimento por atendente</h5>
+                    <div class="buttons-container">
+                        <button id="filterTempoMedioButtonKPI1201" class="btn btn-primary">Aplicar Filtro</button>
+                        <button id="exportExcelKPI1201" class="btn btn-success" style="display: none;">Exportar para Excel</button>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label for="startDateKPI1201">Data de Início:</label>
+                        <input type="text" id="startDateKPI1201" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="endDateKPI1201">Data de Fim:</label>
+                        <input type="text" id="endDateKPI1201" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                </div>
+
+                <!-- Spinner de carregamento -->
+                <div id="loadingSpinnerKPI1201" style="display:none; text-align: center; margin: 10px 0;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                </div>
+
+                <!-- Contêiner onde a tabela de tempo médio de atendimento será renderizada -->
+                <div id="resultadoTempoMedioKPI1201" style="overflow-x: auto;"></div>
+
+            </div>
+        </div>
+    </div>
+</div>

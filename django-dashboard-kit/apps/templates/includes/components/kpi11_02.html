@@ -1,0 +1,51 @@
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <!-- Indicador de Tempo de Espera para Iniciar Atendimento Telefônico em até 1 minuto -->
+                <div class="indicator-section">
+                    <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorTempoEspera" aria-expanded="false" aria-controls="explicacaoIndicadorTempoEspera">
+                        O que é este indicador? 
+                    </button>
+                    <div class="collapse" id="explicacaoIndicadorTempoEspera">
+                        <div class="alert alert-info" role="alert">
+                            Este indicador exibe a eficiência da URA (Unidade de Resposta Audível) em atender chamadas externas em até 1 minuto. Ele mostra o percentual de ligações atendidas dentro desse tempo em relação ao total de ligações recebidas.
+                            <strong>Importante:</strong> O cálculo é feito com base nas chamadas que foram atendidas em até 1 minuto, dividido pelo total de chamadas recebidas, e multiplicado por 100 para obter o percentual.
+                            <strong>Este indicador faz parte do KPI 1102.</strong>
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+                
+                <!-- Filtro de Data para o Indicador de Tempo de Espera -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">11.02 - Indicador de Tempo de Espera para Iniciar Atendimento em até 1 minuto</h5>
+                    <div class="buttons-container">
+                        <button id="filterEspera1minutoButton" class="btn btn-primary">Aplicar Filtro</button>
+                        <button id="exportExcelEsperaKP1102" class="btn btn-success" style="display: none;">Excel</button>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label for="startDateEsperaKPI1102">Data de Início:</label>
+                        <input type="text" id="startDateEsperaKPI1102" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="endDateEsperaKPI1102">Data de Fim:</label>
+                        <input type="text" id="endDateEsperaKPI1102" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                </div>
+                
+                <div id="loadingSpinnerEsperaKPI1102" style="display:none; text-align: center; margin: 10px 0;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                </div> 
+
+                <!-- Aqui está o contêiner onde a tabela será renderizada -->
+                <div id="resultadoEsperaKPI1102" style="overflow-x: auto;"></div> 
+            </div>
+        </div>
+    </div>
+</div>

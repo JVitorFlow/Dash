@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
+    {% load static %}
     <title>
         Django DashboardKit - {% block title %}{% endblock %} | AppSeed
     </title>
@@ -20,10 +20,12 @@
     <meta name="description" content="DashboardKit is made using Bootstrap 5 design framework. Download the free admin template & use it for your project.">
     <meta name="keywords" content="DashboardKit, Dashboard Kit, Dashboard UI Kit, Bootstrap 5, Admin Template, Admin Dashboard, CRM, CMS, Free Bootstrap Admin Template">
     <meta name="author" content="DashboardKit ">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Favicon icon -->
     <link rel="icon" href="/static/assets/images/favicon.svg" type="image/x-icon">
 
+    <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+    
     <!-- font css -->
     <link rel="stylesheet" href="/static/assets/fonts/feather.css">
     <link rel="stylesheet" href="/static/assets/fonts/fontawesome.css">
@@ -33,8 +35,6 @@
     <link rel="stylesheet" href="/static/assets/css/style.css" id="main-style-link">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     
     <!-- Flatpickr CSS -->
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -42,6 +42,9 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>
 
+    <!-- Sidebar CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/sidebar.css' %}"> <!-- Caminho para o sidebar.css -->
+    
     <!-- jQuery (necessário para o DataTables) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -58,40 +61,11 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
 
-    <!-- Custom CSS for Floating Icon -->
-    <style>
-        .chat-icon {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background-color: #4e73df;
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-
-        .chat-icon:hover {
-            background-color: #3c5ab0;
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .chat-icon i {
-            font-size: 24px;
-        }
-    </style>
 </head>
 <body class="">
 
 	{% include 'includes/preloader.html' %}
-    {% load static %}
-
+4
 	<!-- [ Mobile header ] start -->
 	<div class="pc-mob-header pc-header">
 		<div class="pcm-logo">
@@ -115,11 +89,24 @@
 	</div>
 	<!-- [ Mobile header ] End -->
 
-    {% include 'includes/sidebar.html' %}
+    <!-- Contêiner Principal -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        {% include 'includes/sidebar.html' %}
 
-    {% include 'includes/navigation.html' %}
+        <!-- Seção de Conteúdo -->
+        <div class="content-section">
+            <!-- Header/Navegação -->
+            {% include 'includes/navigation.html' %}
 
-    {% block content %}{% endblock content %}
+            <!-- Conteúdo Principal -->
+            <main>
+                {% block content %}{% endblock content %}
+            </main>
+        </div>
+    </div>
+
+
 
     <!--
     {% include 'includes/promo-fixed-button.html' %}
@@ -129,12 +116,122 @@
 
     <!-- Specific Page JS goes HERE  -->
     {% block javascripts %}{% endblock javascripts %}
+    <script>
+        // Seletores
+        const sidebar = document.querySelector(".sidebar");
+        const sidebarBtn = document.querySelector(".bx-menu");
+        const contentSection = document.querySelector(".content-section");
+        const header = document.querySelector(".pc-header");
+    
+        // Evento de Clique para Toggle da Sidebar
+        sidebarBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("close");
+            contentSection.classList.toggle("content-section-close");
+            header.classList.toggle("pc-header-close");
+        });
+    
+        // Evento para expandir e recolher sub-menus
+        const arrows = document.querySelectorAll(".arrow");
+        arrows.forEach(arrow => {
+            arrow.addEventListener("click", (e) => {
+                const arrowParent = e.target.parentElement.parentElement; // Seleciona o elemento pai do menu
+                arrowParent.classList.toggle("showMenu");
+            });
+        });
+    </script>
+    <style>
+        /* Seção de Conteúdo */
+        .content-section {
+            margin-left: 65px; /* Espaço reservado quando a sidebar está aberta */
+            margin-right: 20px;
+            transition: all 0.3s ease;
+            min-height: 100vh; /* Garante que o conteúdo preencha a altura da tela */
+        }
 
-    <!-- Floating Chat Icon -->
-    <div class="chat-icon">
-        <i class="fas fa-comments"></i>
-    </div>
+        /* Header */
+        .pc-header {
+            position: fixed;
+            width: calc(100% - 260px); /* Largura do header quando a sidebar está aberta */
+            margin-left: 260px;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
 
+        /* Container Principal */
+        .pc-container {
+            position: relative;
+            margin-left: 260px; /* Espaço reservado quando a sidebar está aberta */
+            width: calc(100% - 260px); /* Largura do conteúdo principal */
+            padding-top: 70px; /* Espaço reservado para o header fixo */
+            transition: all 0.3s ease;
+        }
+
+        /* Conteúdo Principal */
+        .pc-container .pcoded-content {
+            max-width: 100%; /* Altera para 100% para usar toda a largura disponível */
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        /* Header da Página */
+        .page-header {
+            position: fixed;
+            width: calc(100% - 260px); /* Largura do header quando a sidebar está aberta */
+            padding: 13px 30px; /* Padding conforme mostrado na imagem */
+            top: 70px; /* Considerando que o .pc-header tem 70px de altura */
+            left: 260px;
+            background-color: #fff; /* Cor de fundo para destacar o header */
+            z-index: 1000;
+            transition: all 0.3s ease; /* Transição suave para mudanças */
+        }
+
+        /* Ajuste de margem quando a Sidebar estiver fechada */
+        .sidebar.close ~ .content-section .page-header {
+            margin-left: 1px; /* Ajusta a margem quando a sidebar está fechada */
+            width: calc(100% - 78px); /* Ajusta a largura do header quando a sidebar está fechada */
+            left: 78px; /* Ajuste o alinhamento horizontal */
+        }
+
+        .sidebar.close ~ .content-section .pc-header {
+            width: calc(100% - 78px); /* Ajusta a largura do header quando a sidebar está fechada */
+            margin-left: 78px;
+        }
+
+        .sidebar.close ~ .content-section .pc-container {
+            margin-left: 78px; /* Ajusta a margem quando a sidebar está fechada */
+            width: calc(100% - 78px); /* Ajusta a largura do conteúdo principal quando a sidebar está fechada */
+        }
+
+        .sidebar.close ~ .content-section .page-header {
+            margin-left: 1px; /* Ajusta a margem quando a sidebar está fechada */
+            width: calc(100% - 78px); /* Ajusta a largura do header quando a sidebar está fechada */
+            left: 78px;
+        }
+        /* Ajuste do ícone de menu na sidebar */
+        .sidebar .bx-menu {
+            font-size: 24px; /* Tamanho do ícone */
+            color: #ffffff; /* Cor branca para contraste com o fundo escuro */
+            margin: 15px auto; /* Margem superior e inferior para centralizar */
+            display: block; /* Garante que o ícone ocupe uma linha completa */
+            text-align: center; /* Centraliza o ícone na linha */
+            cursor: pointer; /* Cursor de ponteiro para indicar que é clicável */
+        }
+
+        .sidebar .bx-menu:hover {
+            color: #00aaff; /* Cor de destaque ao passar o mouse */
+        }
+
+        .sidebar.close .bx-menu {
+            margin: 10px auto; /* Ajusta a margem para quando a sidebar está fechada */
+        }
+
+    </style>
+    
+    
 </body>
 </html>
-

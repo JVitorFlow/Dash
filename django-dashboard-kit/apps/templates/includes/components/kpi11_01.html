@@ -1,0 +1,70 @@
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <!-- Indicador de Atividade dos Agentes -->
+                <div class="indicator-section">
+                    <button class="btn btn-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#explicacaoIndicadorAgentes" aria-expanded="false" aria-controls="explicacaoIndicadorAgentes">
+                        O que é este indicador? 
+                    </button>
+                    <div class="collapse" id="explicacaoIndicadorAgentes">
+                        <div class="alert alert-info" role="alert">
+                            Este indicador exibe a atividade dos agentes na URA, incluindo o tempo total de login, pausas e o tempo médio de atendimento. Ele ajuda a avaliar a eficiência dos agentes e a otimizar o atendimento.
+
+                            <strong>Importante:</strong> O Brasil está geralmente 3 horas atrás do horário UTC (UTC-3). Os horários selecionados serão ajustados para UTC ao serem enviados para a API. Por exemplo, se escolher <strong>06:00</strong> no Brasil, o horário enviado será <strong>09:00</strong> UTC.
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+                <!-- Filtro de Data para a Atividade dos Agentes -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">11.01 - % Ocupação por atendente</h5>
+                    <div class="buttons-container">
+                        <button id="filterButton" class="btn btn-primary">Aplicar Filtro</button>
+                        <button id="exportExcel" class="btn btn-success" style="display: none;">Excel</button>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label for="startDate">Data de Início:</label>
+                        <input type="text" id="startDate" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="endDate">Data de Fim:</label>
+                        <input type="text" id="endDate" class="form-control" placeholder="dd/mm/aaaa hh:mm">
+                    </div>
+                </div>
+                <div id="loadingSpinner" style="display:none; text-align: center; margin: 10px 0;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Carregando...</span>
+                    </div>
+                </div>
+
+
+
+                <!-- Tabela -->
+                <div class="table-responsive">
+                    <table id="tabelaAgentes" class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Data</th>
+                                <th>Tempo de Login Total (horas)</th>
+                                <th>Tempo de Pausa Total (minutos)</th>
+                                <th>Quantidade de Pausas</th>
+                                <th>Horário de Login</th>
+                                <th>Horário de Logoff</th>
+                                <th>Detalhes das Pausas</th>
+                                <th>% Ocupação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- As linhas da tabela serão preenchidas dinamicamente aqui -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

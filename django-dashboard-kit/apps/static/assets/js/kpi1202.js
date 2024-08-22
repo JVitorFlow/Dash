@@ -1,37 +1,31 @@
-import { mostrarLoadingSpinner, esconderLoadingSpinner } from './helpers.js';
+// Importando funções de módulos auxiliares
+import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds } from './utils.js';
 
-// Função principal para buscar o indicador de tempo médio por atendente
-export function buscarIndicadorTempoMedio(isManualSearch = false) {
+// Função principal para buscar o indicador de tempo de espera
+export function buscarIndicadorTempoEsperaKPI1202(isManualSearch = false) {
     let startDate, endDate;
 
-    // Caso a busca seja manual, utilize as datas dos campos manuais
     if (isManualSearch) {
+        // Busca manual, utiliza as datas especificadas manualmente
         console.log("[INFO] Realizando busca manual");
-        startDate = document.getElementById('startDateKPI1201').value;
-        endDate = document.getElementById('endDateKPI1201').value;
+
+        startDate = document.getElementById('startDateEsperaKPI1202').value;
+        endDate = document.getElementById('endDateEsperaKPI1202').value;
 
         if (!startDate || !endDate) {
             alert('Por favor, selecione ambas as datas.');
             console.error("[ERROR] Data de início ou fim não selecionada.");
+            toggleButtons(true);  // Habilita os botões em caso de erro
             return;
         }
 
-        // Formatar as datas para ISO 8601 com milissegundos
         startDate = formatDateToISOStringWithMilliseconds(startDate);
         endDate = formatDateToISOStringWithMilliseconds(endDate);
     } else {
-        // Caso não seja busca manual, considere o KPI 1201 com mês/ano
-        const selectedKPI = document.getElementById('kpiSelector').value;
-        console.log("[INFO] KPI Selecionado:", selectedKPI);
+        // Busca automática, utiliza mês/ano para gerar as datas
+        console.log("[INFO] Realizando busca automática");
 
-        if (selectedKPI !== '1201') {
-            console.log("[INFO] KPI não é 1201, abortando buscarIndicadorTempoMedio.");
-            return;
-        }
-
-        console.log("[INFO] Entrou no bloco de lógica para KPI 1201 (busca automática)");
-        
         const selectedMes = document.getElementById('mesSelector').value;
         const selectedAno = document.getElementById('anoSelector').value;
 
@@ -39,12 +33,10 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
             startDate = `${selectedAno}-${selectedMes}-01T00:00:00`;
             endDate = new Date(selectedAno, selectedMes, 0).toISOString().replace(/T.*/, 'T23:59:59');
 
-            console.log("[INFO] Datas geradas para o KPI 12.01");
-            console.log("[DEBUG] Data de Início:", startDate);
-            console.log("[DEBUG] Data de Fim:", endDate);
+            console.log("[INFO] Datas geradas automaticamente para o KPI 12.02");
         } else {
-            console.error("[ERROR] Mês ou ano não selecionado.");
             alert('Por favor, selecione o mês e o ano.');
+            console.error("[ERROR] Mês ou ano não selecionado.");
             toggleButtons(true);  // Habilita os botões em caso de erro
             return;
         }
@@ -53,14 +45,14 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
     console.log("[DEBUG] Data de Início:", startDate);
     console.log("[DEBUG] Data de Fim:", endDate);
 
-    mostrarLoadingSpinner('loadingSpinnerKPI1201');
+    mostrarLoadingSpinner('loadingSpinnerEsperaKPI1202');
 
     const payload = {
         dtStart: startDate,
         dtFinish: endDate
     };
 
-    const urlElement = document.getElementById('tempoChamadasAbandonadasKPI1104');
+    const urlElement = document.getElementById('tempoEsperaAtendimento1minutoInternoKPI1202');
     if (urlElement) {
         const urlApi = urlElement.textContent.trim();
         console.log("[INFO] URL da API carregada:", urlApi);
@@ -78,9 +70,9 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
             console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
 
             if (data.errcode === 0) {
-                console.log('Chamando renderizarTabelaIndicadorTempoMedio');
-                renderizarTabelaIndicadorTempoMedio(data.ura_performance);
-                document.getElementById('exportExcelKPI1201').style.display = 'block';
+                console.log('Chamando renderizarTabelaIndicadorEspera');
+                renderizarTabelaIndicadorEspera(data.ura_performance);
+                document.getElementById('exportExcelEsperaKPI1202').style.display = 'block';
             } else {
                 console.error('Erro ao buscar dados:', data.errmsg);
             }
@@ -89,27 +81,19 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
             console.error('Erro na requisição:', error);
         })
         .finally(() => {
-            esconderLoadingSpinner('loadingSpinnerKPI1201');
+            esconderLoadingSpinner('loadingSpinnerEsperaKPI1202');
             toggleButtons(true); // Habilita os botões após a requisição
         });
     } else {
-        console.error("[ERROR] Elemento 'tempoMedioServicoAtendenteUrlData' não encontrado no documento.");
+        console.error("[ERROR] Elemento 'tempoEsperaAtendimento1minutoInternoKPI1202' não encontrado no documento.");
         toggleButtons(true); // Habilita os botões em caso de erro
     }
 }
 
-
-// Função para desabilitar/habilitar botões
-function toggleButtons(enable) {
-    const searchButton = document.getElementById('kpiSearchButton');
-    const filterButton = document.getElementById('filterButton');
-    searchButton.disabled = !enable;
-    filterButton.disabled = !enable;
-}
-
-// Função para renderizar a tabela de indicadores de tempo médio
-function renderizarTabelaIndicadorTempoMedio(dados) {
-    const resultado = document.getElementById('resultadoTempoMedioKPI1201');
+// Função para renderizar a tabela de resultados
+function renderizarTabelaIndicadorEspera(dados) {
+    console.log('Executando renderizarTabelaIndicadorEspera com dados:', dados);
+    const resultado = document.getElementById('resultadoEsperaKPI1202');
     resultado.innerHTML = ''; // Limpa o conteúdo anterior
 
     if (!dados || dados.length === 0) {
@@ -136,23 +120,25 @@ function renderizarTabelaIndicadorTempoMedio(dados) {
 
     const tbody = table.querySelector('tbody');
 
+    // Filtra e processa apenas ligações internas
     dados.forEach(item => {
         if (item.tipo_atendimento === "Interno") {
-            const tempoTotal = item.tempo_total_ligacao_cognitiva || 0;
-            const atendidas = item.atendidas_cognitiva || 0;
-            const tempoMedio = atendidas > 0 ? (tempoTotal / atendidas).toFixed(2) : 0;
-            const cumpreMeta = tempoMedio <= 180 ? 'SIM' : 'NÃO';  // Considerando 3 minutos (180 segundos) como meta
+            console.log(`Processando ligação interna para URA: ${item.ura}, Data: ${item.data}`);
+
+            const percentual = calcularPercentual(item.atendidas_cognitiva_ate_um_minuto, item.atendidas_cognitiva);
+            const metaCumprida = cumpreMeta(percentual);
 
             const uraName = item.ura.replace(' v3', '');
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${uraName || 'N/A'}</td>
                 <td>${item.tipo_atendimento || 'N/A'}</td>
-                <td>ATENDENTE: ${item.ura || 'N/A'}</td>
-                <td>${item.data || 'N/A'}</td>
-                <td>${item.data || 'N/A'}</td>
-                <td>Ligações: ${atendidas} / Tempo médio: ${new Date(tempoMedio * 1000).toISOString().substr(11, 8)}</td>
-                <td>${cumpreMeta}</td>
+                <td>Dia: ${item.data || 'N/A'}</td>
+                <td>Qtd Espera Superior 1min: ${item.atendidas_cognitiva_acima_um_minuto || 0}</td>
+                <td>Qtd Espera Inf. 1min / Atend direto: ${item.atendidas_cognitiva_ate_um_minuto || 0}</td>
+                <td>Ligações atendidas: ${item.atendidas_cognitiva || 0} / Atingimento: ${percentual}%</td>
+                <td>${metaCumprida}</td>
             `;
             tbody.appendChild(tr);
         }
@@ -170,20 +156,29 @@ function renderizarTabelaIndicadorTempoMedio(dados) {
     }
 }
 
-// Listeners para botões
+// Função para habilitar/desabilitar botões
+function toggleButtons(enable = true) {
+    const buttons = document.querySelectorAll('#filterEsperaKPI1202Button');
+    buttons.forEach(button => {
+        button.disabled = !enable;
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('filterTempoMedioButtonKPI1201').addEventListener('click', function() {
-        toggleButtons(false);
-        buscarIndicadorTempoMedio(true);
+    const filterButton = document.getElementById('filterEsperaKPI1202Button');
+
+    filterButton.addEventListener('click', function() {
+        toggleButtons(false); // Desabilita os botões enquanto a requisição está em andamento
+        buscarIndicadorTempoEsperaKPI1202(true);
     });
 
-    document.getElementById('exportExcelKPI1201').addEventListener('click', function() {
-        const tabela = document.querySelector('#resultadoTempoMedioKPI1201 table');
+    document.getElementById('exportExcelEsperaKPI1202').addEventListener('click', function() {
+        const tabela = document.querySelector('#resultadoEsperaKPI1202 table');
         const wb = XLSX.utils.table_to_book(tabela, { sheet: "Sheet1" });
-        XLSX.writeFile(wb, 'indicadores_tempo_medio.xlsx');
+        XLSX.writeFile(wb, 'indicadores_espera.xlsx');
     });
 
-    flatpickr("#startDateKPI1201", {
+    flatpickr("#startDateEsperaKPI1202", {
         enableTime: true,
         dateFormat: "d/m/Y H:i",
         time_24hr: true,
@@ -191,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
         locale: "pt"
     });
 
-    flatpickr("#endDateKPI1201", {
+    flatpickr("#endDateEsperaKPI1202", {
         enableTime: true,
         dateFormat: "d/m/Y H:i",
         time_24hr: true,
