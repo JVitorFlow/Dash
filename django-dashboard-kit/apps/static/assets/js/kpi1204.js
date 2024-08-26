@@ -1,9 +1,10 @@
 // Importando funções de módulos auxiliares
-import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
-import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds } from './utils.js';
+import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentualAbandono, cumpreMeta } from './helpers.js';
+import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
+import { renderizarGraficoColunas } from './kpi_charts.js';
 
 // Função principal para buscar o indicador de chamadas abandonadas internas
-export function buscarIndicadorChamadasAbandonadasInternas(isManualSearch = false) {
+export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch = false) {
     let startDate, endDate;
 
     // Se for uma busca manual, usa as datas especificadas
@@ -60,50 +61,96 @@ export function buscarIndicadorChamadasAbandonadasInternas(isManualSearch = fals
         }
     }
 
-    mostrarLoadingSpinner('loadingSpinnerAbandonadasInternasKPI1204');
+    try {
+        mostrarLoadingSpinner('loadingSpinnerAbandonadasInternasKPI1204');
+        mostrarLoadingSpinner('loadingSpinnerMedidores');
 
-    const payload = {
-        dtStart: startDate,
-        dtFinish: endDate
-    };
+        const payload = {
+            dtStart: startDate,
+            dtFinish: endDate
+        };
 
-    const urlElement = document.getElementById('tempoChamadasAbandonadasInternasKPI1204');
-    if (urlElement) {
-        const urlApi = urlElement.textContent.trim();
-        console.log("[INFO] URL da API carregada:", urlApi);
+        const urlElement = document.getElementById('tempoChamadasAbandonadasInternasKPI1204');
+        if (urlElement) {
+            const urlApi = urlElement.textContent.trim();
+            console.log("[INFO] URL da API carregada:", urlApi);
 
-        fetch(urlApi, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
+            const response = await fetch(urlApi, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
 
             if (data.errcode === 0) {
                 console.log('Chamando renderizarTabelaIndicadorAbandonadasInternas');
+                const dadosProcessados = processarDadosKPI1204(data.ura_performance);
+                renderizarGraficoColunas('1204', dadosProcessados);
                 renderizarTabelaIndicadorAbandonadasInternas(data.ura_performance);
                 document.getElementById('exportExcelAbandonadasInternasKPI1204').style.display = 'block';
+                seriesSelectorContainer.style.display = 'block';
             } else {
                 console.error('Erro ao buscar dados:', data.errmsg);
             }
-        })
-        .catch(error => {
-            console.error('Erro na requisição:', error);
-        })
-        .finally(() => {
-            esconderLoadingSpinner('loadingSpinnerAbandonadasInternasKPI1204');
-            toggleButtons(true); // Habilita os botões após a requisição
-        });
-    } else {
-        console.error("[ERROR] Elemento 'tempoChamadasAbandonadasInternasKPI1204' não encontrado no documento.");
-        toggleButtons(true); // Habilita os botões em caso de erro
+        } else {
+            console.error("[ERROR] Elemento 'tempoChamadasAbandonadasInternasKPI1204' não encontrado no documento.");
+        }
+    } catch (error) {
+        console.error('Erro na requisição:', error);
+    } finally {
+        esconderLoadingSpinner('loadingSpinnerAbandonadasInternasKPI1204');
+        esconderLoadingSpinner('loadingSpinnerMedidores');
+        toggleButtons(true); // Habilita os botões após a requisição
     }
 }
+
+function processarDadosKPI1204(dados) {
+    const resultado = {
+        geral: {
+            desistenciasInferior1Min: 0,
+            desistenciasSuperior1Min: 0,
+            ligacoesRecebidas: 0,
+        },
+        porURA: {}
+    };
+
+    dados.forEach(item => {
+        if (item.tipo_atendimento === "Interno") {
+            const desistenciasInferior1Min = item.abandonadas_cognitiva_ate_um_minuto || 0;
+            const desistenciasSuperior1Min = item.abandonadas_cognitiva_acima_um_minuto || 0;
+
+            // Calculando ligações recebidas como a soma de atendidas e abandonadas
+            const ligacoesAtendidas = item.atendidas_cognitiva || 0;
+            const ligacoesRecebidas = ligacoesAtendidas + (item.abandonadas_cognitiva || 0);
+
+            // Atualizando os totais gerais
+            resultado.geral.desistenciasInferior1Min += desistenciasInferior1Min;
+            resultado.geral.desistenciasSuperior1Min += desistenciasSuperior1Min;
+            resultado.geral.ligacoesRecebidas += ligacoesRecebidas;
+
+            if (!resultado.porURA[item.ura]) {
+                resultado.porURA[item.ura] = {
+                    desistenciasInferior1Min: 0,
+                    desistenciasSuperior1Min: 0,
+                    ligacoesRecebidas: 0
+                };
+            }
+
+            resultado.porURA[item.ura].desistenciasInferior1Min += desistenciasInferior1Min;
+            resultado.porURA[item.ura].desistenciasSuperior1Min += desistenciasSuperior1Min;
+            resultado.porURA[item.ura].ligacoesRecebidas += ligacoesRecebidas;
+        }
+    });
+
+    console.log("Dados processados para o gráfico KPI 1204:", resultado);
+    return resultado;
+}
+
+
 
 // Função para desabilitar/habilitar botões
 function toggleButtons(enable) {
@@ -155,12 +202,15 @@ function renderizarTabelaIndicadorAbandonadasInternas(dados) {
             const abandonadasAteUmMinuto = item.abandonadas_cognitiva_ate_um_minuto || 0;
             const abandonadasAcimaUmMinuto = item.abandonadas_cognitiva_acima_um_minuto || 0;
 
-            // Usa "recebidas" como "ligações recebidas"
-            const totalRecebidas = item.recebidas || 0; // Considerar atentidas cognitiva + aabandonas coginitva 
-            const totalAtendidas = item.atendidas_cognitiva || 0;
+            // Calcula as ligações atendidas e recebidas separadamente
+            const ligacoesAtendidas = item.atendidas_cognitiva || 0;
+            const ligacoesRecebidas = ligacoesAtendidas + (item.abandonadas_cognitiva || 0);
 
-            const percentualAtendidas = calcularPercentual(totalAtendidas, totalRecebidas);
-            const metaCumprida = cumpreMeta(percentualAtendidas);
+            // **Novo Cálculo de Percentual de Abandono**
+            const percentualAbandono = calcularPercentualAbandono(abandonadasAcimaUmMinuto, ligacoesRecebidas);
+
+            const metaAbandono = 1;
+            const metaCumprida = percentualAbandono < metaAbandono ? 'SIM' : 'NÃO';
 
             tr.innerHTML = `
                 <td>${item.ura.replace(' v3', '') || 'N/A'}</td>
@@ -168,7 +218,7 @@ function renderizarTabelaIndicadorAbandonadasInternas(dados) {
                 <td>${item.data || 'N/A'}</td>
                 <td>Abandonadas Sup. 1min: ${abandonadasAcimaUmMinuto}</td>
                 <td>Abandonadas Inf. 1min: ${abandonadasAteUmMinuto}</td>
-                <td>Ligações atendidas: ${totalAtendidas} / Ligações recebidas: ${totalRecebidas} / Atingimento: ${percentualAtendidas}%</td>
+                <td>Ligações atendidas: ${ligacoesAtendidas} / Ligações recebidas: ${ligacoesRecebidas} / Percentual de Abandono (Sup. 1 min): ${percentualAbandono}%</td>
                 <td>${metaCumprida}</td>
             `;
 
@@ -190,8 +240,50 @@ function renderizarTabelaIndicadorAbandonadasInternas(dados) {
 
 // Adiciona os listeners para os botões de filtro e exportação
 document.addEventListener('DOMContentLoaded', function() {
+
+    const seriesSelectorContainer = document.getElementById('seriesSelectorContainer');
+    const seriesSelector = document.getElementById('seriesSelector');
     const searchButton = document.getElementById('kpiSearchButton');
     const filterButton = document.getElementById('filterAbandonadasInternasButtonKPI1204');
+
+
+    // Evento para o seletor de série
+    if (seriesSelector) {
+        seriesSelector.addEventListener('change', function() {
+            // console.log('[DEBUG] Série selecionada:', seriesSelector.value);
+            // Certifique-se de que o seletor de séries existe e vincule o evento
+            if (seriesSelector) {
+                seriesSelector.addEventListener('change', function() {
+                    waitForChartRender(filterSeries);  // Chama filterSeries quando o gráfico estiver pronto
+                });
+            } else {
+                console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+            }
+            
+        });
+    } else {
+        console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+    }
+
+
+    // Função para verificar o KPI selecionado e mostrar/esconder o seletor de séries
+    function verificarSeletorSeries() {
+        // console.log('[DEBUG] Verificando seletor de séries');
+
+        const selectedKPI = kpiSelector.value.trim();
+
+        // Sempre esconde o seletor no início
+        seriesSelectorContainer.style.display = 'none';
+
+        // Mostra o seletor apenas se o KPI for o 1102 (ou outros KPIs que necessitem) e após carregar os dados
+        if (selectedKPI === '1204') {
+            // console.log('[DEBUG] KPI 1102 selecionado');
+            seriesSelectorContainer.style.display = 'none'; // Esconde inicialmente
+        }
+    }
+
+    // Evento para verificar o KPI selecionado
+    kpiSelector.addEventListener('change', verificarSeletorSeries);
 
     // Listener para o botão "Aplicar Filtro" (usa datas manuais)
     filterButton.addEventListener('click', function() {

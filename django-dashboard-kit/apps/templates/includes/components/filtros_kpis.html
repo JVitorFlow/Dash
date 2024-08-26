@@ -1,7 +1,7 @@
 <div class="d-flex flex-wrap align-items-center mb-4">
-    <div class="me-2 mb-2 flex-grow-1">
-        <label for="kpiSelector" class="form-label mb-1" style="font-weight: 500; font-size: 0.85rem;">KPI:</label>
-        <select id="kpiSelector" class="form-select form-select-sm" style="font-size: 0.85rem; padding: 0.3rem;">
+    <div class="me-3 mb-2 flex-grow-1">
+        <label for="kpiSelector" class="form-label mb-1" style="font-weight: 600; font-size: 0.9rem; color: #5a5a5a;">KPI:</label>
+        <select id="kpiSelector" class="form-select form-select-sm" style="font-size: 0.9rem; padding: 0.5rem; border-radius: 8px; border: 1px solid #ced4da; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
             <option value="" disabled selected>Selecione um KPI</option>
             <option value="1101">(11.01) % Ocupação por Atendente</option>
             <option value="1102">(11.02) Tempo de espera para iniciar atendimento telefônico em até 1 minuto</option>
@@ -13,9 +13,9 @@
         </select>
     </div>
 
-    <div class="me-2 mb-2 flex-grow-1">
-        <label for="mesSelector" class="form-label mb-1" style="font-weight: 500; font-size: 0.85rem;">Mês:</label>
-        <select id="mesSelector" class="form-select form-select-sm" style="font-size: 0.85rem; padding: 0.3rem;">
+    <div class="me-3 mb-2 flex-grow-1">
+        <label for="mesSelector" class="form-label mb-1" style="font-weight: 600; font-size: 0.9rem; color: #5a5a5a;">Mês:</label>
+        <select id="mesSelector" class="form-select form-select-sm" style="font-size: 0.9rem; padding: 0.5rem; border-radius: 8px; border: 1px solid #ced4da; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
             <option value="" disabled selected>Mês</option>
             <option value="01">Janeiro</option>
             <option value="02">Fevereiro</option>
@@ -32,17 +32,32 @@
         </select>
     </div>
 
-    <div class="me-2 mb-2 flex-grow-1">
-        <label for="anoSelector" class="form-label mb-1" style="font-weight: 500; font-size: 0.85rem;">Ano:</label>
-        <select id="anoSelector" class="form-select form-select-sm" style="font-size: 0.85rem; padding: 0.3rem;">
+    <div class="me-3 mb-2 flex-grow-1">
+        <label for="anoSelector" class="form-label mb-1" style="font-weight: 600; font-size: 0.9rem; color: #5a5a5a;">Ano:</label>
+        <select id="anoSelector" class="form-select form-select-sm" style="font-size: 0.9rem; padding: 0.5rem; border-radius: 8px; border: 1px solid #ced4da; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
             <option value="" disabled selected>Ano</option>
             <option value="2024">2024</option>
             <option value="2025">2025</option>
         </select>
     </div>
-
-    <div class="mb-2">
-        <label class="form-label mb-1" style="font-weight: 500; font-size: 0.85rem; visibility: hidden;">Buscar:</label>
-        <button id="kpiSearchButton" class="btn btn-primary w-100" style="font-size: 0.85rem; padding: 0.4rem;">Buscar</button>
+    <div class="mb-2" style="min-width: 100px;">
+        <label class="form-label mb-1" style="visibility: hidden;">Buscar:</label>
+        <button id="kpiSearchButton" class="btn btn-primary w-100" style="font-size: 0.9rem; padding: 0.5rem; border-radius: 8px; transition: all 0.2s ease-in-out; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+            Buscar
+        </button>
     </div>
 </div>
+
+<style>
+    #kpiSearchButton:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    select.form-select-sm:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+    }
+</style>

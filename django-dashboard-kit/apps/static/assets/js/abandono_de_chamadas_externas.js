@@ -1,6 +1,8 @@
 // Importando funções de módulos auxiliares
-import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
-import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds } from './utils.js';
+import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentualAbandono, cumpreMeta } from './helpers.js';
+import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
+
 
 // Função principal para buscar o indicador de chamadas abandonadas
 export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
@@ -8,7 +10,7 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
 
     // Se for uma busca manual, usa as datas especificadas
     if (isManualSearch) {
-        // console.log("[INFO] Realizando busca manual para KPI 1104");
+        console.log("[INFO] Realizando busca manual para KPI 1104");
 
         startDate = document.getElementById('startDateAbandonadasKPI1104').value;
         endDate = document.getElementById('endDateAbandonadasKPI1104').value;
@@ -35,7 +37,7 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
         //console.log("[INFO] KPI Selecionado:", selectedKPI);
 
         if (selectedKPI === '1104') {
-            //console.log("[INFO] Realizando busca automática para KPI 1104");
+            console.log("[INFO] Realizando busca automática para KPI 1104");
 
             const selectedMes = document.getElementById('mesSelector').value;
             const selectedAno = document.getElementById('anoSelector').value;
@@ -60,7 +62,10 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
         }
     }
 
+    // console.log("[DEBUG] Iniciando requisição para buscar dados de chamadas abandonadas");
+
     mostrarLoadingSpinner('loadingSpinnerAbandonadasKPI1104');
+    mostrarLoadingSpinner('loadingSpinnerMedidores');
 
     const payload = {
         dtStart: startDate,
@@ -82,14 +87,19 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
         })
         .then(response => response.json())
         .then(data => {
-            //console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
+            // console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
 
             if (data.errcode === 0) {
+                console.log("Processando os dados para o gráfico KPI 1104")
+                const dadosProcessados = processarDadosKPI1104(data.ura_performance);
+                // Renderizando o gráfico KPI 1104 (passo seguinte)
+                renderizarGraficoColunas('1104',dadosProcessados);
                 //console.log('Chamando renderizarTabelaIndicadorAbandonadas');
                 renderizarTabelaIndicadorAbandonadas(data.ura_performance);
                 document.getElementById('exportExcelAbandonadasKP1104').style.display = 'block';
+                seriesSelectorContainer.style.display = 'block';
             } else {
-                //console.error('Erro ao buscar dados:', data.errmsg);
+                console.error('Erro ao buscar dados:', data.errmsg);
             }
         })
         .catch(error => {
@@ -97,6 +107,7 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
         })
         .finally(() => {
             esconderLoadingSpinner('loadingSpinnerAbandonadasKPI1104');
+            esconderLoadingSpinner('loadingSpinnerMedidores');
             toggleButtons(true); // Habilita os botões após a requisição
         });
     } else {
@@ -105,7 +116,49 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
     }
 }
 
+function processarDadosKPI1104(dados) {
+    const resultado = {
+        geral: {
+            desistenciasInferior1Min: 0,
+            desistenciasSuperior1Min: 0,
+            ligacoesRecebidas: 0,
+        },
+        porURA: {}
+    };
 
+    dados.forEach(item => {
+        if (item.tipo_atendimento === "Externo") {
+            const desistenciasInferior1Min = item.abandonadas_cognitiva_ate_um_minuto || 0;
+            const desistenciasSuperior1Min = item.abandonadas_cognitiva_acima_um_minuto || 0;
+
+
+            // Calculando ligações recebidas como a soma de atendidas e abandonadas
+            const ligacoesAtendidas = item.atendidas_cognitiva || 0;
+            const ligacoesRecebidas = ligacoesAtendidas + (item.abandonadas_cognitiva || 0);
+
+            // Atualizando os totais gerais
+            resultado.geral.desistenciasInferior1Min += desistenciasInferior1Min;
+            resultado.geral.desistenciasSuperior1Min += desistenciasSuperior1Min;
+            resultado.geral.ligacoesRecebidas += ligacoesRecebidas;
+
+
+            if (!resultado.porURA[item.ura]) {
+                resultado.porURA[item.ura] = {
+                    desistenciasInferior1Min: 0,
+                    desistenciasSuperior1Min: 0,
+                    ligacoesRecebidas: 0
+                };
+            }
+
+            resultado.porURA[item.ura].desistenciasInferior1Min += desistenciasInferior1Min;
+            resultado.porURA[item.ura].desistenciasSuperior1Min += desistenciasSuperior1Min;
+            resultado.porURA[item.ura].ligacoesRecebidas += ligacoesRecebidas;
+        }
+    });
+
+    //console.log("Dados processados para o gráfico KPI 1104:", resultado);
+    return resultado;
+}
 
 // Função para desabilitar/habilitar botões
 function toggleButtons(enable) {
@@ -162,9 +215,11 @@ function renderizarTabelaIndicadorAbandonadas(dados) {
             const ligacoesAtendidas = item.atendidas_cognitiva || 0;
             const ligacoesRecebidas = ligacoesAtendidas + (item.abandonadas_cognitiva || 0);
 
-            // Calcula o percentual de atendidas
-            const percentualAtendidas = calcularPercentual(ligacoesAtendidas, ligacoesRecebidas);
-            const metaCumprida = cumpreMeta(percentualAtendidas);
+            // **Novo Cálculo de Percentual de Abandono**
+            const percentualAbandono = calcularPercentualAbandono(abandonadasAcimaUmMinuto, ligacoesRecebidas);
+
+            const metaAbandono = 1;
+            const metaCumprida = percentualAbandono < metaAbandono ? 'SIM' : 'NÃO';
 
 
             tr.innerHTML = `
@@ -173,7 +228,7 @@ function renderizarTabelaIndicadorAbandonadas(dados) {
                 <td>${item.data || 'N/A'}</td>
                 <td>Abandonadas Sup. 1min: ${abandonadasAcimaUmMinuto}</td>
                 <td>Abandonadas Inf. 1min: ${abandonadasAteUmMinuto}</td>
-                <td>Ligações atendidas: ${ligacoesAtendidas} / Ligações recebidas: ${ligacoesRecebidas} / Atingimento: ${percentualAtendidas}%</td>
+                <td>Ligações atendidas: ${ligacoesAtendidas} / Ligações recebidas: ${ligacoesRecebidas} / Percentual de Abandono (Sup. 1 min): ${percentualAbandono}%</td>
                 <td>${metaCumprida}</td>
             `;
 
@@ -195,8 +250,50 @@ function renderizarTabelaIndicadorAbandonadas(dados) {
 
 // Adiciona os listeners para os botões de filtro e exportação
 document.addEventListener('DOMContentLoaded', function() {
+
+    const seriesSelectorContainer = document.getElementById('seriesSelectorContainer');
+    const seriesSelector = document.getElementById('seriesSelector');
     const searchButton = document.getElementById('kpiSearchButton');
     const filterButton = document.getElementById('filterAbandonadasButtonKPI1104');
+
+
+    // Evento para o seletor de série
+    if (seriesSelector) {
+        seriesSelector.addEventListener('change', function() {
+            // console.log('[DEBUG] Série selecionada:', seriesSelector.value);
+            // Certifique-se de que o seletor de séries existe e vincule o evento
+            if (seriesSelector) {
+                seriesSelector.addEventListener('change', function() {
+                    waitForChartRender(filterSeries);  // Chama filterSeries quando o gráfico estiver pronto
+                });
+            } else {
+                console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+            }
+            
+        });
+    } else {
+        console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+    }
+
+
+    // Função para verificar o KPI selecionado e mostrar/esconder o seletor de séries
+    function verificarSeletorSeries() {
+        // console.log('[DEBUG] Verificando seletor de séries');
+
+        const selectedKPI = kpiSelector.value.trim();
+
+        // Sempre esconde o seletor no início
+        seriesSelectorContainer.style.display = 'none';
+
+        // Mostra o seletor apenas se o KPI for o 1102 (ou outros KPIs que necessitem) e após carregar os dados
+        if (selectedKPI === '1104') {
+            // console.log('[DEBUG] KPI 1102 selecionado');
+            seriesSelectorContainer.style.display = 'none'; // Esconde inicialmente
+        }
+    }
+
+    // Evento para verificar o KPI selecionado
+    kpiSelector.addEventListener('change', verificarSeletorSeries);
 
     // Listener para o botão "Aplicar Filtro" (usa datas manuais)
     filterButton.addEventListener('click', function() {

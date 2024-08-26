@@ -2,7 +2,14 @@
     <div class="col-lg-12 mb-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Tempo Médio de Serviço por Atendente</h5>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">Tempo Médio de Serviço por Atendente</h5>
+                    <div class="buttons-container">
+                        <button id="filterAtendenteButton" class="btn btn-primary">Aplicar Filtro</button>
+                        <button id="exportExcelEsperaKPI1202" class="btn btn-success" style="display: none;">Exportar para Excel</button>
+                    </div>
+                </div>
                 <!-- Inputs para as datas -->
                 <div class="row mb-3">
                     <div class="col-md-5">
@@ -13,10 +20,8 @@
                         <label for="endDateAtendente">Data de Fim:</label>
                         <input type="text" id="endDateAtendente" class="form-control" placeholder="dd/mm/aaaa hh:mm">
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button id="filterAtendenteButton" class="btn btn-primary">Aplicar Filtro</button>
-                    </div>
                 </div>
+                <!-- Spinner de carregamento -->
                 <div id="loadingSpinnerAtendente" style="display:none; text-align: center; margin: 10px 0;">
                     <div class="spinner-border text-primary" role="status">
                         <span class="sr-only">Carregando...</span>

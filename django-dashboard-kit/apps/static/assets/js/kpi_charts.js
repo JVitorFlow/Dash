@@ -1,9 +1,27 @@
-import { kpiConfigurations } from './objetos_kpis.js'; // Importa as configurações de KPIs
+import { kpiConfigurations, kpiConfigurationsIndicadorPonteiro  } from './objetos_kpis.js'; // Importa as configurações de KPIs
+
+
+
 
 // Função auxiliar para acessar propriedades aninhadas
 function getNestedProperty(obj, key) {
-    return key.split('.').reduce((o, k) => (o && o[k] !== 'undefined') ? o[k] : undefined, obj);
+    // console.log("[DEBUG] Acessando propriedade aninhada:", key);
+    
+    // Dividindo a chave pela notação de ponto e reduzindo-a para acessar o valor final
+    const result = key.split('.').reduce((o, k) => {
+        if (o && o[k] !== undefined) {
+            console.log(`[DEBUG] Propriedade encontrada: ${k} -> Valor:`, o[k]);
+            return o[k];
+        } else {
+            console.warn(`[WARN] Propriedade não encontrada: ${k}`);
+            return undefined;
+        }
+    }, obj);
+    
+    console.log("[DEBUG] Resultado final de getNestedProperty:", result);
+    return result;
 }
+
 
 // Função para renderizar gráfico de colunas baseado em um KPI específico
 export function renderizarGraficoColunas(kpiId, dadosProcessados) {
@@ -17,11 +35,11 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
     const seriesData = [];
     const categories = [];
 
-    console.log('kpiConfig:', kpiConfig);
+    // console.log('kpiConfig:', kpiConfig);
 
     // Adicionar Séries Gerais
     kpiConfig.series.forEach(serie => {
-        console.log(`Procurando chave ${serie.dataKey} em dadosProcessados`);
+        // console.log(`Procurando chave ${serie.dataKey} em dadosProcessados`);
         const valor = getNestedProperty(dadosProcessados, serie.dataKey);
         if (valor !== undefined) {
             seriesData.push({
@@ -40,7 +58,7 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
         Object.keys(dadosProcessados.porURA).forEach(ura => {
             const seriesPorURA = kpiConfig.seriesPorURA(ura);
             seriesPorURA.forEach(serie => {
-                console.log(`Procurando chave ${serie.dataKey} para URA ${ura}`);
+                // console.log(`Procurando chave ${serie.dataKey} para URA ${ura}`);
                 const valor = getNestedProperty(dadosProcessados, serie.dataKey);
                 if (valor !== undefined) {
                     seriesData.push({
@@ -58,12 +76,11 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
         console.warn('Estrutura porURA ausente ou inválida em dadosProcessados:', dadosProcessados.porURA);
     }
 
-    console.log('Dados formatados para o Highcharts:', seriesData);
+    // console.log('Dados formatados para o Highcharts:', seriesData);
 
     Highcharts.chart('colunasChartContainer', {
         chart: {
             type: 'column',
-            height: 500,
             backgroundColor: kpiConfig.backgroundColor || '#f4f4f4',
             borderRadius: 5
         },
@@ -117,3 +134,114 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
         }
     });
 }
+
+
+// Função para renderizar gráfico de ponteiro (gauge) baseado em um KPI específico
+export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
+    const kpiConfig = kpiConfigurationsIndicadorPonteiro[kpiId];
+
+    if (!kpiConfig || !dadosProcessados) {
+        console.error('Configuração ou dados processados inválidos');
+        return;
+    }
+
+    let valorPonteiro;
+
+    if (kpiId === '1101') {
+        // Log para verificar a chave que estamos tentando acessar
+        console.log("[DEBUG] Tentando acessar a chave para KPI 1101:", kpiConfig.gauge.series[0].dataKey);
+    
+        // Verifica se a chave existe em dadosProcessados
+        valorPonteiro = getNestedProperty(dadosProcessados, kpiConfig.gauge.series[0].dataKey);
+        
+        // Se valorPonteiro for undefined, loga um erro
+        if (valorPonteiro === undefined) {
+            console.error("[ERROR] Chave não encontrada em dadosProcessados para KPI 1101:", kpiConfig.gauge.series[0].dataKey);
+        } else {
+            // Converte o valor para número
+            valorPonteiro = parseFloat(valorPonteiro);
+            console.log("[INFO] Valor do ponteiro KPI 1101:", valorPonteiro);
+            console.log("[DEBUG] Tipo de valor após o parseFloat:", typeof valorPonteiro);
+        }
+    } else if (kpiId === '1102') {
+        const selectedURA = document.getElementById("seriesSelector").value;
+    
+        if (selectedURA === 'all') {
+            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+    
+            const totalPercentages = Object.values(dadosProcessados).reduce((acc, uraData) => {
+                return acc + parseFloat(uraData.porcentagem);
+            }, 0);
+    
+            const totalURAs = Object.keys(dadosProcessados).length;
+            valorPonteiro = totalURAs > 0 ? (totalPercentages / totalURAs).toFixed(2) : NaN;
+            valorPonteiro = Number(valorPonteiro) || 0;         
+        } else {
+            if (!dadosProcessados[selectedURA]) {
+                console.error("[ERROR] URA selecionada não encontrada nos dados processados:", selectedURA);
+                return;
+            }
+    
+            valorPonteiro = parseFloat(dadosProcessados[selectedURA].porcentagem);
+            valorPonteiro = Number(valorPonteiro) || 0;         
+
+        }
+    }
+    
+
+    if (isNaN(valorPonteiro)) {
+        console.error("[ERROR] Valor do ponteiro é NaN, verifique os dados processados e a configuração.");
+        return;
+    }
+
+    // Log final antes de renderizar o gráfico
+    //console.log("[DEBUG] Renderizando gráfico de ponteiro com valor:", valorPonteiro);
+
+    Highcharts.chart('medicaoChartContainer', {
+        chart: {
+            type: 'solidgauge',
+            backgroundColor: kpiConfig.backgroundColor || '#f4f4f4',
+            height: 300,
+        },
+        title: {
+            text: kpiConfig.title,
+            style: {
+                fontSize: '20px',
+                fontWeight: 'bold'
+            }
+        },
+        pane: kpiConfig.pane,
+        yAxis: {
+            min: kpiConfig.gauge.yAxisMin,
+            max: kpiConfig.gauge.yAxisMax,
+            stops: kpiConfig.yAxis.stops,
+            lineWidth: 0,
+            tickWidth: 0,
+            minorTickInterval: null,
+            tickAmount: 2,
+            title: {
+                text: ''
+            },
+            labels: {
+                y: 16
+            }
+        },
+        series: [{
+            name: kpiConfig.gauge.series[0].name,
+            data: [valorPonteiro], // Usando o valor dinâmico aqui
+            dataLabels: kpiConfig.gauge.series[0].dataLabels,
+            tooltip: {
+                valueSuffix: '%'
+            }
+        }],
+        credits: {
+            enabled: false
+        }
+    });
+    
+    console.log("[INFO] Gráfico de ponteiro renderizado com sucesso.");
+
+}
+
+
+

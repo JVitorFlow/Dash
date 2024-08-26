@@ -1,6 +1,6 @@
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds } from './utils.js';
-import { renderizarGraficoColunas } from './kpi_charts.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
 
 // Função principal para buscar os dados de atividade dos agentes
 export function buscarDadosAgentes(isManualSearch = false) {
@@ -34,7 +34,7 @@ export function buscarDadosAgentes(isManualSearch = false) {
             if (selectedMes && selectedAno) {
                 startDate = `${selectedAno}-${selectedMes}-01T00:00:00`;
                 endDate = new Date(selectedAno, selectedMes, 0).toISOString().replace(/T.*/, 'T23:59:59');
-                console.log("[INFO] Datas geradas automaticamente para o KPI 11.01");
+                // console.log("[INFO] Datas geradas automaticamente para o KPI 11.01");
             } else {
                 alert('Por favor, selecione o mês e o ano.');
                 console.error("[ERROR] Mês ou ano não selecionado.");
@@ -105,12 +105,14 @@ export function buscarDadosAgentes(isManualSearch = false) {
         return response.json();
     })
     .then(data => {
-        // console.log("[INFO] Dados recebidos do JSON:", data);
+        console.log("[INFO] Dados recebidos do JSON:", data);
         if (data.errcode === 0) {
             const dadosProcessados = processarDadosParaGrafico(data.agent_activity_list);
             // Renderizar o gráfico de colunas
+            console.log("[INFO] Dados processados para o gráfico:", dadosProcessados);
             renderizarGraficoColunas('1101', dadosProcessados);
             preencherTabelaAgentes(data.agent_activity_list);
+            calcularOcupacaoTotalEExibir(data.agent_activity_list);
             document.getElementById('exportExcel').style.display = data.agent_activity_list.length > 0 ? 'block' : 'none';
         } else {
             console.error("[ERROR] Erro ao buscar dados:", data.errmsg);
@@ -153,7 +155,24 @@ function formatarHorasEmHHMMSS(horasDecimais) {
     ].join(':');
 }
 
-// Função para preencher a tabela com dados dos agentes
+function calcularOcupacaoTotalEExibir(dados) {
+    // Utilize a função processarDadosParaGrafico para obter os dados já calculados
+    const resultado = processarDadosParaGrafico(dados);
+
+    // Subtraindo as horas de pausa da carga horária para obter o tempo disponível
+    const horasDisponiveis = resultado.carga_horaria - resultado.horas_pausa;
+
+    // Calculando a ocupação com base nas horas trabalhadas e nas horas disponíveis
+    const ocupacaoTotalPercent = ((resultado.horas_trabalhadas / horasDisponiveis) * 100).toFixed(2);
+    console.log("(calcularOcupacaoTotalEExibir)[INFO] Ocupação total calculada (percentual):", ocupacaoTotalPercent);
+
+    // Enviando o valor formatado dentro de um objeto para o gráfico de ponteiro
+    const dadosParaGraficoPonteiro = { ocupacaoPercentual: ocupacaoTotalPercent };
+    renderizarGraficoPonteiro('1101', dadosParaGraficoPonteiro);
+}
+
+
+
 function preencherTabelaAgentes(dados) {
     const table = $('#tabelaAgentes').DataTable();
 
@@ -161,66 +180,37 @@ function preencherTabelaAgentes(dados) {
 
     const agentesConsolidados = consolidarDadosPorAgenteEData(dados);
 
-    const TEMPO_TRABALHO_ESPERADO_HORAS = 6;
-
     agentesConsolidados.forEach(agente => {
-        let tempoTotalLoginHoras = parseFloat(agente.tempoTotalLogin.split(' ')[0]);
+        // Aqui, utilize o valor em segundos para os cálculos
+        const tempoLogadoEfetivoSegundos = (parseFloat(agente.tempoTotalLoginHoras) * 3600); // Mantém a precisão em segundos
+        const ocupacaoPercentual = agente.ocupacaoPercentual;
 
-        let tempoPausasParticulares = 0;
+        // Converte o tempo logado efetivo para o formato HH:MM:SS para exibição
+        const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS_nova(tempoLogadoEfetivoSegundos);
 
-        agente.detalhesPausas.forEach(pausa => {
-            if (!pausa.includes('Desc') && !pausa.includes('Café')) {
-                const [inicio, fimCompleto] = pausa.split(' - ');
-                const fim = fimCompleto.split(': ')[0].trim();
-
-                if (!inicio || !fim) {
-                    //console.error("Erro: Hora de início ou fim inválida para a pausa:", pausa);
-                    return;
-                }
-
-                try {
-                    const tempoPausa = (new Date(`1970-01-01T${fim}Z`) - new Date(`1970-01-01T${inicio}Z`)) / 3600000;
-
-                    if (!isNaN(tempoPausa) && tempoPausa >= 0) {
-                        tempoPausasParticulares += tempoPausa;
-                    }
-                } catch (e) {
-                    console.error("Erro ao processar a pausa:", e);
-                }
-            }
-        });
-
-        const tempoLogadoEfetivo = tempoTotalLoginHoras - tempoPausasParticulares;
-        const ocupacaoPercentual = ((tempoLogadoEfetivo / TEMPO_TRABALHO_ESPERADO_HORAS) * 100).toFixed(2);
-        const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS(tempoLogadoEfetivo);
-
-        const medicao = `${tempoLogadoEfetivoFormatado} - Ocupação: ${ocupacaoPercentual}%`;
-
-        // Aqui, altere o tempo de pausa para o formato HH:mm:ss em vez de minutos
         table.row.add([
             agente.nome || 'N/A',
             agente.data || 'N/A',
-            agente.tempoTotalLogin,
-            agente.tempoTotalPausa, // Já no formato HH:mm:ss
+            tempoLogadoEfetivoFormatado,  // Exibindo no formato HH:MM:SS
+            agente.tempoTotalPausa,
             agente.quantidadePausas || 0,
             agente.horarioDeLogin || 'N/A',
             agente.horarioDeLogoff || 'N/A',
+            agente.todosPeriodosFormatados || 'N/A',
             agente.detalhesPausas.length ? agente.detalhesPausas.join('<br>') : 'Nenhuma pausa',
-            medicao
+            `${tempoLogadoEfetivoFormatado} - Ocupação: ${ocupacaoPercentual}%`
         ]);
     });
 
     table.draw();
 }
 
-
-
 function consolidarDadosPorAgenteEData(dados) {
     const agentesConsolidados = [];
 
     dados.forEach(item => {
         if (!item.login || !item.logoff || item.login === item.logoff || item.login === "0" || item.logoff === "0") {
-            //console.warn('Login ou Logoff inválido ou iguais para:', item.nome);
+            console.warn('[AVISO] Login ou logoff inválido para:', item.nome);
             return;
         }
 
@@ -228,7 +218,7 @@ function consolidarDadosPorAgenteEData(dados) {
         const logoffDate = new Date(item.logoff);
 
         if (isNaN(loginDate.getTime()) || isNaN(logoffDate.getTime())) {
-            //console.warn('Datas inválidas para:', item.nome);
+            console.warn('[AVISO] Datas inválidas para:', item.nome);
             return;
         }
 
@@ -240,43 +230,40 @@ function consolidarDadosPorAgenteEData(dados) {
                 nome: item.nome || 'N/A',
                 data: data,
                 periodosLogin: [],
-                tempoTotalPausaSegundos: 0,  // Tempo total de pausas
-                tempoExcedentePausaSegundos: 0,  // Tempo excedente das pausas que será subtraído do tempo de login
+                tempoTotalPausaSegundos: 0,
+                tempoExcedentePausaSegundos: 0,
                 quantidadePausas: 0,
-                detalhesPausas: new Set()
+                detalhesPausas: new Set(),
+                todosPeriodos: []
             };
             agentesConsolidados.push(agenteExistente);
         }
 
-        // Adicionando período de login
+        // Adicionando período de login ao registro geral e à lista de todos os períodos
         agenteExistente.periodosLogin.push({ loginDate, logoffDate });
 
+        // Tratando as pausas
         if (Array.isArray(item.agent_pause_list)) {
             item.agent_pause_list.forEach(pause => {
-                const pauseDurationSeconds = pause.tempo_pause; // Tempo em segundos
-                if (pauseDurationSeconds < 0) {
-                    console.warn('Duração de pausa negativa para:', pause);
-                    return;
-                }
-
-                // Log da pausa original
-                //console.log(`[INFO] Pausa original para ${item.nome}: ${pause.motivo_pause}, Duração: ${pauseDurationSeconds / 60} minutos`);
+                const pauseStart = new Date(pause.pause);
+                const pauseEnd = new Date(pause.unpause);
+                const pauseDurationSeconds = (pauseEnd - pauseStart) / 1000; // Tempo em segundos
 
                 let tempoExcedenteSegundos = 0;
 
-                // Ajuste apenas para fins de subtração do tempo excedente do login total
-                if (pause.motivo_pause.includes('Desc') && pauseDurationSeconds > 600) { // 10 minutos = 600 segundos
+                // Ajuste do tempo excedente para pausas de descanso e café
+                if (pause.motivo_pause.includes('Desc') && pauseDurationSeconds > 600) { // 10 minutos para descanso
                     tempoExcedenteSegundos = pauseDurationSeconds - 600;
-                } else if (pause.motivo_pause.includes('Café') && pauseDurationSeconds > 1200) { // 20 minutos = 1200 segundos
+                } else if (pause.motivo_pause.includes('Café') && pauseDurationSeconds > 1200) { // 20 minutos para café
                     tempoExcedenteSegundos = pauseDurationSeconds - 1200;
                 }
 
-                const detalhePausa = `${new Date(pause.pause).toLocaleTimeString('pt-BR')} - ${new Date(pause.unpause).toLocaleTimeString('pt-BR')}: ${pause.motivo_pause}`;
+                const detalhePausa = `${pauseStart.toLocaleTimeString('pt-BR')} - ${pauseEnd.toLocaleTimeString('pt-BR')}: ${pause.motivo_pause}`;
 
                 if (!agenteExistente.detalhesPausas.has(detalhePausa)) {
                     agenteExistente.detalhesPausas.add(detalhePausa);
-                    agenteExistente.tempoTotalPausaSegundos += pauseDurationSeconds;  // Somando tempo total de pausa sem ajustes
-                    agenteExistente.tempoExcedentePausaSegundos += tempoExcedenteSegundos;  // Somando tempo excedente para ajustar login
+                    agenteExistente.tempoTotalPausaSegundos += pauseDurationSeconds;
+                    agenteExistente.tempoExcedentePausaSegundos += tempoExcedenteSegundos;
                     agenteExistente.quantidadePausas += 1;
                 }
             });
@@ -286,46 +273,65 @@ function consolidarDadosPorAgenteEData(dados) {
     agentesConsolidados.forEach(ag => {
         ag.detalhesPausas = Array.from(ag.detalhesPausas);
 
-        // Consolidar períodos de login para evitar sobreposição
         ag.periodosLogin.sort((a, b) => a.loginDate - b.loginDate);
 
-        let tempoTotalLogado = 0;
+        let tempoTotalLogadoSegundos = 0;
         let lastLogoff = null;
 
         ag.periodosLogin.forEach(periodo => {
+            const periodoLoginSegundos = (periodo.logoffDate - periodo.loginDate) / 1000;
+
             if (lastLogoff && periodo.loginDate < lastLogoff) {
-                // Se o login atual começa antes do último logoff, há uma sobreposição
-                tempoTotalLogado += Math.max(0, periodo.logoffDate - lastLogoff);
+                tempoTotalLogadoSegundos += Math.max(0, (periodo.logoffDate - lastLogoff) / 1000);
             } else {
-                tempoTotalLogado += periodo.logoffDate - periodo.loginDate;
+                tempoTotalLogadoSegundos += periodoLoginSegundos;
             }
+
             lastLogoff = Math.max(lastLogoff || 0, periodo.logoffDate);
+
+            ag.todosPeriodos.push(`${periodo.loginDate.toLocaleDateString('pt-BR')} ${periodo.loginDate.toLocaleTimeString('pt-BR')} - ${periodo.logoffDate.toLocaleTimeString('pt-BR')}`);
         });
 
-        const tempoTotalHoras = (tempoTotalLogado / 3600000).toFixed(2);
+        // Considerando que 5h20min é o tempo efetivo esperado
+        const TEMPO_EFETIVO_ATENDIMENTO_SEGUNDOS = 320 * 60; // 320 minutos = 5h20min
 
-        // Subtrair o tempo excedente das pausas do tempo total de login
-        const tempoLogadoEfetivo = ((tempoTotalLogado - ag.tempoExcedentePausaSegundos * 1000) / 3600000).toFixed(2);
+        // Subtraindo todo o tempo de pausa (incluindo o tempo excedente) do tempo total logado
+        const tempoLogadoEfetivoSegundos = tempoTotalLogadoSegundos - ag.tempoTotalPausaSegundos;
 
-        ag.tempoTotalLogin = `${tempoLogadoEfetivo} horas`;
-        ag.tempoTotalPausa = formatarTempoEmHHMMSS(ag.tempoTotalPausaSegundos); // Formatar tempo total de pausa em HH:mm:ss
+        // Aqui, armazena tanto o valor em horas (para cálculos) quanto no formato "HH:MM:SS"
+        const tempoLogadoEfetivoHoras = tempoLogadoEfetivoSegundos / 3600; // Armazena em horas (para cálculos)
+        const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS_nova(tempoLogadoEfetivoSegundos); // Armazena em "HH:MM:SS"
+
+        // Calcula a ocupação baseada no tempo efetivo de 5h20min
+        const ocupacaoPercentual = ((tempoLogadoEfetivoSegundos / TEMPO_EFETIVO_ATENDIMENTO_SEGUNDOS) * 100).toFixed(2);
+
+        ag.tempoTotalLogin = `${tempoLogadoEfetivoHoras.toFixed(6)} horas`; // Mantém o valor em horas para cálculos futuros
+        ag.tempoTotalLoginHoras = tempoLogadoEfetivoHoras.toFixed(6); // Valor em horas para cálculos
+        ag.tempoTotalLoginFormatado = tempoLogadoEfetivoFormatado; // Formato "HH:MM:SS"
+        ag.tempoTotalPausa = formatarHorasEmHHMMSS_nova(ag.tempoTotalPausaSegundos);
         ag.horarioDeLogin = ag.periodosLogin[0].loginDate.toLocaleTimeString('pt-BR');
         ag.horarioDeLogoff = ag.periodosLogin[ag.periodosLogin.length - 1].logoffDate.toLocaleTimeString('pt-BR');
-
-        //console.log(`[INFO] Tempo total de login calculado para ${ag.nome} no dia ${ag.data}: ${ag.tempoTotalLogin}`);
-        //console.log(`[INFO] Tempo total de pausa calculado para ${ag.nome} no dia ${ag.data}: ${ag.tempoTotalPausa}`);
+        ag.ocupacaoPercentual = ocupacaoPercentual;
+        ag.todosPeriodosFormatados = ag.todosPeriodos.join('<br>');
     });
 
     return agentesConsolidados;
 }
 
-function formatarTempoEmHHMMSS(segundosTotais) {
+
+
+// Função auxiliar para formatar tempo em HH:MM:SS
+function formatarHorasEmHHMMSS_nova(segundosTotais) {
     const horas = Math.floor(segundosTotais / 3600);
     const minutos = Math.floor((segundosTotais % 3600) / 60);
-    const segundos = segundosTotais % 60;
+    const segundos = Math.floor(segundosTotais % 60);
 
-    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+    return [horas, minutos, segundos]
+        .map(valor => valor < 10 ? `0${valor}` : valor) // Adiciona zero à esquerda se necessário
+        .join(':');
 }
+
+
 
 
 
@@ -351,8 +357,15 @@ function processarDadosParaGrafico(dados) {
             pessoasPorDia[agente.data].add(agente.nome);
         }
 
-        resultado.horas_trabalhadas += parseFloat(agente.tempoTotalLogin); // Tempo logado efetivo em horas
-        resultado.horas_pausa += parseFloat(agente.tempoTotalPausaSegundos / 3600); // Tempo de pausa convertido para horas
+        // Somar as horas trabalhadas (tempo logado efetivo)
+        resultado.horas_trabalhadas += parseFloat(agente.tempoTotalLogin);
+
+        // Somar o tempo de pausa (convertido de segundos para horas)
+        const horasPausa = parseFloat((agente.tempoTotalPausaSegundos / 3600).toFixed(2));
+        resultado.horas_pausa += horasPausa;
+
+        // Log para verificar os valores
+        console.log(`[LOG] Agente: ${agente.nome} | Horas Trabalhadas: ${agente.tempoTotalLogin} | Horas Pausa: ${horasPausa}`);
     });
 
     // Cálculo da carga horária para o gráfico
@@ -360,8 +373,17 @@ function processarDadosParaGrafico(dados) {
         resultado.carga_horaria += pessoasPorDia[dia].size * TEMPO_TRABALHO_ESPERADO_HORAS;
     }
 
+    // Formatar resultado final com duas casas decimais
+    resultado.horas_trabalhadas = parseFloat(resultado.horas_trabalhadas.toFixed(2));
+    resultado.horas_pausa = parseFloat(resultado.horas_pausa.toFixed(2));
+    resultado.carga_horaria = parseFloat(resultado.carga_horaria.toFixed(2));
+
+    // Log final para verificar os resultados
+    console.log("[LOG] Resultado Final para Gráfico:", resultado);
+
     return resultado;
 }
+
 
 
 

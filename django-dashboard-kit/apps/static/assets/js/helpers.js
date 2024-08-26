@@ -27,3 +27,12 @@ export function calcularPercentual(atendidas, recebidas) {
 export function cumpreMeta(percentual) {
     return percentual == 100 ? "SIM" : "NÃO";
 }
+
+
+
+export function calcularPercentualAbandono(abandonadasAcimaUmMinuto, ligacoesRecebidas) {
+    if (ligacoesRecebidas === 0) {
+        return 0;
+    }
+    return ((abandonadasAcimaUmMinuto / ligacoesRecebidas) * 100).toFixed(2);
+}

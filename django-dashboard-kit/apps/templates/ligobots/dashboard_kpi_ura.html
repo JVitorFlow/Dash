@@ -37,13 +37,11 @@
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="seriesSelector">Selecionar Séries:</label>
-                        <select id="seriesSelector" class="form-control" onchange="filterSeries()" style="width: 300px; margin: 0 auto;">
+                        <select id="seriesSelector" class="form-control" style="width: 300px; margin: 0 auto;">
                             <option value="all">Mostrar Todas</option>
-                            <option value="geral">Mostrar Geral</option>
-                            <option value="HM v3">Mostrar HM v3</option>
-                            <option value="HSJC v3">Mostrar HSJC v3</option>
-                            <option value="HSOR v3">Mostrar HSOR v3</option>
-                            <option value="HSOR">Mostrar HSOR</option>
+                            <option value="HM v3">Hospital da Mulher</option>
+                            <option value="HSJC v3">Hospital São José dos Campos</option>
+                            <option value="HSOR">Hospital Sorocaba</option>
                         </select>
                     </div>
                 </div>
@@ -56,16 +54,18 @@
                         <span class="sr-only">Carregando...</span>
                     </div>
                 </div>
-                <div class="col-md-4">
+            
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div id="medicaoChartContainer" class="chart-container"></div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div id="colunasChartContainer" class="chart-container"></div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-4 col-md-6 col-sm-12">
                     <div id="tendenciaChartContainer" class="chart-container"></div>
                 </div>
             </div>
+            
             <!-- KPI 1101  -->
             {% include 'includes/components/kpi11_01.html' %}
         
@@ -107,6 +107,7 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
     <!-- Remova ou comente o script do chartjs-gauge -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/chartjs-gauge"></script> -->
 
@@ -177,11 +178,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('kpiSearchButton').addEventListener('click', function() {
                 const selectedKPI = document.getElementById('kpiSelector').value.trim();
-                console.log("[INFO] KPI Selecionado no case:", selectedKPI);
+                // console.log("[INFO] KPI Selecionado no case:", selectedKPI);
     
                 switch (selectedKPI) {
                     case '1101':
-                        console.log('Entrou no case 1');
+                        // console.log('Entrou no case 1');
                         // Chamar a função relacionada ao KPI 11.01 (Ocupação por Atendente)
                         if (typeof buscarDadosAgentes === 'function') {
                             buscarDadosAgentes(); // Função específica para este KPI
@@ -190,7 +191,7 @@
                         }
                         break;
                     case '1102':
-                        console.log('Entrou no case 2');
+                        // console.log('Entrou no case 2');
                         if (typeof buscarIndicadorTempoEspera === 'function') {
                             buscarIndicadorTempoEspera(); // Função específica para este KPI
                         } else {
@@ -198,19 +199,19 @@
                         }
                         break;
                     case '1104':
-                        console.log('Entrou no case 4');
+                        // console.log('Entrou no case 4');
                         buscarIndicadorChamadasAbandonadas(); // Função específica para este KPI
                         break;
                     case '1201':
-                        console.log('Entrou no case 1201');
+                        // console.log('Entrou no case 1201');
                         buscarIndicadorTempoMedio(); // Função específica para este KPI
                         break;
                     case '1204':
-                        console.log('Entrou no case 1204');
+                        // console.log('Entrou no case 1204');
                         buscarIndicadorChamadasAbandonadasInternas(); // Função específica para este KPI
                         break;
                     case '1202':
-                        console.log('Entrou no case 1202');
+                        // console.log('Entrou no case 1202');
                         buscarIndicadorTempoEsperaKPI1202(); // Função específica para este KPI
                         break;
                     default:
@@ -220,6 +221,12 @@
             });
         });
     </script>
+    <style>
+        #colunasChartContainer {
+            width: 100%;
+            height: auto;
+        }        
+    </style>
     
 {% endblock javascripts %}
 

@@ -1,66 +1,100 @@
 {% extends "layouts/base-fullscreen.html" %}
-{% load static %}
 
-{% block title %} Login Dashboard Wtime {% endblock %}
+{% block title %} Login DashboardX Wtime {% endblock %} 
+{% load static %}
+{% block extrahead %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+{% endblock extrahead %}
 
 {% block stylesheets %}
     <style>
         body {
             margin: 0;
             height: 100vh;
-            overflow: hidden;
             display: flex;
-            justify-content: center;
+            justify-content: flex-end;
             align-items: center;
+            overflow: hidden;
+            background-image: url("{% static 'assets/images/user/Blue_Modern_Technology_Presentation.svg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
+
         #particles-js {
             position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1; /* Ensures the particles are behind the content */
+            z-index: 1;
         }
+
         .auth-wrapper {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            width: 100%;
-        }
-        .auth-content {
             background: rgba(255, 255, 255, 0.9);
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            max-width: 360px;
             width: 100%;
-            z-index: 1; /* Ensures the content is above the particles */
+            z-index: 2;
+            margin-right: 300px;
         }
+
         .card-body {
             text-align: center;
         }
+
         .card-body img {
-            width: 150px;
+            width: 160px;
         }
+
         .input-group {
             margin-bottom: 1.5rem;
         }
+
         .input-group-text {
-            background-color: #764ba2;
+            background-color: #4A90E2;
             color: #fff;
+            border-radius: 8px 0 0 8px;
         }
+
+        .form-control {
+            border-radius: 0 8px 8px 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 2px solid #4A90E2;
+        }
+
+        .form-control::placeholder {
+            color: #9B9B9B;
+        }
+
         .btn-primary {
-            background-color: #667eea;
+            background-color: #4A90E2;
             border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            transition: background-color 0.3s;
         }
+
         .btn-primary:hover {
-            background-color: #5a67d8;
+            background-color: #357ABD;
         }
+
         .form-check-label {
             color: #333;
         }
+
         .text-muted a {
-            color: #667eea;
+            color: #4A90E2;
+            font-weight: 500;
+        }
+
+        .text-muted a:hover {
+            color: #357ABD;
         }
     </style>
 {% endblock stylesheets %}
@@ -73,7 +107,7 @@
                 <div class="row align-items-center text-center">
                     <div class="col-md-12">
                         <div class="card-body">
-                            <img src="/static/assets/images/user/LogoHorizontal_Wtime_CorOficial-1.png" alt="" class="img-fluid mb-4">
+                            <img src="{% static 'assets/images/user/LogoHorizontal_Wtime_CorOficial-1.png' %}" alt="" class="img-fluid mb-4">
                             <h4 class="mb-3 f-w-400">Login</h4>
                             <p>
                                 {% if msg %}
@@ -85,11 +119,15 @@
                             <form role="form" method="post" action="">
                                 {% csrf_token %}
                                 <div class="input-group mb-3">
-                                    <span class="input-group-text"><i data-feather="user"></i></span>
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person-fill"></i>
+                                    </span>
                                     {{ form.username }}
                                 </div>
                                 <div class="input-group mb-4">
-                                    <span class="input-group-text"><i data-feather="lock"></i></span>
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
                                     {{ form.password }}
                                 </div>
                                 <div class="form-group text-start mt-2">
@@ -101,7 +139,9 @@
                                     </div>
                                 </div>
                                 <br />
-                                <button type="submit" name="login" class="btn btn-block btn-primary mb-4">Login</button>
+                                <button type="submit" name="login" class="btn btn-block btn-primary mb-4">
+                                    Login <i class="bi bi-arrow-right"></i>
+                                </button>
                             </form>
                             <p class="mb-0 text-muted">Não tem uma conta? 
                                 <a href="{% url 'authentication:register' %}" class="f-w-400">Inscrever-se</a>
@@ -115,12 +155,111 @@
 {% endblock content %}
 
 {% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
     <script>
-        particlesJS.load('particles-js', '/static/assets/particles.json', function() {
-            console.log('particles.js loaded - callback');
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#ffffff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    },
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#ffffff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 6,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "grab"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 140,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
         });
-
-        feather.replace();
     </script>
 {% endblock javascripts %}

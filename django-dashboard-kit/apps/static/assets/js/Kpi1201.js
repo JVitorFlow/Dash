@@ -23,10 +23,10 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
     } else {
         // Caso não seja busca manual, considere o KPI 1201 com mês/ano
         const selectedKPI = document.getElementById('kpiSelector').value;
-        console.log("[INFO] KPI Selecionado:", selectedKPI);
+        //console.log("[INFO] KPI Selecionado:", selectedKPI);
 
         if (selectedKPI !== '1201') {
-            console.log("[INFO] KPI não é 1201, abortando buscarIndicadorTempoMedio.");
+            //console.log("[INFO] KPI não é 1201, abortando buscarIndicadorTempoMedio.");
             return;
         }
 
@@ -39,19 +39,19 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
             startDate = `${selectedAno}-${selectedMes}-01T00:00:00`;
             endDate = new Date(selectedAno, selectedMes, 0).toISOString().replace(/T.*/, 'T23:59:59');
 
-            console.log("[INFO] Datas geradas para o KPI 12.01");
-            console.log("[DEBUG] Data de Início:", startDate);
-            console.log("[DEBUG] Data de Fim:", endDate);
+            // console.log("[INFO] Datas geradas para o KPI 12.01");
+            // console.log("[DEBUG] Data de Início:", startDate);
+            // console.log("[DEBUG] Data de Fim:", endDate);
         } else {
-            console.error("[ERROR] Mês ou ano não selecionado.");
+            //console.error("[ERROR] Mês ou ano não selecionado.");
             alert('Por favor, selecione o mês e o ano.');
             toggleButtons(true);  // Habilita os botões em caso de erro
             return;
         }
     }
 
-    console.log("[DEBUG] Data de Início:", startDate);
-    console.log("[DEBUG] Data de Fim:", endDate);
+    // console.log("[DEBUG] Data de Início:", startDate);
+    // console.log("[DEBUG] Data de Fim:", endDate);
 
     mostrarLoadingSpinner('loadingSpinnerKPI1201');
 
@@ -63,7 +63,7 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
     const urlElement = document.getElementById('tempoChamadasAbandonadasKPI1104');
     if (urlElement) {
         const urlApi = urlElement.textContent.trim();
-        console.log("[INFO] URL da API carregada:", urlApi);
+        // console.log("[INFO] URL da API carregada:", urlApi);
 
         fetch(urlApi, {
             method: 'POST',
@@ -75,7 +75,7 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
+            // console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
 
             if (data.errcode === 0) {
                 console.log('Chamando renderizarTabelaIndicadorTempoMedio');
