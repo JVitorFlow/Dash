@@ -58,7 +58,7 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
         Object.keys(dadosProcessados.porURA).forEach(ura => {
             const seriesPorURA = kpiConfig.seriesPorURA(ura);
             seriesPorURA.forEach(serie => {
-                // console.log(`Procurando chave ${serie.dataKey} para URA ${ura}`);
+                console.log(`Procurando chave ${serie.dataKey} para URA ${ura}`);
                 const valor = getNestedProperty(dadosProcessados, serie.dataKey);
                 if (valor !== undefined) {
                     seriesData.push({

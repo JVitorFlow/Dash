@@ -94,8 +94,7 @@ export function filterSeries() {
         } */
 
         console.log("[DEBUG] Chaves disponíveis em dadosSelecionados:", Object.keys(dadosSelecionados));
-        console.log("Chaves de dadosProcessadosPonteiro1202: ", Object.keys(dadosProcessadosPonteiro1202));
-        console.log("Chaves de dadosProcessadosPonteiro: ", Object.keys(dadosProcessadosPonteiro));
+
         
         const normalizedSelectedSeries = selectedSeries.trim().toUpperCase();
         const normalizedKeys = Object.keys(dadosSelecionados).reduce((acc, key) => {

@@ -14,17 +14,22 @@ export function processarDadosParaGraficoPonteiro1104(dados) {
 
     // Iterando sobre os dados processados por URA
     Object.keys(dadosProcessados.porURA).forEach(ura => {
+        // Normaliza o nome da URA para evitar inconsistências
+        const uraNormalizada = ura.trim().toUpperCase();
+
         const uraData = dadosProcessados.porURA[ura];
 
         // Calcular a porcentagem de chamadas abandonadas com mais de 1 minuto
         const chamadasAbandonadasSuperior1Min = uraData.desistenciasSuperior1Min;
-        const porcentagem = uraData.ligacoesRecebidas > 0 ? (chamadasAbandonadasSuperior1Min / uraData.ligacoesRecebidas) * 100 : 0;
+        const porcentagem = uraData.ligacoesRecebidas > 0 
+            ? (chamadasAbandonadasSuperior1Min / uraData.ligacoesRecebidas) * 100 
+            : 0;
 
         // Log do cálculo da porcentagem
-        console.log(`[processarDadosParaGraficoPonteiro1104] URA: ${ura}, Porcentagem Abandonadas > 1 Min: ${porcentagem.toFixed(2)}%`);
+        console.log(`[processarDadosParaGraficoPonteiro1104] URA: ${uraNormalizada}, Porcentagem Abandonadas > 1 Min: ${porcentagem.toFixed(2)}%`);
 
         // Armazenar o resultado para cada hospital/URA
-        resultado[ura] = {
+        resultado[uraNormalizada] = {
             ligacoesRecebidas: uraData.ligacoesRecebidas,
             chamadasAbandonadasSuperior1Min: chamadasAbandonadasSuperior1Min,
             porcentagem: porcentagem.toFixed(2) // Armazenar com duas casas decimais
@@ -39,6 +44,8 @@ export function processarDadosParaGraficoPonteiro1104(dados) {
     // Retorna o resultado para ser usado na função de renderização do gráfico de ponteiro
     return resultado;
 }
+
+
 
 
 
@@ -183,8 +190,17 @@ function processarDadosKPI1104(dados) {
             resultado.geral.desistenciasSuperior1Min += desistenciasSuperior1Min;
             resultado.geral.ligacoesRecebidas += ligacoesRecebidas;
 
-            // Normalizando as URAs "HSOR" para serem agrupadas
-            const uraNormalizada = item.ura.startsWith("HSOR") ? "HSOR" : item.ura;
+            // Normalizando as URAs para agrupamento
+            let uraNormalizada;
+            if (item.ura.startsWith("HSOR")) {
+                uraNormalizada = "HSOR";
+            } else if (item.ura.startsWith("HM")) {
+                uraNormalizada = "HM v3";
+            } else if (item.ura.startsWith("HSJC")) {
+                uraNormalizada = "HSJC v3";
+            } else {
+                uraNormalizada = item.ura; // Mantém o nome original se não for uma das URAs listadas
+            }
 
             if (!resultado.porURA[uraNormalizada]) {
                 resultado.porURA[uraNormalizada] = {
@@ -203,6 +219,7 @@ function processarDadosKPI1104(dados) {
     console.log("Dados processados para o gráfico KPI 1104:", resultado);
     return resultado;
 }
+
 
 
 // Função para desabilitar/habilitar botões

@@ -21,7 +21,16 @@ export function processarDadosParaGraficoPonteiro1202(dados) {
 
         // Calcular a porcentagem de atendimentos realizados em menos de 1 minuto
         const atendidasInferior1Min = uraData.atendidasInferior1Min;
-        const porcentagem = uraData.ligacoesRecebidas > 0 ? (atendidasInferior1Min / uraData.ligacoesRecebidas) * 100 : 0;
+        const totalLigacoesRelevantes = uraData.ligacoesRecebidas
+        
+        let porcentagem;
+        if (uraData.atendidasSuperior1Min > 0) {
+            // Se houver atendidas superiores a 1 minuto, calcula a porcentagem excluindo essas
+            porcentagem = totalLigacoesRelevantes > 0 ? (atendidasInferior1Min / (totalLigacoesRelevantes - uraData.atendidasSuperior1Min)) * 100 : 0;
+        } else {
+            // Caso contrário, a porcentagem é 100%
+            porcentagem = 100;
+        }
 
         // Log do cálculo da porcentagem
         console.log(`[processarDadosParaGraficoPonteiro1202] URA: ${ura}, Porcentagem Atendidas < 1 Min: ${porcentagem.toFixed(2)}%`);
