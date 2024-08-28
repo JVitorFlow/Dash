@@ -87,6 +87,7 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
             const data = await response.json();
 
             if (data.errcode === 0) {
+                console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
                 console.log('Chamando renderizarTabelaIndicadorAbandonadasInternas');
                 const dadosProcessados = processarDadosKPI1204(data.ura_performance);
                 renderizarGraficoColunas('1204', dadosProcessados);

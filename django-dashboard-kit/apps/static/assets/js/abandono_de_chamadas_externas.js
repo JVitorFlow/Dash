@@ -4,6 +4,44 @@ import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeri
 import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
 
 
+export let dadosProcessadosPonteiro1104 = {};
+
+export function processarDadosParaGraficoPonteiro1104(dados) {
+    // Processar os dados com base na função existente processarDadosKPI1104
+    const dadosProcessados = processarDadosKPI1104(dados);
+
+    const resultado = {};
+
+    // Iterando sobre os dados processados por URA
+    Object.keys(dadosProcessados.porURA).forEach(ura => {
+        const uraData = dadosProcessados.porURA[ura];
+
+        // Calcular a porcentagem de chamadas abandonadas com mais de 1 minuto
+        const chamadasAbandonadasSuperior1Min = uraData.desistenciasSuperior1Min;
+        const porcentagem = uraData.ligacoesRecebidas > 0 ? (chamadasAbandonadasSuperior1Min / uraData.ligacoesRecebidas) * 100 : 0;
+
+        // Log do cálculo da porcentagem
+        console.log(`[processarDadosParaGraficoPonteiro1104] URA: ${ura}, Porcentagem Abandonadas > 1 Min: ${porcentagem.toFixed(2)}%`);
+
+        // Armazenar o resultado para cada hospital/URA
+        resultado[ura] = {
+            ligacoesRecebidas: uraData.ligacoesRecebidas,
+            chamadasAbandonadasSuperior1Min: chamadasAbandonadasSuperior1Min,
+            porcentagem: porcentagem.toFixed(2) // Armazenar com duas casas decimais
+        };
+    });
+
+    // Log do final do processamento
+    console.log("[processarDadosParaGraficoPonteiro1104] Processamento concluído. Resultado:", resultado);
+
+    dadosProcessadosPonteiro1104 = resultado;
+
+    // Retorna o resultado para ser usado na função de renderização do gráfico de ponteiro
+    return resultado;
+}
+
+
+
 // Função principal para buscar o indicador de chamadas abandonadas
 export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
     let startDate, endDate;
@@ -94,6 +132,11 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
                 const dadosProcessados = processarDadosKPI1104(data.ura_performance);
                 // Renderizando o gráfico KPI 1104 (passo seguinte)
                 renderizarGraficoColunas('1104',dadosProcessados);
+
+                // Processando os dados para o gráfico de ponteiro KPI 1104
+                const dadosProcessadosPonteiro = processarDadosParaGraficoPonteiro1104(data.ura_performance);
+                renderizarGraficoPonteiro('1104', dadosProcessadosPonteiro);
+
                 //console.log('Chamando renderizarTabelaIndicadorAbandonadas');
                 renderizarTabelaIndicadorAbandonadas(data.ura_performance);
                 document.getElementById('exportExcelAbandonadasKP1104').style.display = 'block';
@@ -131,7 +174,6 @@ function processarDadosKPI1104(dados) {
             const desistenciasInferior1Min = item.abandonadas_cognitiva_ate_um_minuto || 0;
             const desistenciasSuperior1Min = item.abandonadas_cognitiva_acima_um_minuto || 0;
 
-
             // Calculando ligações recebidas como a soma de atendidas e abandonadas
             const ligacoesAtendidas = item.atendidas_cognitiva || 0;
             const ligacoesRecebidas = ligacoesAtendidas + (item.abandonadas_cognitiva || 0);
@@ -141,24 +183,27 @@ function processarDadosKPI1104(dados) {
             resultado.geral.desistenciasSuperior1Min += desistenciasSuperior1Min;
             resultado.geral.ligacoesRecebidas += ligacoesRecebidas;
 
+            // Normalizando as URAs "HSOR" para serem agrupadas
+            const uraNormalizada = item.ura.startsWith("HSOR") ? "HSOR" : item.ura;
 
-            if (!resultado.porURA[item.ura]) {
-                resultado.porURA[item.ura] = {
+            if (!resultado.porURA[uraNormalizada]) {
+                resultado.porURA[uraNormalizada] = {
                     desistenciasInferior1Min: 0,
                     desistenciasSuperior1Min: 0,
                     ligacoesRecebidas: 0
                 };
             }
 
-            resultado.porURA[item.ura].desistenciasInferior1Min += desistenciasInferior1Min;
-            resultado.porURA[item.ura].desistenciasSuperior1Min += desistenciasSuperior1Min;
-            resultado.porURA[item.ura].ligacoesRecebidas += ligacoesRecebidas;
+            resultado.porURA[uraNormalizada].desistenciasInferior1Min += desistenciasInferior1Min;
+            resultado.porURA[uraNormalizada].desistenciasSuperior1Min += desistenciasSuperior1Min;
+            resultado.porURA[uraNormalizada].ligacoesRecebidas += ligacoesRecebidas;
         }
     });
 
-    //console.log("Dados processados para o gráfico KPI 1104:", resultado);
+    console.log("Dados processados para o gráfico KPI 1104:", resultado);
     return resultado;
 }
+
 
 // Função para desabilitar/habilitar botões
 function toggleButtons(enable) {

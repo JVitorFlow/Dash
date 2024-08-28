@@ -178,7 +178,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('kpiSearchButton').addEventListener('click', function() {
                 const selectedKPI = document.getElementById('kpiSelector').value.trim();
-                // console.log("[INFO] KPI Selecionado no case:", selectedKPI);
+                console.log("[INFO] KPI Selecionado no case:", selectedKPI);
     
                 switch (selectedKPI) {
                     case '1101':
@@ -211,7 +211,7 @@
                         buscarIndicadorChamadasAbandonadasInternas(); // Função específica para este KPI
                         break;
                     case '1202':
-                        // console.log('Entrou no case 1202');
+                        console.log('Entrou no case 1202');
                         buscarIndicadorTempoEsperaKPI1202(); // Função específica para este KPI
                         break;
                     default:

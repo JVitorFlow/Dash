@@ -1,4 +1,6 @@
+import { dadosProcessadosPonteiro1202, processarDadosParaGraficoPonteiro1202 } from './kpi1202.js';
 import { dadosProcessadosPonteiro } from './tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js';
+import { dadosProcessadosPonteiro1104 } from './abandono_de_chamadas_externas.js';
 
 // Função para obter o valor de um cookie específico
 export function getCookie(name) {
@@ -31,6 +33,7 @@ export function formatDateToISOStringWithMilliseconds(dateString) {
 
 
 export function filterSeries() {
+    
     const chartColunas = Highcharts.charts ? Highcharts.charts.find(chart => chart && chart.renderTo && chart.renderTo.id === 'colunasChartContainer') : undefined;
     const chartPonteiro = Highcharts.charts ? Highcharts.charts.find(chart => chart && chart.renderTo && chart.renderTo.id === 'medicaoChartContainer') : undefined;
 
@@ -40,10 +43,20 @@ export function filterSeries() {
     }
 
     const selectedSeries = document.getElementById("seriesSelector").value;
+    const kpiSelecionado = document.getElementById('kpiSelector').value;
+
+    // Função auxiliar para calcular a média das porcentagens de um conjunto de dados
+    function calcularMediaPorcentagem(dadosProcessados) {
+        const totalPercentages = Object.values(dadosProcessados).reduce((acc, uraData) => {
+            return acc + parseFloat(uraData.porcentagem);
+        }, 0);
+        const totalURAs = Object.keys(dadosProcessados).length;
+        return totalURAs > 0 ? (totalPercentages / totalURAs).toFixed(2) : NaN;
+    }
 
     // Atualiza a visibilidade das séries no gráfico de colunas
     if (chartColunas) {
-        chartColunas.series.forEach(function(series) {
+        chartColunas.series.forEach(function (series) {
             series.setVisible(selectedSeries === 'all' || series.name.includes(selectedSeries), false);
         });
         chartColunas.redraw();
@@ -52,20 +65,53 @@ export function filterSeries() {
     // Atualiza o valor do ponteiro no gráfico de medição
     if (chartPonteiro) {
         let valorPonteiro;
+        let dadosSelecionados;
 
-        if (selectedSeries === 'all') {
-            const totalPercentages = Object.values(dadosProcessadosPonteiro).reduce((acc, uraData) => {
-                return acc + parseFloat(uraData.porcentagem);
-            }, 0);
-            const totalURAs = Object.keys(dadosProcessadosPonteiro).length;
-            valorPonteiro = totalURAs > 0 ? (totalPercentages / totalURAs).toFixed(2) : NaN;
-        } else {
-            if (dadosProcessadosPonteiro[selectedSeries]) {
-                valorPonteiro = parseFloat(dadosProcessadosPonteiro[selectedSeries].porcentagem);
-            } else {
-                console.warn("Dados da URA selecionada não encontrados.");
+        // Centraliza a lógica de obtenção de dados com base no KPI selecionado
+        switch (kpiSelecionado) {
+            case '1102':
+                dadosSelecionados = dadosProcessadosPonteiro;
+                break;
+            case '1104':
+                dadosSelecionados = dadosProcessadosPonteiro1104;
+                break;
+            case '1202':
+                dadosSelecionados = window.dadosProcessadosPonteiro1202;
+                if (!dadosSelecionados || Object.keys(dadosSelecionados).length === 0) {
+                    // Se estiver vazio, chame a função para processar os dados
+                    dadosSelecionados = window.dadosProcessadosPonteiro1202;
+                }
+                break;
+            default:
+                console.error("KPI não suportado:", kpiSelecionado);
                 return;
-            }
+        }
+
+        /* // Verificação adicional para garantir que dadosSelecionados não sejam nulos ou indefinidos
+        if (!dadosSelecionados || Object.keys(dadosSelecionados).length === 0) {
+            console.error("[ERROR] Nenhum dado encontrado para o KPI selecionado:", kpiSelecionado);
+            return;
+        } */
+
+        console.log("[DEBUG] Chaves disponíveis em dadosSelecionados:", Object.keys(dadosSelecionados));
+        console.log("Chaves de dadosProcessadosPonteiro1202: ", Object.keys(dadosProcessadosPonteiro1202));
+        console.log("Chaves de dadosProcessadosPonteiro: ", Object.keys(dadosProcessadosPonteiro));
+        
+        const normalizedSelectedSeries = selectedSeries.trim().toUpperCase();
+        const normalizedKeys = Object.keys(dadosSelecionados).reduce((acc, key) => {
+            acc[key.trim().toUpperCase()] = key;
+            return acc;
+        }, {});
+
+        if (normalizedSelectedSeries === 'ALL') {
+            // Cálculo individual de média para o KPI selecionado
+            valorPonteiro = calcularMediaPorcentagem(dadosSelecionados);
+        } else if (normalizedKeys.hasOwnProperty(normalizedSelectedSeries)) {
+            const originalKey = normalizedKeys[normalizedSelectedSeries];
+            valorPonteiro = parseFloat(dadosSelecionados[originalKey].porcentagem);
+        } else {
+            console.warn("Dados da URA/KPI selecionada não encontrados.");
+            return;
         }
 
         if (isNaN(valorPonteiro)) {
@@ -73,15 +119,12 @@ export function filterSeries() {
             return;
         }
 
-        // Atualiza o gráfico de ponteiro
+        console.log("[DEBUG] Valor ponteiro:", valorPonteiro);
+
         chartPonteiro.series[0].setData([valorPonteiro], true);
         chartPonteiro.redraw();
     }
 }
-
-
-
-
 
 
 
@@ -90,17 +133,14 @@ export function waitForChartRender(callback) {
         const chart = Highcharts.charts.find(chart => chart && chart.renderTo && chart.renderTo.id === 'colunasChartContainer');
         if (chart) {
             clearInterval(interval);
-            // console.log("[DEBUG] Gráfico 'colunasChartContainer' carregado.");
             callback();  // Chama a função filterSeries
         }
     }, 100);
 
     setTimeout(() => {
         clearInterval(interval);
-        // console.error("[ERROR] Gráfico 'colunasChartContainer' não carregou a tempo.");
     }, 5000);  // Timeout de 5 segundos
 }
-
 
 export function formatarHorasEmHHMMSS(segundosTotais) {
     const horas = Math.floor(segundosTotais / 3600);

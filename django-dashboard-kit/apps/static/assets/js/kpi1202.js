@@ -1,15 +1,57 @@
-// Importando funções de módulos auxiliares
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
-import { renderizarGraficoColunas } from './kpi_charts.js';
+
+
+export let dadosProcessadosPonteiro1202 = {};
+
+export function processarDadosParaGraficoPonteiro1202(dados) {
+    console.log("[DEBUG] Dados recebidos na função processarDadosParaGraficoPonteiro1202:", dados);
+
+    // Processar os dados com base na função existente processarDadosParaGraficoKPI1202
+    const dadosProcessados = processarDadosParaGraficoKPI1202(dados);
+    console.log("[DEBUG] Dados processados por processarDadosParaGraficoKPI1202:", dadosProcessados);
+
+    const resultado = {};
+
+    // Iterando sobre os dados processados por URA
+    Object.keys(dadosProcessados.porURA).forEach(ura => {
+        const uraData = dadosProcessados.porURA[ura];
+        console.log(`[DEBUG] Processando dados da URA: ${ura}`, uraData);
+
+        // Calcular a porcentagem de atendimentos realizados em menos de 1 minuto
+        const atendidasInferior1Min = uraData.atendidasInferior1Min;
+        const porcentagem = uraData.ligacoesRecebidas > 0 ? (atendidasInferior1Min / uraData.ligacoesRecebidas) * 100 : 0;
+
+        // Log do cálculo da porcentagem
+        console.log(`[processarDadosParaGraficoPonteiro1202] URA: ${ura}, Porcentagem Atendidas < 1 Min: ${porcentagem.toFixed(2)}%`);
+
+        // Armazenar o resultado para cada hospital/URA
+        resultado[ura] = {
+            ligacoesRecebidas: uraData.ligacoesRecebidas,
+            atendidasInferior1Min: atendidasInferior1Min,
+            porcentagem: porcentagem.toFixed(2) // Armazenar com duas casas decimais
+        };
+    });
+
+    // Log do final do processamento
+    console.log("[processarDadosParaGraficoPonteiro1202] Processamento concluído. Resultado:", resultado);
+
+    // Armazenando o resultado na variável global
+    window.dadosProcessadosPonteiro1202 = resultado;
+    console.log("[DEBUG] Variável global dadosProcessadosPonteiro1202 após processamento:", window.dadosProcessadosPonteiro1202);
+
+    // Retorna o resultado para ser usado na função de renderização do gráfico de ponteiro
+    return resultado;
+}
+
+
 
 // Função principal para buscar o indicador de tempo de espera
-export async function buscarIndicadorTempoEsperaKPI1202(isManualSearch = false) {
+export function buscarIndicadorTempoEsperaKPI1202(isManualSearch = false) {
     let startDate, endDate;
 
     if (isManualSearch) {
-        // console.log("[INFO] Realizando busca manual");
-
         startDate = document.getElementById('startDateEsperaKPI1202').value;
         endDate = document.getElementById('endDateEsperaKPI1202').value;
 
@@ -23,28 +65,27 @@ export async function buscarIndicadorTempoEsperaKPI1202(isManualSearch = false) 
         startDate = formatDateToISOStringWithMilliseconds(startDate);
         endDate = formatDateToISOStringWithMilliseconds(endDate);
     } else {
-        // console.log("[INFO] Realizando busca automática");
+        const selectedKPI = document.getElementById('kpiSelector').value;
+        if (selectedKPI === '1202') {
+            const selectedMes = document.getElementById('mesSelector').value;
+            const selectedAno = document.getElementById('anoSelector').value;
 
-        const selectedMes = document.getElementById('mesSelector').value;
-        const selectedAno = document.getElementById('anoSelector').value;
-
-        if (selectedMes && selectedAno) {
-            startDate = `${selectedAno}-${selectedMes}-01T00:00:00`;
-            endDate = new Date(selectedAno, selectedMes, 0).toISOString().replace(/T.*/, 'T23:59:59');
-
-            // console.log("[INFO] Datas geradas automaticamente para o KPI 12.02");
+            if (selectedMes && selectedAno) {
+                startDate = `${selectedAno}-${selectedMes}-01T00:00:00`;
+                endDate = new Date(selectedAno, selectedMes, 0).toISOString().replace(/T.*/, 'T23:59:59');
+            } else {
+                alert('Por favor, selecione o mês e o ano.');
+                console.error("[ERROR] Mês ou ano não selecionado.");
+                toggleButtons(true);  // Habilita os botões em caso de erro
+                return;
+            }
         } else {
-            alert('Por favor, selecione o mês e o ano.');
-            console.error("[ERROR] Mês ou ano não selecionado.");
-            toggleButtons(true);  // Habilita os botões em caso de erro
+            toggleButtons(true); // Habilita os botões se o KPI não for 1202
             return;
         }
     }
 
     try {
-        // console.log("[DEBUG] Data de Início:", startDate);
-        // console.log("[DEBUG] Data de Fim:", endDate);
-
         mostrarLoadingSpinner('loadingSpinnerEsperaKPI1202');
         mostrarLoadingSpinner('loadingSpinnerMedidores');
 
@@ -53,38 +94,56 @@ export async function buscarIndicadorTempoEsperaKPI1202(isManualSearch = false) 
 
         if (urlElement) {
             const urlApi = urlElement.textContent.trim();
-            const response = await fetch(urlApi, {
+
+            fetch(urlApi, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrftoken
                 },
                 body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.errcode === 0) {
+                    console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
+
+                    const dadosProcessados = processarDadosParaGraficoKPI1202(data.ura_performance);
+                    renderizarGraficoColunas('1202', dadosProcessados);
+
+                    renderizarTabelaIndicadorEspera(data.ura_performance);
+
+                    const dadosProcessadosPonteiro = processarDadosParaGraficoPonteiro1202(data.ura_performance);
+                    renderizarGraficoPonteiro('1202', dadosProcessadosPonteiro);
+
+                    document.getElementById('exportExcelEsperaKPI1202').style.display = 'block';
+                    seriesSelectorContainer.style.display = 'block';
+                } else {
+                    console.error('Erro ao buscar dados:', data.errmsg);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+            })
+            .finally(() => {
+                esconderLoadingSpinner('loadingSpinnerEsperaKPI1202');
+                esconderLoadingSpinner('loadingSpinnerMedidores');
+                toggleButtons(true);
             });
-
-            const data = await response.json();
-
-            if (data.errcode === 0) {
-                // console.log('Chamando renderizarTabelaIndicadorEspera');
-                const dadosProcessados = processarDadosParaGraficoKPI1202(data.ura_performance);
-                renderizarGraficoColunas('1202', dadosProcessados);
-                renderizarTabelaIndicadorEspera(data.ura_performance);
-                document.getElementById('exportExcelEsperaKPI1202').style.display = 'block';
-                seriesSelectorContainer.style.display = 'block';
-            } else {
-                console.error('Erro ao buscar dados:', data.errmsg);
-            }
         } else {
             console.error("[ERROR] Elemento 'tempoEsperaAtendimento1minutoInternoKPI1202' não encontrado no documento.");
+            esconderLoadingSpinner('loadingSpinnerEsperaKPI1202');
+            esconderLoadingSpinner('loadingSpinnerMedidores');
+            toggleButtons(true);
         }
     } catch (error) {
-        //console.error('Erro na requisição:', error);
-    } finally {
+        console.error('Erro na requisição:', error);
         esconderLoadingSpinner('loadingSpinnerEsperaKPI1202');
         esconderLoadingSpinner('loadingSpinnerMedidores');
         toggleButtons(true);
     }
 }
+
 
 
 // Função para renderizar a tabela de resultados
@@ -148,7 +207,7 @@ function renderizarTabelaIndicadorEspera(dados) {
             "pageLength": 14,
             "lengthMenu": [5, 10, 25, 50, 100]
         });
-    } catch (error) {
+    } catch (error) {   
         console.error('Erro ao inicializar DataTables:', error);
     }
 }
@@ -173,22 +232,35 @@ function processarDadosParaGraficoKPI1202(dados) {
             resultado.geral.atendidasInferior1Min += item.atendidas_cognitiva_ate_um_minuto || 0;
             resultado.geral.atendidasSuperior1Min += item.atendidas_cognitiva_acima_um_minuto || 0;
 
+
+            // Normalizando as URAs para serem agrupadas
+            let uraNormalizada;
+            if (item.ura.startsWith("HM")) {
+                uraNormalizada = "HM v3";
+            } else if (item.ura.startsWith("HSJC")) {
+                uraNormalizada = "HSJC v3";
+            } else if (item.ura.startsWith("HSOR")) {
+                uraNormalizada = "HSOR";
+            } else {
+                uraNormalizada = item.ura; // Mantém o nome original se não for uma das URAs listadas
+            }
+
             // Processamento por URA
-            if (!resultado.porURA[item.ura]) {
-                resultado.porURA[item.ura] = {
+            if (!resultado.porURA[uraNormalizada]) {
+                resultado.porURA[uraNormalizada] = {
                     ligacoesRecebidas: 0,
                     atendidasInferior1Min: 0,
                     atendidasSuperior1Min: 0
                 };
             }
 
-            resultado.porURA[item.ura].ligacoesRecebidas += ligacoesRecebidas;
-            resultado.porURA[item.ura].atendidasInferior1Min += item.atendidas_cognitiva_ate_um_minuto || 0;
-            resultado.porURA[item.ura].atendidasSuperior1Min += item.atendidas_cognitiva_acima_um_minuto || 0;
+            resultado.porURA[uraNormalizada].ligacoesRecebidas += ligacoesRecebidas;
+            resultado.porURA[uraNormalizada].atendidasInferior1Min += item.atendidas_cognitiva_ate_um_minuto || 0;
+            resultado.porURA[uraNormalizada].atendidasSuperior1Min += item.atendidas_cognitiva_acima_um_minuto || 0;
         }
     });
 
-    // console.log('Dados processados para o gráfico KPI 1202:', JSON.stringify(resultado, null, 2));
+    console.log('Dados processados para o gráfico KPI 1202:', JSON.stringify(resultado, null, 2));
     return resultado;
 }
 
@@ -216,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Certifique-se de que o seletor de séries existe e vincule o evento
             if (seriesSelector) {
                 seriesSelector.addEventListener('change', filterSeries);
-                // // console.log('[DEBUG] Evento de mudança de série vinculado');
+                console.log('[DEBUG] Evento de mudança de série vinculado');
             } else {
                 console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
             }

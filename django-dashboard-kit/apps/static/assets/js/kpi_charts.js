@@ -148,17 +148,12 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
     let valorPonteiro;
 
     if (kpiId === '1101') {
-        // Log para verificar a chave que estamos tentando acessar
         console.log("[DEBUG] Tentando acessar a chave para KPI 1101:", kpiConfig.gauge.series[0].dataKey);
-    
-        // Verifica se a chave existe em dadosProcessados
         valorPonteiro = getNestedProperty(dadosProcessados, kpiConfig.gauge.series[0].dataKey);
         
-        // Se valorPonteiro for undefined, loga um erro
         if (valorPonteiro === undefined) {
             console.error("[ERROR] Chave não encontrada em dadosProcessados para KPI 1101:", kpiConfig.gauge.series[0].dataKey);
         } else {
-            // Converte o valor para número
             valorPonteiro = parseFloat(valorPonteiro);
             console.log("[INFO] Valor do ponteiro KPI 1101:", valorPonteiro);
             console.log("[DEBUG] Tipo de valor após o parseFloat:", typeof valorPonteiro);
@@ -186,16 +181,80 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
             valorPonteiro = Number(valorPonteiro) || 0;         
 
         }
-    }
+    } else if (kpiId === '1104') {
+        const selectedURA = document.getElementById("seriesSelector").value;
+        // Log para verificar o valor selecionado pelo usuário
+        console.log("[DEBUG] URA Selecionada:", selectedURA);
+
+        if (selectedURA === 'all') {
+            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+        
+            console.log("[DEBUG] Chaves disponíveis em dadosProcessadosPonteiro:", Object.keys(dadosProcessados));
+        
+            // Calcular a média ponderada de chamadas abandonadas com mais de 1 minuto
+            const totalAbandonadas = Object.values(dadosProcessados).reduce((acc, uraData) => {
+                return acc + (parseFloat(uraData.chamadasAbandonadasSuperior1Min) || 0);
+            }, 0);
+        
+            const totalRecebidas = Object.values(dadosProcessados).reduce((acc, uraData) => {
+                return acc + (parseFloat(uraData.ligacoesRecebidas) || 0);
+            }, 0);
+        
+            valorPonteiro = totalRecebidas > 0 ? ((totalAbandonadas / totalRecebidas) * 100).toFixed(2) : NaN;
+            valorPonteiro = Number(valorPonteiro) || 0;
+        }
+         else {
+            if (!dadosProcessados[selectedURA]) {
+                console.error("[ERROR] URA selecionada não encontrada nos dados processados:", selectedURA);
+                return;
+            }
+
+            const uraData = dadosProcessados[selectedURA];
+            const abandonadasSuperior1Min = parseFloat(uraData.abandonadasSuperior1Min) || 0;
+            const ligacoesRecebidas = parseFloat(uraData.ligacoesRecebidas) || 0;
+
+            valorPonteiro = ligacoesRecebidas > 0 ? ((abandonadasSuperior1Min / ligacoesRecebidas) * 100).toFixed(2) : NaN;
+            valorPonteiro = Number(valorPonteiro) || 0;        
+            
+            // Log para confirmar o valor encontrado
+            console.log("[DEBUG] Valor do ponteiro para URA selecionada:", valorPonteiro);
+            console.log("[DEBUG] Configuração dos stops do gráfico:", kpiConfig.yAxis.stops);
+
+        }
+    } else if (kpiId === '1202') {
+        const selectedURA = document.getElementById("seriesSelector").value;
     
+        if (selectedURA === 'all') {
+            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+    
+            const totalPercentages = Object.values(dadosProcessados).reduce((acc, uraData) => {
+                return acc + parseFloat(uraData.porcentagem);
+            }, 0);
+    
+            const totalURAs = Object.keys(dadosProcessados).length;
+            valorPonteiro = totalURAs > 0 ? (totalPercentages / totalURAs).toFixed(2) : NaN;
+            valorPonteiro = Number(valorPonteiro) || 0
+            // Log para verificar o valor consolidado
+            console.log("[DEBUG] Valor do ponteiro consolidado para todas as URAs:", valorPonteiro);
+        } else {
+            if (!dadosProcessados[selectedURA]) {
+                console.error("[ERROR] URA selecionada não encontrada nos dados processados:", selectedURA);
+                return;
+            }
+    
+            // Cálculo do valor específico da URA selecionada
+            valorPonteiro = parseFloat(dadosProcessados[selectedURA].porcentagem);
+            valorPonteiro = Number(valorPonteiro) || 0;
+            
+            // Log para confirmar o valor encontrado
+            console.log("[DEBUG] Valor do ponteiro para URA selecionada:", valorPonteiro);
+        }
+    }
 
     if (isNaN(valorPonteiro)) {
         console.error("[ERROR] Valor do ponteiro é NaN, verifique os dados processados e a configuração.");
         return;
     }
-
-    // Log final antes de renderizar o gráfico
-    //console.log("[DEBUG] Renderizando gráfico de ponteiro com valor:", valorPonteiro);
 
     Highcharts.chart('medicaoChartContainer', {
         chart: {
@@ -228,7 +287,7 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
         },
         series: [{
             name: kpiConfig.gauge.series[0].name,
-            data: [valorPonteiro], // Usando o valor dinâmico aqui
+            data: [valorPonteiro], 
             dataLabels: kpiConfig.gauge.series[0].dataLabels,
             tooltip: {
                 valueSuffix: '%'
@@ -240,8 +299,8 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
     });
     
     console.log("[INFO] Gráfico de ponteiro renderizado com sucesso.");
-
 }
+
 
 
 

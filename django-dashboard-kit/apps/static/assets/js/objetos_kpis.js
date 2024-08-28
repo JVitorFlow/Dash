@@ -309,7 +309,153 @@ const kpiConfigurationsIndicadorPonteiro = {
                 valueSuffix: ' %'
             }
         }]
+    },
+    '1104': {
+        title: 'KPI 11.04 - % Abandono de chamada externas',
+        chartType: 'gauge',
+        gauge: {
+            yAxisMin: 0,
+            yAxisMax: 100,
+            greenThreshold: 10,  // Meta: até 10% de abandono
+            redThreshold: 10,    // Acima de 10% será vermelho
+            series: [{
+                name: 'Abandono > 1min',
+                dataKey: 'porcentagem',
+                dataLabels: {
+                    format: '{y}%',
+                    style: {
+                        fontSize: '24px',
+                        color: 'black'
+                    }
+                },
+                dial: {
+                    radius: '100%',
+                    baseWidth: 10,
+                    baseLength: '0%',
+                    rearLength: '0%',
+                    backgroundColor: 'black',
+                    borderColor: 'silver',
+                    borderWidth: 1
+                },
+                pivot: {
+                    backgroundColor: 'black',
+                    radius: 6
+                }
+            }]
+        },
+        pane: {
+            center: ['50%', '85%'],
+            size: '140%',
+            startAngle: -90,
+            endAngle: 90,
+            background: {
+                backgroundColor: '#EEE',
+                innerRadius: '60%',
+                outerRadius: '100%',
+                shape: 'arc'
+            }
+        },
+        yAxis: {
+            min: 0,
+            max: 100,
+            stops: [
+                [0.001, '#55BF3B'], // Verde em 0% até 10%
+                [0.0, '#55BF3B'], // Verde para 0%
+                [0.1, '#55BF3B'], // Verde até 10%
+                [0.1, '#DF5353']  // Vermelho acima de 10%
+            ],
+            lineWidth: 0,
+            tickWidth: 0,
+            minorTickInterval: null,
+            tickAmount: 2,
+            title: {
+                y: -70
+            },
+            labels: {
+                y: 16
+            }
+        },
+        series: [{
+            name: 'Abandono > 1min',
+            data: [],
+            tooltip: {
+                valueSuffix: ' %'
+            }
+        }]
+    },
+    '1202': {
+        title: 'KPI 12.02 - Tempo de espera para iniciar atendimento em até 1 minuto',
+        chartType: 'gauge',
+        gauge: {
+            yAxisMin: 0,
+            yAxisMax: 100,
+            greenThreshold: 95,  // Meta de 95% ou mais
+            yellowThreshold: 85, // Abaixo de 95% e até 85% (amarelo)
+            redThreshold: 85,    // Abaixo de 85% (vermelho)
+            series: [{
+                name: 'Atendimentos em < 1min',
+                dataKey: 'porcentagem',
+                dataLabels: {
+                    format: '{y}%',
+                    style: {
+                        fontSize: '24px',
+                        color: 'black'
+                    }
+                },
+                dial: {
+                    radius: '100%',
+                    baseWidth: 10,
+                    baseLength: '0%', 
+                    rearLength: '0%',
+                    backgroundColor: 'black',
+                    borderColor: 'silver',
+                    borderWidth: 1
+                },
+                pivot: {
+                    backgroundColor: 'black',
+                    radius: 6
+                }
+            }]
+        },
+        pane: {
+            center: ['50%', '85%'],
+            size: '140%',
+            startAngle: -90,
+            endAngle: 90,
+            background: {
+                backgroundColor: '#EEE',
+                innerRadius: '60%',
+                outerRadius: '100%',
+                shape: 'arc'
+            }
+        },
+        yAxis: {
+            min: 0,
+            max: 100,
+            stops: [
+                [0.9, '#DF5353'], // Vermelho até 90%
+                [0.9, '#55BF3B']  // Verde acima de 90%
+            ],
+            lineWidth: 0,
+            tickWidth: 0,
+            minorTickInterval: null,
+            tickAmount: 2,
+            title: {
+                y: -70
+            },
+            labels: {
+                y: 16
+            }
+        },
+        series: [{
+            name: 'Atendimentos em < 1min',
+            data: [],
+            tooltip: {
+                valueSuffix: ' %'
+            }
+        }]
     }
+
 
 };
 
