@@ -1,7 +1,52 @@
 // Importando funções de módulos auxiliares
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentualAbandono, cumpreMeta } from './helpers.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
-import { renderizarGraficoColunas } from './kpi_charts.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
+
+
+export let dadosProcessadosPonteiro1204 = {};
+
+export function processarDadosParaGraficoPonteiro1204(dados) {
+    // Processar os dados com base na função existente processarDadosKPI1204
+    const dadosProcessados = processarDadosKPI1204(dados);
+
+    const resultado = {};
+
+    // Iterando sobre os dados processados por URA
+    Object.keys(dadosProcessados.porURA).forEach(ura => {
+        // Normaliza o nome da URA para evitar inconsistências
+        const uraNormalizada = ura.trim().toUpperCase();
+
+        const uraData = dadosProcessados.porURA[ura];
+
+        // Calcular a porcentagem de chamadas abandonadas com mais de 1 minuto
+        const chamadasAbandonadasSuperior1Min = uraData.desistenciasSuperior1Min;
+        const porcentagem = uraData.ligacoesRecebidas > 0 
+            ? (chamadasAbandonadasSuperior1Min / uraData.ligacoesRecebidas) * 100 
+            : 0;
+
+        // Log do cálculo da porcentagem
+        console.log(`[processarDadosParaGraficoPonteiro1204] URA: ${uraNormalizada}, Porcentagem Abandonadas > 1 Min: ${porcentagem.toFixed(2)}%`);
+
+        // Armazenar o resultado para cada hospital/URA
+        resultado[uraNormalizada] = {
+            ligacoesRecebidas: uraData.ligacoesRecebidas,
+            chamadasAbandonadasSuperior1Min: chamadasAbandonadasSuperior1Min,
+            porcentagem: porcentagem.toFixed(2) // Armazenar com duas casas decimais
+        };
+    });
+
+    // Log do final do processamento
+    console.log("[processarDadosParaGraficoPonteiro1204] Processamento concluído. Resultado:", resultado);
+
+    dadosProcessadosPonteiro1204 = resultado;
+
+    // Retorna o resultado para ser usado na função de renderização do gráfico de ponteiro
+    return resultado;
+}
+
+
+
 
 // Função principal para buscar o indicador de chamadas abandonadas internas
 export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch = false) {
@@ -89,8 +134,13 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
             if (data.errcode === 0) {
                 console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
                 console.log('Chamando renderizarTabelaIndicadorAbandonadasInternas');
+
                 const dadosProcessados = processarDadosKPI1204(data.ura_performance);
                 renderizarGraficoColunas('1204', dadosProcessados);
+
+                const dadosProcessadosPonteiro = processarDadosParaGraficoPonteiro1204(data.ura_performance);
+                renderizarGraficoPonteiro('1204', dadosProcessadosPonteiro);
+
                 renderizarTabelaIndicadorAbandonadasInternas(data.ura_performance);
                 document.getElementById('exportExcelAbandonadasInternasKPI1204').style.display = 'block';
                 seriesSelectorContainer.style.display = 'block';
@@ -133,17 +183,30 @@ function processarDadosKPI1204(dados) {
             resultado.geral.desistenciasSuperior1Min += desistenciasSuperior1Min;
             resultado.geral.ligacoesRecebidas += ligacoesRecebidas;
 
-            if (!resultado.porURA[item.ura]) {
-                resultado.porURA[item.ura] = {
+
+            // Normalizando as URAs para serem agrupadas
+            let uraNormalizada;
+            if (item.ura.startsWith("HM")) {
+                uraNormalizada = "HM v3";
+            } else if (item.ura.startsWith("HSJC")) {
+                uraNormalizada = "HSJC v3";
+            } else if (item.ura.startsWith("HSOR")) {
+                uraNormalizada = "HSOR";
+            } else {
+                uraNormalizada = item.ura; // Mantém o nome original se não for uma das URAs listadas
+            }
+
+            if (!resultado.porURA[uraNormalizada]) {
+                resultado.porURA[uraNormalizada] = {
                     desistenciasInferior1Min: 0,
                     desistenciasSuperior1Min: 0,
                     ligacoesRecebidas: 0
                 };
             }
 
-            resultado.porURA[item.ura].desistenciasInferior1Min += desistenciasInferior1Min;
-            resultado.porURA[item.ura].desistenciasSuperior1Min += desistenciasSuperior1Min;
-            resultado.porURA[item.ura].ligacoesRecebidas += ligacoesRecebidas;
+            resultado.porURA[uraNormalizada].desistenciasInferior1Min += desistenciasInferior1Min;
+            resultado.porURA[uraNormalizada].desistenciasSuperior1Min += desistenciasSuperior1Min;
+            resultado.porURA[uraNormalizada].ligacoesRecebidas += ligacoesRecebidas;
         }
     });
 

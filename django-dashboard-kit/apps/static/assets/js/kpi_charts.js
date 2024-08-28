@@ -42,6 +42,7 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
         // console.log(`Procurando chave ${serie.dataKey} em dadosProcessados`);
         const valor = getNestedProperty(dadosProcessados, serie.dataKey);
         if (valor !== undefined) {
+            console.log(`[DEBUG] Adicionando série geral: ${serie.name} com valor: ${valor}`);
             seriesData.push({
                 name: serie.name,
                 data: [valor],
@@ -76,7 +77,7 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
         console.warn('Estrutura porURA ausente ou inválida em dadosProcessados:', dadosProcessados.porURA);
     }
 
-    // console.log('Dados formatados para o Highcharts:', seriesData);
+    console.log('Dados formatados para o Highcharts:', seriesData);
 
     Highcharts.chart('colunasChartContainer', {
         chart: {
@@ -222,6 +223,62 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
 
         }
     } else if (kpiId === '1202') {
+        const selectedURA = document.getElementById("seriesSelector").value;
+    
+        if (selectedURA === 'all') {
+            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+    
+            const totalPercentages = Object.values(dadosProcessados).reduce((acc, uraData) => {
+                return acc + parseFloat(uraData.porcentagem);
+            }, 0);
+    
+            const totalURAs = Object.keys(dadosProcessados).length;
+            valorPonteiro = totalURAs > 0 ? (totalPercentages / totalURAs).toFixed(2) : NaN;
+            valorPonteiro = Number(valorPonteiro) || 0
+            // Log para verificar o valor consolidado
+            console.log("[DEBUG] Valor do ponteiro consolidado para todas as URAs:", valorPonteiro);
+        } else {
+            if (!dadosProcessados[selectedURA]) {
+                console.error("[ERROR] URA selecionada não encontrada nos dados processados:", selectedURA);
+                return;
+            }
+    
+            // Cálculo do valor específico da URA selecionada
+            valorPonteiro = parseFloat(dadosProcessados[selectedURA].porcentagem);
+            valorPonteiro = Number(valorPonteiro) || 0;
+            
+            // Log para confirmar o valor encontrado
+            console.log("[DEBUG] Valor do ponteiro para URA selecionada:", valorPonteiro);
+        }
+    } else if (kpiId === '1204') {
+        const selectedURA = document.getElementById("seriesSelector").value;
+    
+        if (selectedURA === 'all') {
+            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+    
+            const totalPercentages = Object.values(dadosProcessados).reduce((acc, uraData) => {
+                return acc + parseFloat(uraData.porcentagem);
+            }, 0);
+    
+            const totalURAs = Object.keys(dadosProcessados).length;
+            valorPonteiro = totalURAs > 0 ? (totalPercentages / totalURAs).toFixed(2) : NaN;
+            valorPonteiro = Number(valorPonteiro) || 0
+            // Log para verificar o valor consolidado
+            console.log("[DEBUG] Valor do ponteiro consolidado para todas as URAs:", valorPonteiro);
+        } else {
+            if (!dadosProcessados[selectedURA]) {
+                console.error("[ERROR] URA selecionada não encontrada nos dados processados:", selectedURA);
+                return;
+            }
+    
+            // Cálculo do valor específico da URA selecionada
+            valorPonteiro = parseFloat(dadosProcessados[selectedURA].porcentagem);
+            valorPonteiro = Number(valorPonteiro) || 0;
+            
+            // Log para confirmar o valor encontrado
+            console.log("[DEBUG] Valor do ponteiro para URA selecionada:", valorPonteiro);
+        }
+    } else if (kpiId === '1201') {
         const selectedURA = document.getElementById("seriesSelector").value;
     
         if (selectedURA === 'all') {

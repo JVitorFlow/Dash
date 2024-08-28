@@ -89,11 +89,21 @@ const kpiConfigurations = {
         series: [
             {
                 name: 'Tempo médio(s)',
-                dataKey: 'tempoMedio'
+                dataKey: 'geral.tempoMedio'
             },
             {
                 name: 'Total ligações',
-                dataKey: 'totalLigacoes'
+                dataKey: 'geral.totalLigacoes'
+            }
+        ],
+        seriesPorURA: (ura) => [
+            {
+                name: `Tempo médio(s) - ${ura}`,
+                dataKey: `porURA.${ura}.tempoMedio`
+            },
+            {
+                name: `Total ligações - ${ura}`,
+                dataKey: `porURA.${ura}.totalLigacoes`
             }
         ]
     },
@@ -454,9 +464,152 @@ const kpiConfigurationsIndicadorPonteiro = {
                 valueSuffix: ' %'
             }
         }]
+    },
+    '1204': {
+        title: 'KPI 12.04 - % Abandono de chamada internas',
+        chartType: 'gauge',
+        gauge: {
+            yAxisMin: 0,
+            yAxisMax: 100,
+            greenThreshold: 10,  // Meta: até 10% de abandono
+            redThreshold: 10,    // Acima de 10% será vermelho
+            series: [{
+                name: 'Abandono > 1min',
+                dataKey: 'porcentagem',
+                dataLabels: {
+                    format: '{y}%',
+                    style: {
+                        fontSize: '24px',
+                        color: 'black'
+                    }
+                },
+                dial: {
+                    radius: '100%',
+                    baseWidth: 10,
+                    baseLength: '0%',
+                    rearLength: '0%',
+                    backgroundColor: 'black',
+                    borderColor: 'silver',
+                    borderWidth: 1
+                },
+                pivot: {
+                    backgroundColor: 'black',
+                    radius: 6
+                }
+            }]
+        },
+        pane: {
+            center: ['50%', '85%'],
+            size: '140%',
+            startAngle: -90,
+            endAngle: 90,
+            background: {
+                backgroundColor: '#EEE',
+                innerRadius: '60%',
+                outerRadius: '100%',
+                shape: 'arc'
+            }
+        },
+        yAxis: {
+            min: 0,
+            max: 100,
+            stops: [
+                [0.001, '#55BF3B'], // Verde em 0% até 10%
+                [0.0, '#55BF3B'], // Verde para 0%
+                [0.1, '#55BF3B'], // Verde até 10%
+                [0.1, '#DF5353']  // Vermelho acima de 10%
+            ],
+            lineWidth: 0,
+            tickWidth: 0,
+            minorTickInterval: null,
+            tickAmount: 2,
+            title: {
+                y: -70
+            },
+            labels: {
+                y: 16
+            }
+        },
+        series: [{
+            name: 'Abandono > 1min',
+            data: [],
+            tooltip: {
+                valueSuffix: ' %'
+            }
+        }]
+    },
+    '1201': {
+        title: 'KPI 12.01 - Tempo Médio de Atendimento por Atendente',
+        chartType: 'gauge',
+        gauge: {
+            yAxisMin: 0,
+            yAxisMax: 100, // A porcentagem vai de 0 a 100%
+            greenThreshold: 100, // Verde para 100%
+            yellowThreshold: 80, // Amarelo para valores entre 80% e 100%
+            redThreshold: 0, // Vermelho para valores abaixo de 80%
+            series: [{
+                name: 'Eficiência',
+                dataKey: 'porcentagem',
+                dataLabels: {
+                    format: '{y}%', // Exibe o valor em porcentagem
+                    style: {
+                        fontSize: '24px',
+                        color: 'black'
+                    }
+                },
+                dial: {
+                    radius: '100%',
+                    baseWidth: 10,
+                    baseLength: '0%', 
+                    rearLength: '0%',
+                    backgroundColor: 'black',
+                    borderColor: 'silver',
+                    borderWidth: 1
+                },
+                pivot: {
+                    backgroundColor: 'black',
+                    radius: 6
+                }
+            }]
+        },
+        pane: {
+            center: ['50%', '85%'],
+            size: '140%',
+            startAngle: -90,
+            endAngle: 90,
+            background: {
+                backgroundColor: '#EEE',
+                innerRadius: '60%',
+                outerRadius: '100%',
+                shape: 'arc'
+            }
+        },
+        yAxis: {
+            min: 0,
+            max: 100,
+            stops: [
+                [0.8, '#DF5353'], // Vermelho até 80%
+                [0.8, '#55BF3B'], // Verde a partir de 80% até 100%
+            ],
+            lineWidth: 0,
+            tickWidth: 0,
+            minorTickInterval: null,
+            tickAmount: 2,
+            title: {
+                y: -70
+            },
+            labels: {
+                y: 16
+            }
+        },
+        series: [{
+            name: 'Eficiência',
+            data: [],
+            tooltip: {
+                valueSuffix: ' %'
+            }
+        }]
     }
-
-
 };
 
 

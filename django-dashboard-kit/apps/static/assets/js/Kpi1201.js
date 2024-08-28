@@ -1,5 +1,61 @@
-import { mostrarLoadingSpinner, esconderLoadingSpinner } from './helpers.js';
-import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds } from './utils.js';
+import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
+import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
+
+
+
+export let dadosProcessadosPonteiro1201 = {};
+
+export function processarDadosParaGraficoPonteiroKPI1201(dados) {
+    console.log("[DEBUG] Dados recebidos na função processarDadosParaGraficoPonteiroKPI1201:", dados);
+
+    // Processar os dados usando a função de processamento que criamos
+    const dadosProcessados = processarDadosParaGraficoBarrasKPI1201(dados);
+    console.log("[DEBUG] Dados processados por processarDadosParaGraficoBarrasKPI1201:", dadosProcessados);
+
+    const resultado = {};
+
+    // Iterando sobre os dados processados por URA
+    Object.keys(dadosProcessados.porURA).forEach(ura => {
+        const uraData = dadosProcessados.porURA[ura];
+        console.log(`[DEBUG] Processando dados da URA: ${ura}`, uraData);
+
+        // Calcular o tempo médio de atendimento em segundos
+        const tempoMedio = uraData.totalLigacoes > 0 ? (uraData.tempoTotal / uraData.totalLigacoes).toFixed(2) : 0;
+
+        // Calcular a porcentagem baseada no tempo médio
+        let porcentagem;
+        if (tempoMedio <= 180) {
+            // Dentro da meta
+            porcentagem = 100;
+        } else {
+            // Fora da meta
+            porcentagem = (180 / tempoMedio) * 100;
+        }
+
+        // Log do cálculo do tempo médio e da porcentagem
+        console.log(`[processarDadosParaGraficoPonteiroKPI1201] URA: ${ura}, Tempo Médio (segundos): ${tempoMedio}, Porcentagem: ${porcentagem.toFixed(2)}%`);
+
+        // Armazenar o resultado para cada hospital/URA
+        resultado[ura] = {
+            totalLigacoes: uraData.totalLigacoes,
+            tempoMedio: tempoMedio, // Armazenar o tempo médio com duas casas decimais
+            porcentagem: porcentagem.toFixed(2) // Armazenar a porcentagem com duas casas decimais
+        };
+    });
+
+    // Log do final do processamento
+    console.log("[processarDadosParaGraficoPonteiroKPI1201] Processamento concluído. Resultado:", resultado);
+
+    // Armazenando o resultado na variável global
+    dadosProcessadosPonteiro1201 = resultado;
+    console.log("[DEBUG] Variável global dadosProcessadosPonteiro1201 após processamento:", dadosProcessadosPonteiro1201);
+
+    // Retorna o resultado para ser usado na função de renderização do gráfico de colunas
+    return resultado;
+}
+
+
 
 // Função principal para buscar o indicador de tempo médio por atendente
 export function buscarIndicadorTempoMedio(isManualSearch = false) {
@@ -80,7 +136,16 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
             if (data.errcode === 0) {
                 console.log('Chamando renderizarTabelaIndicadorTempoMedio');
                 renderizarTabelaIndicadorTempoMedio(data.ura_performance);
+                
+
+                const dadosProcessados = processarDadosParaGraficoBarrasKPI1201(data.ura_performance);
+                renderizarGraficoColunas('1201', dadosProcessados);
+
+                const dadosProcessadosPonteiro = processarDadosParaGraficoPonteiroKPI1201(data.ura_performance);
+                renderizarGraficoPonteiro('1201', dadosProcessadosPonteiro);
+
                 document.getElementById('exportExcelKPI1201').style.display = 'block';
+                seriesSelectorContainer.style.display = 'block';
             } else {
                 console.error('Erro ao buscar dados:', data.errmsg);
             }
@@ -170,11 +235,117 @@ function renderizarTabelaIndicadorTempoMedio(dados) {
     }
 }
 
+
+function processarDadosParaGraficoBarrasKPI1201(dados) {
+    const resultado = {
+        geral: {
+            tempoTotal: 0,
+            totalLigacoes: 0,
+            tempoMedio: 0
+        },
+        porURA: {}
+    };
+
+    dados.forEach(item => {
+        if (item.tipo_atendimento === "Interno") {
+            const tempoTotal = item.tempo_total_ligacao_cognitiva || 0;
+            const atendidas = item.atendidas_cognitiva || 0;
+
+            // Processamento Geral
+            resultado.geral.tempoTotal += tempoTotal;
+            resultado.geral.totalLigacoes += atendidas;
+
+            // Normalizando as URAs para serem agrupadas
+            let uraNormalizada;
+            if (item.ura.startsWith("HM")) {
+                uraNormalizada = "HM v3";
+            } else if (item.ura.startsWith("HSJC")) {
+                uraNormalizada = "HSJC v3";
+            } else if (item.ura.startsWith("HSOR")) {
+                uraNormalizada = "HSOR";
+            } else {
+                uraNormalizada = item.ura; // Mantém o nome original se não for uma das URAs listadas
+            }
+
+            // Processamento por URA
+            if (!resultado.porURA[uraNormalizada]) {
+                resultado.porURA[uraNormalizada] = {
+                    tempoTotal: 0,
+                    totalLigacoes: 0,
+                    tempoMedio: 0
+                };
+            }
+
+            resultado.porURA[uraNormalizada].tempoTotal += tempoTotal;
+            resultado.porURA[uraNormalizada].totalLigacoes += atendidas;
+        }
+    });
+
+    // Calcular o tempo médio geral
+    resultado.geral.tempoMedio = resultado.geral.totalLigacoes > 0 
+        ? resultado.geral.tempoTotal / resultado.geral.totalLigacoes
+        : 0;
+
+    // Calcular o tempo médio por URA
+    Object.keys(resultado.porURA).forEach(ura => {
+        const uraData = resultado.porURA[ura];
+        uraData.tempoMedio = uraData.totalLigacoes > 0 
+            ? uraData.tempoTotal / uraData.totalLigacoes
+            : 0;
+    });
+
+    console.log('Dados processados para o gráfico KPI 1201:', JSON.stringify(resultado, null, 2));
+    return resultado;
+}
+
+
+
 // Listeners para botões
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('filterTempoMedioButtonKPI1201').addEventListener('click', function() {
-        toggleButtons(false);
-        buscarIndicadorTempoMedio(true);
+    const seriesSelectorContainer = document.getElementById('seriesSelectorContainer');
+    const seriesSelector = document.getElementById('seriesSelector');
+    const kpiSelector = document.getElementById('kpiSelector');
+    const filterButton = document.getElementById('filterTempoMedioButtonKPI1201');
+
+    // Evento para o seletor de série
+    if (seriesSelector) {
+        seriesSelector.addEventListener('change', function() {
+            // console.log('[DEBUG] Série selecionada:', seriesSelector.value);
+            // Certifique-se de que o seletor de séries existe e vincule o evento
+            if (seriesSelector) {
+                seriesSelector.addEventListener('change', filterSeries);
+                console.log('[DEBUG] Evento de mudança de série vinculado');
+            } else {
+                console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+            }
+            
+        });
+    } else {
+        console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+    }
+
+    // Função para verificar o KPI selecionado e mostrar/esconder o seletor de séries
+    function verificarSeletorSeries() {
+        // // console.log('[DEBUG] Verificando seletor de séries');
+
+        const selectedKPI = kpiSelector.value.trim();
+
+        // Sempre esconde o seletor no início
+        seriesSelectorContainer.style.display = 'none';
+
+        // Mostra o seletor apenas se o KPI for o 1102 (ou outros KPIs que necessitem) e após carregar os dados
+        if (selectedKPI === '1201') {
+            // // console.log('[DEBUG] KPI 1102 selecionado');
+            seriesSelectorContainer.style.display = 'none'; // Esconde inicialmente
+        }
+    }
+
+    // Evento para verificar o KPI selecionado
+    kpiSelector.addEventListener('change', verificarSeletorSeries);
+
+    filterButton.addEventListener('click', function() {
+        toggleButtons(false); // Desabilita os botões enquanto a requisição está em andamento
+        buscarIndicadorTempoEsperaKPI1202(true);
     });
 
     document.getElementById('exportExcelKPI1201').addEventListener('click', function() {

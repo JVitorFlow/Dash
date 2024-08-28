@@ -1,6 +1,7 @@
-import { dadosProcessadosPonteiro1202, processarDadosParaGraficoPonteiro1202 } from './kpi1202.js';
 import { dadosProcessadosPonteiro } from './tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js';
 import { dadosProcessadosPonteiro1104 } from './abandono_de_chamadas_externas.js';
+import { dadosProcessadosPonteiro1204 } from './kpi1204.js';
+import { dadosProcessadosPonteiro1201 } from './Kpi1201.js';
 
 // Função para obter o valor de um cookie específico
 export function getCookie(name) {
@@ -81,6 +82,12 @@ export function filterSeries() {
                     // Se estiver vazio, chame a função para processar os dados
                     dadosSelecionados = window.dadosProcessadosPonteiro1202;
                 }
+                break;
+            case '1204':
+                dadosSelecionados = dadosProcessadosPonteiro1204;
+                break;
+            case '1201':
+                dadosSelecionados = dadosProcessadosPonteiro1201;
                 break;
             default:
                 console.error("KPI não suportado:", kpiSelecionado);
