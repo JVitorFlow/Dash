@@ -22,15 +22,20 @@ export function getCookie(name) {
 // Constante para armazenar o token CSRF
 export const csrftoken = getCookie('csrftoken');
 
-// Função para converter uma data em string para ISO format com milissegundos
+
+// Função para converter uma data em string para ISO format com milissegundos sem converter para UTC
 export function formatDateToISOStringWithMilliseconds(dateString) {
     const [datePart, timePart] = dateString.split(' ');
     const [day, month, year] = datePart.split('/');
     const [hour, minute] = timePart.split(':');
 
-    const localDate = new Date(year, month - 1, day, hour, minute);
-    return localDate.toISOString();
+    // Manualmente construir a string no formato ISO
+    const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00.000`;
+
+    return formattedDate;
 }
+
+
 
 
 export function filterSeries() {

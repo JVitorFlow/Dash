@@ -1,6 +1,6 @@
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds } from './utils.js';
-import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro, renderizarGraficoTendencia } from './kpi_charts.js';
 
 // Função principal para buscar os dados de atividade dos agentes
 export function buscarDadosAgentes(isManualSearch = false) {
@@ -16,6 +16,7 @@ export function buscarDadosAgentes(isManualSearch = false) {
         if (!startDate || !endDate) {
             alert('Por favor, selecione ambas as datas.');
             console.error("[ERROR] Data de início ou fim não selecionada.");
+            toggleButtons(true);
             return;
         }
 
@@ -48,8 +49,9 @@ export function buscarDadosAgentes(isManualSearch = false) {
         }
     }
 
-    /* console.log("[DEBUG] Data de Início:", startDate);
-    console.log("[DEBUG] Data de Fim:", endDate); */
+    console.log("[DEBUG] Data de Início (sem ajuste para UTC):", startDate);
+    console.log("[DEBUG] Data de Fim (sem ajuste para UTC):", endDate);
+
 
     mostrarLoadingSpinner('loadingSpinnerMedidores');
     mostrarLoadingSpinner('loadingSpinner');
@@ -60,7 +62,7 @@ export function buscarDadosAgentes(isManualSearch = false) {
         dtFinish: endDate
     };
 
-    // console.log("[INFO] Payload enviado:", payload);
+    console.log("[INFO] Payload enviado:", payload);
 
     const urlElement = document.getElementById('atividadesAgentesUrlData');
     let atividadesAgentesUrl = null;
@@ -108,9 +110,20 @@ export function buscarDadosAgentes(isManualSearch = false) {
         console.log("[INFO] Dados recebidos do JSON:", data);
         if (data.errcode === 0) {
             const dadosProcessados = processarDadosParaGrafico(data.agent_activity_list);
+            
+            
+            const dadosConsolidados = consolidarDadosPorAgenteEData(data.agent_activity_list);
+            const disponibilidadePorDia = calcularDisponibilidadeDiariaPorAgente(dadosConsolidados);
+            console.log("[INFO] Dados processados para o gráfico TENDENCIA:", disponibilidadePorDia);
+            
+            renderizarGraficoTendencia('1101', disponibilidadePorDia);
+
             // Renderizar o gráfico de colunas
             console.log("[INFO] Dados processados para o gráfico:", dadosProcessados);
             renderizarGraficoColunas('1101', dadosProcessados);
+
+
+            
             preencherTabelaAgentes(data.agent_activity_list);
             calcularOcupacaoTotalEExibir(data.agent_activity_list);
             document.getElementById('exportExcel').style.display = data.agent_activity_list.length > 0 ? 'block' : 'none';
@@ -208,7 +221,16 @@ function preencherTabelaAgentes(dados) {
 function consolidarDadosPorAgenteEData(dados) {
     const agentesConsolidados = [];
 
+    // E-mails a serem ignorados
+    const emailsParaIgnorar = ["homolog.inovasaude@mail.com", "yara.bezerra@wtime.com.br"];
+
     dados.forEach(item => {
+        // Verifica se o e-mail está na lista de e-mails a serem ignorados
+        if (emailsParaIgnorar.includes(item.nome)) {
+            console.warn('[AVISO] Ignorando dados do usuário:', item.nome);
+            return;
+        }
+
         if (!item.login || !item.logoff || item.login === item.logoff || item.login === "0" || item.logoff === "0") {
             console.warn('[AVISO] Login ou logoff inválido para:', item.nome);
             return;
@@ -250,12 +272,17 @@ function consolidarDadosPorAgenteEData(dados) {
                 const pauseDurationSeconds = (pauseEnd - pauseStart) / 1000; // Tempo em segundos
 
                 let tempoExcedenteSegundos = 0;
+                let tempoSemImpactoSegundos = 0;
 
                 // Ajuste do tempo excedente para pausas de descanso e café
                 if (pause.motivo_pause.includes('Desc') && pauseDurationSeconds > 600) { // 10 minutos para descanso
                     tempoExcedenteSegundos = pauseDurationSeconds - 600;
+                    tempoSemImpactoSegundos = 600; // Tempo sem impacto é o limite máximo (10 minutos)
                 } else if (pause.motivo_pause.includes('Café') && pauseDurationSeconds > 1200) { // 20 minutos para café
                     tempoExcedenteSegundos = pauseDurationSeconds - 1200;
+                    tempoSemImpactoSegundos = 1200; // Tempo sem impacto é o limite máximo (20 minutos)
+                } else {
+                    tempoSemImpactoSegundos = pauseDurationSeconds; // Pausas dentro do limite são consideradas sem impacto
                 }
 
                 const detalhePausa = `${pauseStart.toLocaleTimeString('pt-BR')} - ${pauseEnd.toLocaleTimeString('pt-BR')}: ${pause.motivo_pause}`;
@@ -264,6 +291,7 @@ function consolidarDadosPorAgenteEData(dados) {
                     agenteExistente.detalhesPausas.add(detalhePausa);
                     agenteExistente.tempoTotalPausaSegundos += pauseDurationSeconds;
                     agenteExistente.tempoExcedentePausaSegundos += tempoExcedenteSegundos;
+                    agenteExistente.tempoSemImpactoSegundos = (agenteExistente.tempoSemImpactoSegundos || 0) + tempoSemImpactoSegundos;
                     agenteExistente.quantidadePausas += 1;
                 }
             });
@@ -320,6 +348,7 @@ function consolidarDadosPorAgenteEData(dados) {
 
 
 
+
 // Função auxiliar para formatar tempo em HH:MM:SS
 function formatarHorasEmHHMMSS_nova(segundosTotais) {
     const horas = Math.floor(segundosTotais / 3600);
@@ -339,7 +368,9 @@ function processarDadosParaGrafico(dados) {
     const resultado = {
         carga_horaria: 0,
         horas_trabalhadas: 0,
-        horas_pausa: 0
+        horas_pausa: 0,
+        horas_trabalhadas_formatadas: '',
+        horas_pausa_formatadas: ''
     };
 
     const TEMPO_TRABALHO_ESPERADO_HORAS = 6;
@@ -347,6 +378,9 @@ function processarDadosParaGrafico(dados) {
 
     // Dicionário para armazenar o número de pessoas que logaram em cada dia
     const pessoasPorDia = {};
+
+    let totalSegundosTrabalhados = 0;
+    let totalSegundosPausa = 0;
 
     agentesConsolidados.forEach(agente => {
         // Considera apenas dias onde o agente fez login
@@ -358,14 +392,13 @@ function processarDadosParaGrafico(dados) {
         }
 
         // Somar as horas trabalhadas (tempo logado efetivo)
-        resultado.horas_trabalhadas += parseFloat(agente.tempoTotalLogin);
+        totalSegundosTrabalhados += parseFloat(agente.tempoTotalLoginHoras) * 3600; // Converte para segundos
 
-        // Somar o tempo de pausa (convertido de segundos para horas)
-        const horasPausa = parseFloat((agente.tempoTotalPausaSegundos / 3600).toFixed(2));
-        resultado.horas_pausa += horasPausa;
+        // Somar o tempo de pausa (em segundos)
+        totalSegundosPausa += agente.tempoTotalPausaSegundos;
 
         // Log para verificar os valores
-        console.log(`[LOG] Agente: ${agente.nome} | Horas Trabalhadas: ${agente.tempoTotalLogin} | Horas Pausa: ${horasPausa}`);
+        console.log(`[LOG] Agente: ${agente.nome} | Horas Trabalhadas: ${agente.tempoTotalLoginHoras} horas | Horas Pausa: ${agente.tempoTotalPausa}`);
     });
 
     // Cálculo da carga horária para o gráfico
@@ -373,9 +406,13 @@ function processarDadosParaGrafico(dados) {
         resultado.carga_horaria += pessoasPorDia[dia].size * TEMPO_TRABALHO_ESPERADO_HORAS;
     }
 
-    // Formatar resultado final com duas casas decimais
-    resultado.horas_trabalhadas = parseFloat(resultado.horas_trabalhadas.toFixed(2));
-    resultado.horas_pausa = parseFloat(resultado.horas_pausa.toFixed(2));
+    // Formatar horas trabalhadas e horas de pausa em "HH:MM:SS"
+    resultado.horas_trabalhadas_formatadas = formatarHorasEmHHMMSS_Grafico(totalSegundosTrabalhados);
+    resultado.horas_pausa_formatadas = formatarHorasEmHHMMSS_Grafico(totalSegundosPausa);
+
+    // Converter o total de segundos trabalhados e pausados para horas decimais
+    resultado.horas_trabalhadas = parseFloat((totalSegundosTrabalhados / 3600).toFixed(2));
+    resultado.horas_pausa = parseFloat((totalSegundosPausa / 3600).toFixed(2));
     resultado.carga_horaria = parseFloat(resultado.carga_horaria.toFixed(2));
 
     // Log final para verificar os resultados
@@ -383,6 +420,66 @@ function processarDadosParaGrafico(dados) {
 
     return resultado;
 }
+
+// Função para formatar segundos em "HH:MM:SS"
+function formatarHorasEmHHMMSS_Grafico(segundos) {
+    const horas = Math.floor(segundos / 3600);
+    const minutos = Math.floor((segundos % 3600) / 60);
+    const segundosRestantes = Math.floor(segundos % 60);
+
+    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundosRestantes.toString().padStart(2, '0')}`;
+}
+
+
+function calcularDisponibilidadeDiariaPorAgente(dadosConsolidados) {
+    const cargaHorariaAgente = 6 * 3600; // Convertendo carga horária de horas para segundos
+    console.log("[DEBUG] Carga horária por agente (segundos):", cargaHorariaAgente);
+
+    const resultadoPorDia = {};
+
+    dadosConsolidados.forEach((agente, index) => {
+        console.log(`[DEBUG] Estrutura do agente ${index}:`, agente);
+
+        const data = agente.data;
+        const tempoLogado = parseFloat(agente.tempoTotalLoginHoras) * 3600; // Convertendo tempo logado de horas para segundos
+        const tempoPausa = agente.tempoTotalPausaSegundos || 0;  // Pausa já está em segundos
+
+        console.log(`[DEBUG] Processando agente: Data=${data}, TempoLogado=${tempoLogado}, TempoPausa=${tempoPausa}`);
+
+        if (!resultadoPorDia[data]) {
+            resultadoPorDia[data] = {
+                tempoLogadoTotal: 0,
+                tempoPausaTotal: 0,
+                cargaHorariaTotal: 0,
+                agentes: new Set()
+            };
+        }
+
+        resultadoPorDia[data].tempoLogadoTotal += tempoLogado;
+        resultadoPorDia[data].tempoPausaTotal += tempoPausa;
+        resultadoPorDia[data].agentes.add(agente.nome);
+
+        console.log(`[DEBUG] Acumulado para ${data}: TempoLogadoTotal=${resultadoPorDia[data].tempoLogadoTotal}, TempoPausaTotal=${resultadoPorDia[data].tempoPausaTotal}, Agentes=${resultadoPorDia[data].agentes.size}`);
+    });
+
+    // Após agregar os dados, calculamos a carga horária e a disponibilidade diária
+    Object.keys(resultadoPorDia).forEach(data => {
+        const diaData = resultadoPorDia[data];
+        diaData.cargaHorariaTotal = cargaHorariaAgente * diaData.agentes.size;
+
+        // Revisando a fórmula de disponibilidade
+        const tempoDisponivel = diaData.cargaHorariaTotal - diaData.tempoPausaTotal;
+        const disponibilidadePercentual = tempoDisponivel > 0 ? ((diaData.tempoLogadoTotal / tempoDisponivel) * 100) : 0;
+        diaData.disponibilidadePercentual = disponibilidadePercentual.toFixed(2);
+
+        console.log(`[DEBUG] Resultados para ${data}: CargaHorariaTotal=${diaData.cargaHorariaTotal}, TempoDisponivel=${tempoDisponivel}, DisponibilidadePercentual=${diaData.disponibilidadePercentual}`);
+    });
+
+    console.log("[DEBUG] Resultado final por dia:", resultadoPorDia);
+    return resultadoPorDia;
+}
+
+
 
 
 

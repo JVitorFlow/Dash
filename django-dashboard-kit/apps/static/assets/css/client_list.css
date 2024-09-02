@@ -1,9 +1,19 @@
+/* Configuração padrão quando a sidebar está aberta */
 .pc-container {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: calc(100% - 260px); /* Calcula a largura disponível subtraindo a largura da sidebar */
+    margin-left: 260px; /* Ajusta a margem para compensar a largura da sidebar */
     padding-top: 60px;
-    padding-left: 240px; /* Adjust based on the sidebar width */
+    transition: all 0.3s ease; /* Transição suave para mudanças */
+    box-sizing: border-box; /* Inclui o padding dentro da largura total do elemento */
 }
+
+/* Configuração quando a sidebar está colapsada */
+.sidebar-collapsed .pc-container {
+    max-width: calc(100% - 80px); /* Ajusta a largura do container para 100% menos 80px quando a sidebar estiver colapsada */
+    margin-left: 90px; /* Ajusta a margem quando a sidebar está colapsada */
+    transition: all 0.3s ease; /* Mantém a transição suave */
+}
+
 
 .page-header {
     padding: 20px 30px;
@@ -12,13 +22,15 @@
 
 .card-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Menor largura mínima para os cards */
     gap: 20px;
     padding: 20px;
+    max-width: 100%; /* Garante que o container ocupe toda a largura disponível */
+    margin: 0 auto; /* Centraliza o container */
 }
 
 .card {
-    width: 300px;
+    max-width: 300px;
     margin: auto;
     transition: transform 0.3s, box-shadow 0.3s;
     display: flex;
@@ -64,6 +76,21 @@
     background-color: #4e73df;
     border-color: #4e73df;
     margin-top: auto;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #3c5ab0;
+    border-color: #3c5ab0;
+}
+
+.btn-primary i {
+    margin-right: 5px; /* Adiciona espaço entre o ícone e o texto */
 }
 
 .btn-icon {
@@ -102,7 +129,7 @@
     }
 
     .pc-container {
-        padding-left: 0; /* Adjust to remove padding on small screens */
+        padding-left: 0; /* Remove padding à esquerda em telas menores */
     }
 }
 
@@ -120,4 +147,38 @@
 .col-md-6,
 .col-12 {
     flex: 1;
+}
+
+/* Estilo geral do formulário de filtro */
+.filter-card {
+    max-width: 400px; /* Define uma largura fixa ou use 100% para flexibilidade */
+    margin: 20px auto; /* Centraliza o formulário na página */
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Estilo dos campos de formulário */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.input-group-prepend .input-group-text {
+    background-color: #4e73df;
+    color: #fff;
+    border: 1px solid #4e73df;
+    border-radius: 0.25rem 0 0 0.25rem;
+    padding: 10px;
+}
+
+.input-group .form-control {
+    height: 38px; /* Ajusta a altura do campo de entrada para corresponder ao botão */
+}
+
+.form-control {
+    border: 1px solid #ced4da;
+    border-radius: 0 0.25rem 0.25rem 0;
+    padding: 10px;
+    transition: box-shadow 0.3s ease;
 }

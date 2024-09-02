@@ -47,7 +47,7 @@
 					<li><a class="link_name" href="{% url 'ligobots:dashboard_kpi_ura' %}">URA</a></li>
 				</ul>
 			</li>
-			<li>
+			{% comment %} <li>
 				<a href="#">
 					<i class="material-icons-two-tone">chat_bubble</i>
 					<span class="link_name">Chatbots</span>
@@ -55,8 +55,8 @@
 				<ul class="sub-menu blank">
 					<li><a class="link_name" href="#">Chatbots</a></li>
 				</ul>
-			</li>
-			<li>
+			</li> {% endcomment %}
+			{% comment %} <li>
 				<div class="iocn-link">
 					<a href="#">
 						<i class="material-icons-two-tone">table_rows</i>
@@ -67,8 +67,8 @@
 				<ul class="sub-menu">
 					<li><a href="{% url 'ligobots:tbl_bootstrap' %}">Bootstrap Table</a></li>
 				</ul>
-			</li>
-			<li>
+			</li> {% endcomment %}
+			{% comment %} <li>
 				<div class="iocn-link">
 					<a href="#">
 						<i class="material-icons-two-tone">bubble_chart</i>
@@ -80,8 +80,8 @@
 					<li><a href="{% url 'ligobots:chart_apex' %}">Gráficos</a></li>
 					<li><a href="{% url 'ligobots:map_google' %}">Mapas</a></li>
 				</ul>
-			</li>
-			<li>
+			</li> {% endcomment %}
+			{% comment %} <li>
 				<div class="iocn-link">
 					<a href="#">
 						<i class="material-icons-two-tone">https</i>
@@ -93,24 +93,15 @@
 					<li><a href="/auth-signup.html">Registrar</a></li>
 					<li><a href="/auth-signin.html">Entrar</a></li>
 				</ul>
-			</li>
-			<li>
-				<a href="sample-page.html">
-					<i class="material-icons-two-tone">storefront</i>
-					<span class="link_name">Página Exemplo</span>
-				</a>
-				<ul class="sub-menu blank">
-					<li><a class="link_name" href="sample-page.html">Página Exemplo</a></li>
-				</ul>
-			</li>
+			</li> {% endcomment %}
 			<li>
 				<div class="profile-details">
 					<div class="profile-content">
-						<img src="/static/assets/images/profile.jpg" alt="profileImg">
+						<img src="{% static 'assets/images/auth/auth-side.jpg' %}" alt="profileImg">
 					</div>
 					<div class="name-job">
-						<div class="profile_name">João Vitor</div>
-						<div class="job">Desenvolvedor</div>
+						<div class="profile_name">Wtime</div>
+						<div class="job">Dashboard</div>
 					</div>
 					<i class="bx bx-log-out"></i>
 				</div>

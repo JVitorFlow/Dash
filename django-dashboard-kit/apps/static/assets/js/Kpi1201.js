@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     filterButton.addEventListener('click', function() {
         toggleButtons(false); // Desabilita os botões enquanto a requisição está em andamento
-        buscarIndicadorTempoEsperaKPI1202(true);
+        buscarIndicadorTempoMedio(true);
     });
 
     document.getElementById('exportExcelKPI1201').addEventListener('click', function() {

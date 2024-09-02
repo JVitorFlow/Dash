@@ -43,18 +43,21 @@ class DashboardKpiUraView(TemplateView):
         uras_ativas = Ura.objects.filter(ativa=True).count()
         uras_inativas = Ura.objects.filter(ativa=False).count()
 
-        # Data da última atualização de qualquer URA
-        ultima_atualizacao = Ura.objects.latest('data_atualizacao').data_atualizacao
+        # Verifica se há alguma URA no banco de dados antes de tentar acessar a data da última atualização
+        if total_uras > 0:
+            ultima_atualizacao = Ura.objects.latest('data_atualizacao').data_atualizacao
+        else:
+            ultima_atualizacao = None  # ou uma data padrão, ou mensagem informativa
 
         # Dados para os gráficos
         clientes = Ura.objects.values('cliente__nome').annotate(total=Count('cliente'))
-        clientes_labels = [cliente['cliente__nome'] for cliente in clientes]
-        uras_por_cliente = [cliente['total'] for cliente in clientes]
+        clientes_labels = [cliente['cliente__nome'] for cliente in clientes] if clientes.exists() else []
+        uras_por_cliente = [cliente['total'] for cliente in clientes] if clientes.exists() else []
 
         # Adicionando a URL da API indicadores_de_desempenho ao contexto
         indicador_de_desempenho_por_fila_de_URA = reverse_lazy('ligobots:indicador_de_desempenho_por_fila_de_URA')
         tempo_medio_servico_por_atendente_url = reverse_lazy('ligobots:tempo_medio_servico_por_atendente')
-        indicador_tempo_espera_url =  reverse_lazy('ligobots:indicador-tempo-espera')
+        indicador_tempo_espera_url = reverse_lazy('ligobots:indicador-tempo-espera')
         atividades_agentes_ura_url = reverse_lazy('ligobots:atividade-agentes-ura')
         indicador_de_desempenho_url = reverse_lazy('ligobots:indicadores_de_desempenho')
 
@@ -68,7 +71,7 @@ class DashboardKpiUraView(TemplateView):
             'uras': Ura.objects.all(),
             'indicador_de_desempenho_por_fila_de_URA': indicador_de_desempenho_por_fila_de_URA,
             'tempo_medio_servico_por_atendente_url': tempo_medio_servico_por_atendente_url,
-            'indicador_tempo_espera_url':indicador_tempo_espera_url,
+            'indicador_tempo_espera_url': indicador_tempo_espera_url,
             'atividades_agentes_ura_url': atividades_agentes_ura_url,
             'indicador_de_desempenho_url': indicador_de_desempenho_url,
         })

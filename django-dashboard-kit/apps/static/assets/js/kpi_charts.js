@@ -1,4 +1,4 @@
-import { kpiConfigurations, kpiConfigurationsIndicadorPonteiro  } from './objetos_kpis.js'; // Importa as configurações de KPIs
+import { kpiConfigurations, kpiConfigurationsIndicadorPonteiro, kpiConfigurationsTendencia  } from './objetos_kpis.js'; // Importa as configurações de KPIs
 
 
 
@@ -357,6 +357,102 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
     
     console.log("[INFO] Gráfico de ponteiro renderizado com sucesso.");
 }
+
+
+
+export function renderizarGraficoTendencia(kpiId, dadosProcessados) {
+    const kpiConfig = kpiConfigurationsTendencia[kpiId];
+
+    if (!dadosProcessados || typeof dadosProcessados !== 'object') {
+        console.error('Dados processados inválidos:', dadosProcessados);
+        return;
+    }
+
+    const seriesData = [];
+    const categories = Object.keys(dadosProcessados).sort((a, b) => {
+        const dateA = new Date(a.split('/').reverse().join('-'));
+        const dateB = new Date(b.split('/').reverse().join('-'));
+        return dateA - dateB;
+    });
+    
+    console.log("[DEBUG] Categorias do eixo X ordenadas:", categories);
+
+    // Adicionar Séries
+    kpiConfig.series.forEach(serie => {
+        const valores = categories.map(data => {
+            if (serie.dataKey === 'metaDiaria') {
+                return serie.fixedValue !== undefined ? serie.fixedValue : 80; // Linha da Meta (Ajustável)
+            }
+            const valor = dadosProcessados[data][serie.dataKey];
+            console.log(`[DEBUG] Valor para ${serie.name} em ${data}:`, valor); // Log dos valores
+            return valor !== undefined ? parseFloat(valor) : null;
+        });
+
+        seriesData.push({
+            name: serie.name,
+            data: valores,
+            color: serie.color || undefined
+        });
+    });
+
+    console.log("[INFO] Dados formatados para o gráfico de tendência:", seriesData);
+
+    Highcharts.chart('tendenciaChartContainer', {
+        chart: {
+            type: 'line',
+            backgroundColor: kpiConfig.backgroundColor || '#f4f4f4',
+            borderRadius: 5
+        },
+        title: {
+            text: kpiConfig.title,
+            style: {
+                fontSize: '20px',
+                fontWeight: 'bold'
+            }
+        },
+        xAxis: {
+            categories: categories, // Datas como rótulos no eixo X
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            max: 120, // Ajuste o eixo Y para incluir a meta de 80%
+            title: {
+                text: kpiConfig.yAxisTitle || 'Disponibilidade (%)'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:.2f}%</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            line: {
+                dataLabels: {
+                    enabled: true,
+                    formatter: function() {
+                        return Highcharts.numberFormat(this.y, 2) + '%';
+                    },
+                    style: {
+                        fontWeight: 'bold',
+                        color: kpiConfig.dataLabelColor || 'black',
+                    }
+                }
+            }
+        },
+        series: seriesData,
+        credits: {
+            enabled: false
+        }
+    });
+}
+
+
+
+
 
 
 

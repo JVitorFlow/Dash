@@ -18,7 +18,6 @@ from .serializers import (
     RPASerializer, URASerializer
 )
 
-
 class EmpresasOminiViewSet(viewsets.ModelViewSet):
     queryset = EmpresasOmini.objects.all()
     serializer_class = EmpresasOminiSerializer
@@ -47,7 +46,6 @@ class LicencaUsuarioViewSet(viewsets.ModelViewSet):
     queryset = LicencaUsuario.objects.all()
     serializer_class = LicencaUsuarioSerializer
 
-
 class URAViewSet(viewsets.ModelViewSet):
     queryset = Ura.objects.all()
     serializer_class = URASerializer
@@ -62,7 +60,7 @@ def empresas_view(request):
     data = request.data  # Captura os dados do corpo da requisição
     result = obter_empresas(data)
     if result["status"] == "success":
-        return Response(result)
+        return Response(result["dados"], status=status.HTTP_200_OK)
     else:
         return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
@@ -78,10 +76,10 @@ def quantidade_mensagens_por_bot_e_canal_view(request):
     
     result = obter_quantidade_mensagens_por_bot_e_canal(data)
     
-    if result["status"] == "error":
-        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    if result["status"] == "success":
+        return Response(result["data"], status=status.HTTP_200_OK)
     else:
-        return Response(result)
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
 def sessoes_view(request):
@@ -95,10 +93,10 @@ def sessoes_view(request):
     
     result = obter_sessoes(data)
     
-    if result["status"] == "erro":
-        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    if result["status"] == "sucesso":
+        return Response(result["data"], status=status.HTTP_200_OK)
     else:
-        return Response(result)
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
     
 
 @api_view(['POST'])
@@ -106,41 +104,37 @@ def atividade_agentes_ura_view(request):
     data = request.data  # Captura os dados do corpo da requisição
     result = obter_atividade_agentes_ura(data)
     
-    if result.get("status") == "error":
-        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    if result.get("status") == "success":
+        return Response(result["data"], status=status.HTTP_200_OK)
     else:
-        return Response(result, status=status.HTTP_200_OK)
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['POST'])
 def indicador_de_desempenho_por_fila_de_URA_view(request):
     data = request.data  # Captura os dados do corpo da requisição
     result = obter_indicador_de_desempenho_por_fila_de_URA(data)  # Chama a função de serviço
     
-    if result.get("status") == "error":
-        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    if result.get("status") == "success":
+        return Response(result["data"], status=status.HTTP_200_OK)
     else:
-        return Response(result, status=status.HTTP_200_OK)
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['POST'])
 def tempo_medio_servico_por_atendente_view(request):
     data = request.data
     result = obter_tempo_medio_servico_por_atendente(data)
 
-    # Verifica se houve algum erro na resposta da API
-    if result.get("status") == "error":
-        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    if result.get("status") == "success":
+        return Response(result["data"], status=status.HTTP_200_OK)
     else:
-        return Response(result, status=status.HTTP_200_OK)
-
-
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def indicadores_de_desempenho_view(request):
     data = request.data
     result = obter_indicadores_de_desempenho(data)
 
-    # Verifica se houve algum erro na resposta da API
-    if result.get("status") == "error":
-        return Response(result, status=status.HTTP_400_BAD_REQUEST)
+    if result.get("status") == "success":
+        return Response(result["data"], status=status.HTTP_200_OK)
     else:
-        return Response(result, status=status.HTTP_200_OK)
+        return Response(result, status=status.HTTP_400_BAD_REQUEST)

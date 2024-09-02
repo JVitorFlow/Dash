@@ -613,9 +613,50 @@ const kpiConfigurationsIndicadorPonteiro = {
 };
 
 
+const kpiConfigurationsTendencia = {
+    '1101': {
+        title: 'KPI 11.01 - Tendência de Disponibilidade Diária',
+        chartType: 'line',
+        xAxisTitle: 'Data',
+        yAxisTitle: 'Disponibilidade (%)',
+        series: [
+            {
+                name: 'Meta',
+                dataKey: 'metaDiaria',
+                color: '#007bff', // Azul
+                fixedValue: 80 // Meta ajustável para 1101
+            },
+            {
+                name: 'Acumulado do Dia',
+                dataKey: 'disponibilidadePercentual',
+                color: '#ff0000' // Vermelho
+            }
+        ]
+    },
+    '1102': {
+        title: 'KPI 11.02 - Tendência de Atendimento em Menos de 1 Minuto',
+        chartType: 'line',
+        xAxisTitle: 'Data',
+        yAxisTitle: 'Atendimento (%)',
+        series: [
+            {
+                name: 'Meta',
+                dataKey: 'metaDiaria',
+                color: '#007bff', // Azul
+                fixedValue: 100 // Meta de 100% para KPI 1102
+            },
+            {
+                name: 'Acumulado do Dia',
+                dataKey: 'atendimentoPercentual',
+                color: '#ff0000' // Vermelho
+            }
+        ]
+    }
+};
+
 
 
 
 // Exportar a configuração para ser utilizada em outros módulos
-export { kpiConfigurations, kpiConfigurationsIndicadorPonteiro };
+export { kpiConfigurations, kpiConfigurationsIndicadorPonteiro, kpiConfigurationsTendencia };
 

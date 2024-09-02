@@ -20,9 +20,13 @@ SECRET_KEY = config('SECRET_KEY', default='S#perS3crEt_1122')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # carrega o servidor de produção de .env
-ALLOWED_HOSTS        = ['*']
-CSRF_TRUSTED_ORIGINS = ['http://localhost:85', 'http://127.0.0.1', 'https://' + config('SERVER', default='127.0.0.1')]
-
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:85', 
+    'http://127.0.0.1', 
+    'https://' + config('SERVER', default='127.0.0.1'),
+    'https://d250-2804-388-e052-50b7-ac38-3f28-c34f-a101.ngrok-free.app'
+]
 # Application definition
 
 INSTALLED_APPS = [

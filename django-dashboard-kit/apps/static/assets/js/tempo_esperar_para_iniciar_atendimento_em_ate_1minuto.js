@@ -1,7 +1,7 @@
 // Importando funções de módulos auxiliares
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
-import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro, renderizarGraficoTendencia } from './kpi_charts.js';
 
 
 export let dadosProcessadosPonteiro = {}; 
@@ -75,17 +75,22 @@ export async function buscarIndicadorTempoEspera(isManualSearch = false) {
     }
 
     try {
-        // console.log("[DEBUG] Data de Início:", startDate);
-        // console.log("[DEBUG] Data de Fim:", endDate);
+        console.log("[INFO] Iniciando busca de Indicador de Tempo de Espera");
+        console.log("[DEBUG] Data de Início:", startDate);
+        console.log("[DEBUG] Data de Fim:", endDate);
 
         mostrarLoadingSpinner('loadingSpinnerEsperaKPI1102');
         mostrarLoadingSpinner('loadingSpinnerMedidores');
 
         const payload = { dtStart: startDate, dtFinish: endDate };
+        console.log("[DEBUG] Payload enviado:", JSON.stringify(payload));
+
         const urlElement = document.getElementById('tempoEsperaAtendimento1minutoExternoKPI1102');
 
         if (urlElement) {
             const urlApi = urlElement.textContent.trim();
+            console.log("[INFO] URL da API chamada:", urlApi);
+
             const response = await fetch(urlApi, {
                 method: 'POST',
                 headers: {
@@ -95,33 +100,100 @@ export async function buscarIndicadorTempoEspera(isManualSearch = false) {
                 body: JSON.stringify(payload)
             });
 
-            const data = await response.json();
+            console.log("[DEBUG] Status da resposta da API:", response.status);
 
-            if (data.errcode === 0) {
-                // console.log("[DEBUG] Processando dados para o gráfico");
-                const dadosParaGraficoPonteiro = processarDadosParaGraficoPonteiro(data.ura_performance);
-                console.log("[INFO] Dados processados para o gráfico de ponteiro:", dadosParaGraficoPonteiro);
-                renderizarGraficoPonteiro('1102', dadosParaGraficoPonteiro);
+            if (response.ok) {
+                const data = await response.json();
+                console.log("[DEBUG] Dados recebidos da API:", data);
 
+                if (data.errcode === 0) {
+                    console.log("[INFO] Processando dados para o gráfico");
+                    const dadosParaGraficoPonteiro = processarDadosParaGraficoPonteiro(data.ura_performance);
+                    console.log("[INFO] Dados processados para o gráfico de ponteiro:", dadosParaGraficoPonteiro);
+                    renderizarGraficoPonteiro('1102', dadosParaGraficoPonteiro);
 
-                const dadosProcessados = processarDadosParaGrafico(data.ura_performance);
-                renderizarGraficoColunas('1102', dadosProcessados);
-                renderizarTabelaIndicadorEspera(data.ura_performance);
-                document.getElementById('exportExcelEsperaKP1102').style.display = 'block';
-                seriesSelectorContainer.style.display = 'block';
+                    const dadosParaGraficoTendencia = processarDadosParaGraficoTendencia(data.ura_performance);
+                    renderizarGraficoTendencia('1102', dadosParaGraficoTendencia);
+
+                    const dadosProcessados = processarDadosParaGrafico(data.ura_performance);
+                    renderizarGraficoColunas('1102', dadosProcessados);
+                    renderizarTabelaIndicadorEspera(data.ura_performance);
+                    document.getElementById('exportExcelEsperaKP1102').style.display = 'block';
+                    seriesSelectorContainer.style.display = 'block';
+                } else {
+                    console.error("[ERROR] Erro ao buscar dados:", data.errmsg);
+                }
             } else {
-                console.error('Erro ao buscar dados:', data.errmsg);
+                console.error("[ERROR] Falha na resposta da API:", response.status, response.statusText);
             }
         } else {
             console.error("[ERROR] Elemento 'tempoEsperaAtendimento1minutoExternoKPI1102' não encontrado no documento.");
         }
     } catch (error) {
-        console.error('Erro na requisição:', error);
+        console.error("[ERROR] Erro na requisição:", error);
     } finally {
         esconderLoadingSpinner('loadingSpinnerEsperaKPI1102');
         esconderLoadingSpinner('loadingSpinnerMedidores');
         toggleButtons(true);
+        console.log("[INFO] Finalizando busca de Indicador de Tempo de Espera");
     }
+}
+
+// Função para processar dados para o gráfico de tendência (KPI 1102)
+function processarDadosParaGraficoTendencia(dados) {
+    const resultadoTendencia = [];
+
+    // Mapeamento das URAs para combinar dados, mas mantendo o sufixo "v3" nas chaves finais
+    const mapeamentoURAs = {
+        "HM": "HM v3",
+        "HM v3": "HM v3",
+        "HSJC": "HSJC v3",
+        "HSJC v3": "HSJC v3",
+        "HSOR v3": "HSOR",
+        "HSOR": "HSOR"
+    };
+
+    // Inicializa um objeto para armazenar os dados por data
+    const dadosPorData = {};
+
+    dados.forEach(item => {
+        if (item.tipo_atendimento === "Externo") {
+            const data = item.data;  // Aqui assumimos que `data` está presente e no formato desejado
+            const uraKey = mapeamentoURAs[item.ura] || item.ura;
+
+            if (!dadosPorData[data]) {
+                dadosPorData[data] = {
+                    data,
+                    ligacoesRecebidas: 0,
+                    atendidasInferior1Min: 0,
+                    atendidasSuperior1Min: 0
+                };
+            }
+
+            const ligacoesRecebidas = (item.atendidas_cognitiva || 0) + (item.abandonadas_cognitiva || 0);
+
+            dadosPorData[data].ligacoesRecebidas += ligacoesRecebidas;
+            dadosPorData[data].atendidasInferior1Min += item.atendidas_cognitiva_ate_um_minuto || 0;
+            dadosPorData[data].atendidasSuperior1Min += item.atendidas_cognitiva_acima_um_minuto || 0;
+        }
+    });
+
+    // Converte o objeto para um array de resultados
+    for (const data in dadosPorData) {
+        const item = dadosPorData[data];
+        const percentual = (item.atendidasInferior1Min / item.ligacoesRecebidas) * 100 || 0;
+        resultadoTendencia.push({
+            data: item.data,
+            percentual: percentual.toFixed(2) // Arredondar para duas casas decimais
+        });
+    }
+
+    // Ordena o array de resultados por data
+    resultadoTendencia.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+    // Debug da estrutura final
+    console.log('Estrutura final de dados processados para tendência:', JSON.stringify(resultadoTendencia, null, 2));
+    return resultadoTendencia;
 }
 
 
@@ -191,7 +263,6 @@ function renderizarTabelaIndicadorEspera(dados) {
     }
 }
 
-// Função para processar os dados para o gráfico
 function processarDadosParaGrafico(dados) {
     const resultado = {
         geral: {
@@ -200,6 +271,16 @@ function processarDadosParaGrafico(dados) {
             atendidasSuperior1Min: 0
         },
         porURA: {}
+    };
+
+    // Mapeamento das URAs para combinar dados, mas mantendo o sufixo "v3" nas chaves finais
+    const mapeamentoURAs = {
+        "HM": "HM v3",
+        "HM v3": "HM v3",
+        "HSJC": "HSJC v3",
+        "HSJC v3": "HSJC v3",
+        "HSOR v3": "HSOR",
+        "HSOR": "HSOR"
     };
 
     dados.forEach(item => {
@@ -214,10 +295,8 @@ function processarDadosParaGrafico(dados) {
             // Processamento por URA
             let uraKey = item.ura;
 
-            // Se a URA for "HSOR v3" ou "HSOR", combinar os dados em uma única chave "HSOR"
-            if (uraKey === "HSOR v3" || uraKey === "HSOR") {
-                uraKey = "HSOR";
-            }
+            // Ajusta a chave URA usando o mapeamento para combinações, mas mantendo o sufixo "v3" quando aplicável
+            uraKey = mapeamentoURAs[uraKey] || uraKey;
 
             if (!resultado.porURA[uraKey]) {
                 resultado.porURA[uraKey] = {
@@ -237,6 +316,8 @@ function processarDadosParaGrafico(dados) {
     console.log('Estrutura final de dados processados:', JSON.stringify(resultado, null, 2));
     return resultado;
 }
+
+
 
 
 

@@ -31,11 +31,7 @@ apps/static/assets/.temp
 
 .env
 /media/
-CHANGELOG.md
-docker-compose.yml
-Dockerfile
 Procfile
-gunicorn-cfg.py
 package.json
 runtime.txt
 LICENSE.md

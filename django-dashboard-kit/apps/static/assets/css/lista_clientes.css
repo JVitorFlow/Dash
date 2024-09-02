@@ -1,0 +1,121 @@
+/* Ajuste para as Imagens dentro dos Cards */
+.card-img-top {
+    width: 100%;
+    height: auto; /* Permitir que a altura seja automática, respeitando a proporção da imagem */
+    max-height: 150px; /* Definir uma altura máxima */
+    object-fit: contain; /* Garantir que a imagem seja contida dentro dos limites sem distorção */
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+/* Cards dos Clientes */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding-top: 20px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    width: 100%;
+    max-width: 250px;
+    margin: 0 auto 20px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-body {
+    padding: 15px;
+    text-align: center; /* Centraliza o conteúdo dentro dos cards */
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.card-text {
+    color: #666;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 8px 15px; /* Ajuste no padding para botões menores */
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%; /* Botão ocupando toda a largura do card */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* Card do Formulário */
+.filter-card {
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    background-color: #ffffff;
+    max-width: 400px; /* Mantendo o formulário compacto */
+    margin: 0 auto; /* Centralizando o card */
+}
+
+/* Estilo dos Grupos de Formulário */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Estilo dos Campos */
+.input-group {
+    display: flex;
+    align-items: center;
+}
+
+.input-group-prepend .input-group-text {
+    background-color: #007bff;
+    color: #fff;
+    border: 1px solid #007bff;
+    border-radius: 0.25rem 0 0 0.25rem;
+    padding: 10px;
+}
+
+.input-group-prepend .input-group-text i.material-icons {
+    font-size: 20px;
+}
+
+.form-control {
+    border: 1px solid #ced4da;
+    border-radius: 0 0.25rem 0.25rem 0;
+    padding: 10px;
+    transition: box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.form-control::placeholder {
+    color: #999;
+    opacity: 1; /* Altera a cor do placeholder para um cinza claro */
+}

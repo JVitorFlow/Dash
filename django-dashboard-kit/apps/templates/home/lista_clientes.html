@@ -5,7 +5,9 @@
 {% load static %}
 
 {% block title %} Lista de Clientes {% endblock %}
-
+{% block stylesheets %}
+    <link rel="stylesheet" href=" {% static 'assets/css/client_list.css' %}">
+{% endblock stylesheets %}
 {% block content %}
 <!-- [ Main Content ] start -->
 <div class="pc-container">
@@ -16,7 +18,7 @@
                     <div class="col-md-6 col-12">
                         <div class="page-header-title">
                             <h5 class="m-b-10">Clientes</h5>
-                        </div>
+                        </div>s
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{% url 'home:home' %}">Home</a></li>
                             <li class="breadcrumb-item">Clientes</li>
@@ -31,30 +33,8 @@
             </div>
         </div>
 
-        <!-- Formulário de Filtro -->
-        <div class="row mb-4 justify-content-center">
-            <div class="col-md-10">
-                <form method="get" class="form-row">
-                    <div class="col-md-3 mb-3">
-                        {{ filter_form.nome.label_tag }}
-                        {{ filter_form.nome|add_class:"form-control" }}
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        {{ filter_form.descricao.label_tag }}
-                        {{ filter_form.descricao|add_class:"form-control" }}
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        {{ filter_form.servico.label_tag }}
-                        {{ filter_form.servico|add_class:"form-control" }}
-                    </div>
-                    <div class="col-md-3 text-right align-self-end">
-                        <button type="submit" class="btn btn-primary">Filtrar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+
         
-        <link rel="stylesheet" href="{% static 'assets/css/client_list.css' %}">
         <div class="card-container">
             {% for cliente in clientes %}
             <div class="card">
