@@ -1,7 +1,7 @@
 // Importando funções de módulos auxiliares
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentualAbandono, cumpreMeta } from './helpers.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
-import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro, renderizarGraficoTendencia } from './kpi_charts.js';
 
 
 export let dadosProcessadosPonteiro1204 = {};
@@ -37,7 +37,7 @@ export function processarDadosParaGraficoPonteiro1204(dados) {
     });
 
     // Log do final do processamento
-    console.log("[processarDadosParaGraficoPonteiro1204] Processamento concluído. Resultado:", resultado);
+    // console.log("[processarDadosParaGraficoPonteiro1204] Processamento concluído. Resultado:", resultado);
 
     dadosProcessadosPonteiro1204 = resultado;
 
@@ -59,9 +59,9 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
         startDate = document.getElementById('startDateAbandonadasInternasKPI1204').value;
         endDate = document.getElementById('endDateAbandonadasInternasKPI1204').value;
 
-        console.log('[INFO] Datas selecionadas manualmente');
-        console.log('[DEBUG] Data de Início original:', startDate);
-        console.log('[DEBUG] Data de Fim original:', endDate);
+        // console.log('[INFO] Datas selecionadas manualmente');
+        // console.log('[DEBUG] Data de Início original:', startDate);
+        // console.log('[DEBUG] Data de Fim original:', endDate);
 
         if (!startDate || !endDate) {
             alert('Por favor, selecione ambas as datas.');
@@ -73,8 +73,8 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
         startDate = formatDateToISOStringWithMilliseconds(startDate);
         endDate = formatDateToISOStringWithMilliseconds(endDate);
 
-        console.log("[DEBUG] Data de Início convertida para ISO:", startDate);
-        console.log("[DEBUG] Data de Fim convertida para ISO:", endDate);
+        // console.log("[DEBUG] Data de Início convertida para ISO:", startDate);
+        // console.log("[DEBUG] Data de Fim convertida para ISO:", endDate);
     } else {
         // Caso contrário, usa mês e ano para gerar as datas automaticamente
         const selectedKPI = document.getElementById('kpiSelector').value;
@@ -140,6 +140,10 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
 
                 const dadosProcessadosPonteiro = processarDadosParaGraficoPonteiro1204(data.ura_performance);
                 renderizarGraficoPonteiro('1204', dadosProcessadosPonteiro);
+
+                const dadosProcessadostendencia1204 = processarDadosParaGraficoTendencia1204(data.ura_performance);
+                // Renderizar o gráfico de tendência para o KPI 1104
+                renderizarGraficoTendencia('1204', dadosProcessadostendencia1204);
 
                 renderizarTabelaIndicadorAbandonadasInternas(data.ura_performance);
                 document.getElementById('exportExcelAbandonadasInternasKPI1204').style.display = 'block';
@@ -210,7 +214,7 @@ function processarDadosKPI1204(dados) {
         }
     });
 
-    console.log("Dados processados para o gráfico KPI 1204:", resultado);
+    // console.log("Dados processados para o gráfico KPI 1204:", resultado);
     return resultado;
 }
 
@@ -302,6 +306,65 @@ function renderizarTabelaIndicadorAbandonadasInternas(dados) {
     }
 }
 
+
+function processarDadosParaGraficoTendencia1204(dados) {
+    const resultadoTendencia = [];
+
+    // Mapeamento das URAs para combinar dados com e sem o sufixo "v3"
+    const mapeamentoURAs = {
+        "HM": "HM v3",
+        "HM v3": "HM v3",
+        "HSJC": "HSJC v3",
+        "HSJC v3": "HSJC v3",
+        "HSOR v3": "HSOR",
+        "HSOR": "HSOR"
+    };
+
+    // Inicializa um objeto para armazenar os dados agregados por data
+    const dadosPorData = {};
+
+    dados.forEach(item => {
+        if (item.tipo_atendimento === "Interno") {
+            const data = item.data;
+            const uraKey = mapeamentoURAs[item.ura] || item.ura;
+
+            // Inicializa os contadores para a data específica, se ainda não existir
+            if (!dadosPorData[data]) {
+                dadosPorData[data] = {
+                    data,
+                    ligacoesRecebidas: 0,
+                    desistenciasSuperior1Min: 0
+                };
+            }
+
+            // Calcula o número de ligações recebidas e atualiza os contadores
+            const ligacoesRecebidas = (item.atendidas_cognitiva || 0) + (item.abandonadas_cognitiva || 0);
+            dadosPorData[data].ligacoesRecebidas += ligacoesRecebidas;
+            dadosPorData[data].desistenciasSuperior1Min += item.abandonadas_cognitiva_acima_um_minuto || 0;
+        }
+    });
+
+    // Calcula o percentual de eficiência para cada data
+    for (const data in dadosPorData) {
+        const item = dadosPorData[data];
+        const percentual = item.desistenciasSuperior1Min === 0 
+            ? 100 // Se não houver desistências, a eficiência é 100%
+            : 100 - ((item.desistenciasSuperior1Min / item.ligacoesRecebidas) * 100);
+
+        // Adiciona o resultado ao array final
+        resultadoTendencia.push({
+            data: item.data,
+            percentual: percentual.toFixed(2) // Arredonda para duas casas decimais
+        });
+    }
+
+    // Ordena os resultados por data
+    resultadoTendencia.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+    // console.log('Estrutura final de dados processados para tendência 1204:', JSON.stringify(resultadoTendencia, null, 2));
+    return resultadoTendencia;
+}
+
 // Adiciona os listeners para os botões de filtro e exportação
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -309,13 +372,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const seriesSelector = document.getElementById('seriesSelector');
     const searchButton = document.getElementById('kpiSearchButton');
     const filterButton = document.getElementById('filterAbandonadasInternasButtonKPI1204');
+    const exportButton = document.getElementById('exportExcelAbandonadasInternasKPI1204'); // Botão de exportação
 
+    // Função para exportar a tabela para Excel
+    function exportToExcel() {
+        const tabela = document.querySelector('#resultadoAbandonadasInternasKPI1204 table');
+        const wb = XLSX.utils.table_to_book(tabela, { sheet: "Sheet1" });
+        XLSX.writeFile(wb, 'KPI1204_indicadores_abandonadas_internas.xlsx');
+    }
+
+    // Remove event listener de exportação se já estiver adicionado
+    exportButton.replaceWith(exportButton.cloneNode(true)); // Remove qualquer listener duplicado
+    const newExportButton = document.getElementById('exportExcelAbandonadasInternasKPI1204');
+
+    // Adiciona o listener de clique para exportar para Excel (somente uma vez)
+    newExportButton.addEventListener('click', exportToExcel);
 
     // Evento para o seletor de série
     if (seriesSelector) {
         seriesSelector.addEventListener('change', function() {
-            // console.log('[DEBUG] Série selecionada:', seriesSelector.value);
-            // Certifique-se de que o seletor de séries existe e vincule o evento
             if (seriesSelector) {
                 seriesSelector.addEventListener('change', function() {
                     waitForChartRender(filterSeries);  // Chama filterSeries quando o gráfico estiver pronto
@@ -323,49 +398,34 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
             }
-            
         });
     } else {
         console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
     }
 
-
     // Função para verificar o KPI selecionado e mostrar/esconder o seletor de séries
     function verificarSeletorSeries() {
-        // console.log('[DEBUG] Verificando seletor de séries');
-
         const selectedKPI = kpiSelector.value.trim();
-
-        // Sempre esconde o seletor no início
         seriesSelectorContainer.style.display = 'none';
 
-        // Mostra o seletor apenas se o KPI for o 1102 (ou outros KPIs que necessitem) e após carregar os dados
         if (selectedKPI === '1204') {
-            // console.log('[DEBUG] KPI 1102 selecionado');
-            seriesSelectorContainer.style.display = 'none'; // Esconde inicialmente
+            seriesSelectorContainer.style.display = 'none';
         }
     }
 
-    // Evento para verificar o KPI selecionado
+    // Verificar seletor de séries ao mudar o KPI selecionado
     kpiSelector.addEventListener('change', verificarSeletorSeries);
 
     // Listener para o botão "Aplicar Filtro" (usa datas manuais)
     filterButton.addEventListener('click', function() {
-        toggleButtons(false); // Desabilita os botões enquanto a requisição está em andamento
+        toggleButtons(false);
         buscarIndicadorChamadasAbandonadasInternas(true);
     });
 
     // Listener para o botão "Buscar" (usa mês e ano)
     searchButton.addEventListener('click', function() {
-        toggleButtons(false); // Desabilita os botões enquanto a requisição está em andamento
+        toggleButtons(false);
         buscarIndicadorChamadasAbandonadasInternas(false);
-    });
-
-    // Listener para exportar a tabela para Excel
-    document.getElementById('exportExcelAbandonadasInternasKPI1204').addEventListener('click', function() {
-        const tabela = document.querySelector('#resultadoAbandonadasInternasKPI1204 table');
-        const wb = XLSX.utils.table_to_book(tabela, { sheet: "Sheet1" });
-        XLSX.writeFile(wb, 'indicadores_abandonadas_internas.xlsx');
     });
 
     // Inicializando o Flatpickr para a seleção de datas
@@ -385,3 +445,5 @@ document.addEventListener('DOMContentLoaded', function() {
         locale: "pt"
     });
 });
+
+

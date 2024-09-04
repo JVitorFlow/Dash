@@ -1,16 +1,16 @@
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
-import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro, renderizarGraficoTendencia } from './kpi_charts.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
 
 
 export let dadosProcessadosPonteiro1202 = {};
 
 export function processarDadosParaGraficoPonteiro1202(dados) {
-    console.log("[DEBUG] Dados recebidos na função processarDadosParaGraficoPonteiro1202:", dados);
+    //console.log("[DEBUG] Dados recebidos na função processarDadosParaGraficoPonteiro1202:", dados);
 
     // Processar os dados com base na função existente processarDadosParaGraficoKPI1202
     const dadosProcessados = processarDadosParaGraficoKPI1202(dados);
-    console.log("[DEBUG] Dados processados por processarDadosParaGraficoKPI1202:", dadosProcessados);
+    //console.log("[DEBUG] Dados processados por processarDadosParaGraficoKPI1202:", dadosProcessados);
 
     const resultado = {};
 
@@ -44,11 +44,11 @@ export function processarDadosParaGraficoPonteiro1202(dados) {
     });
 
     // Log do final do processamento
-    console.log("[processarDadosParaGraficoPonteiro1202] Processamento concluído. Resultado:", resultado);
+    //console.log("[processarDadosParaGraficoPonteiro1202] Processamento concluído. Resultado:", resultado);
 
     // Armazenando o resultado na variável global
     window.dadosProcessadosPonteiro1202 = resultado;
-    console.log("[DEBUG] Variável global dadosProcessadosPonteiro1202 após processamento:", window.dadosProcessadosPonteiro1202);
+    // console.log("[DEBUG] Variável global dadosProcessadosPonteiro1202 após processamento:", window.dadosProcessadosPonteiro1202);
 
     // Retorna o resultado para ser usado na função de renderização do gráfico de ponteiro
     return resultado;
@@ -124,6 +124,11 @@ export function buscarIndicadorTempoEsperaKPI1202(isManualSearch = false) {
 
                     const dadosProcessadosPonteiro = processarDadosParaGraficoPonteiro1202(data.ura_performance);
                     renderizarGraficoPonteiro('1202', dadosProcessadosPonteiro);
+
+
+                    const dadosParaGraficoTendencia1202 = processarDadosParaGraficoTendencia(data.ura_performance);
+                    renderizarGraficoTendencia('1202', dadosParaGraficoTendencia1202);
+
 
                     document.getElementById('exportExcelEsperaKPI1202').style.display = 'block';
                     seriesSelectorContainer.style.display = 'block';
@@ -269,9 +274,67 @@ function processarDadosParaGraficoKPI1202(dados) {
         }
     });
 
-    console.log('Dados processados para o gráfico KPI 1202:', JSON.stringify(resultado, null, 2));
+    //console.log('Dados processados para o gráfico KPI 1202:', JSON.stringify(resultado, null, 2));
     return resultado;
 }
+
+
+function processarDadosParaGraficoTendencia(dados) {
+    const resultadoTendencia = [];
+
+    // Mapeamento das URAs para combinar dados, mas mantendo o sufixo "v3" nas chaves finais
+    const mapeamentoURAs = {
+        "HM": "HM v3",
+        "HM v3": "HM v3",
+        "HSJC": "HSJC v3",
+        "HSJC v3": "HSJC v3",
+        "HSOR v3": "HSOR",
+        "HSOR": "HSOR"
+    };
+
+    // Inicializa um objeto para armazenar os dados por data
+    const dadosPorData = {};
+
+    dados.forEach(item => {
+        if (item.tipo_atendimento === "Interno") {
+            const data = item.data;  // Aqui assumimos que `data` está presente e no formato desejado
+            const uraKey = mapeamentoURAs[item.ura] || item.ura;
+
+            if (!dadosPorData[data]) {
+                dadosPorData[data] = {
+                    data,
+                    ligacoesRecebidas: 0,
+                    atendidasInferior1Min: 0,
+                    atendidasSuperior1Min: 0
+                };
+            }
+
+            const ligacoesRecebidas = (item.atendidas_cognitiva || 0) + (item.abandonadas_cognitiva || 0);
+
+            dadosPorData[data].ligacoesRecebidas += ligacoesRecebidas;
+            dadosPorData[data].atendidasInferior1Min += item.atendidas_cognitiva_ate_um_minuto || 0;
+            dadosPorData[data].atendidasSuperior1Min += item.atendidas_cognitiva_acima_um_minuto || 0;
+        }
+    });
+
+    // Converte o objeto para um array de resultados
+    for (const data in dadosPorData) {
+        const item = dadosPorData[data];
+        const percentual = (item.atendidasInferior1Min / item.ligacoesRecebidas) * 100 || 0;
+        resultadoTendencia.push({
+            data: item.data,
+            percentual: percentual.toFixed(2) // Arredondar para duas casas decimais
+        });
+    }
+
+    // Ordena o array de resultados por data
+    resultadoTendencia.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+    // Debug da estrutura final
+    console.log('Estrutura final de dados processados para tendência 1202:', JSON.stringify(resultadoTendencia, null, 2));
+    return resultadoTendencia;
+}
+
 
 
 // Função para habilitar/desabilitar botões
@@ -334,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('exportExcelEsperaKPI1202').addEventListener('click', function() {
         const tabela = document.querySelector('#resultadoEsperaKPI1202 table');
         const wb = XLSX.utils.table_to_book(tabela, { sheet: "Sheet1" });
-        XLSX.writeFile(wb, 'indicadores_espera.xlsx');
+        XLSX.writeFile(wb, 'KPI1202 - Têndencia Espera Telefônica (Interno - 1 min).xlsx');
     });
 
     flatpickr("#startDateEsperaKPI1202", {

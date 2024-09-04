@@ -6,8 +6,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const [datePart, timePart] = dateString.split(' ');
         const [day, month, year] = datePart.split('/');
         const [hour, minute] = timePart.split(':');
-        const localDate = new Date(year, month - 1, day, hour, minute);
-        return localDate.toISOString();
+
+        // Manualmente construir a string no formato ISO
+        const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:00.000`;
+
+        return formattedDate;
     }
 
     function getCookie(name) {
@@ -63,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
             dtFinish: formatDateToISOStringWithMilliseconds(endDate)
         };
 
-        // console.log('Informações enviadas para a API:', JSON.stringify(payload, null, 2));
+        console.log('Informações enviadas para a API:', JSON.stringify(payload, null, 2));
 
         // Captura a URL da API a partir do elemento script
         const urlElement = document.getElementById('indicadorDesempenhoFilaUrlData');

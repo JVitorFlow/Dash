@@ -10,7 +10,7 @@ function getNestedProperty(obj, key) {
     // Dividindo a chave pela notação de ponto e reduzindo-a para acessar o valor final
     const result = key.split('.').reduce((o, k) => {
         if (o && o[k] !== undefined) {
-            console.log(`[DEBUG] Propriedade encontrada: ${k} -> Valor:`, o[k]);
+            //console.log(`[DEBUG] Propriedade encontrada: ${k} -> Valor:`, o[k]);
             return o[k];
         } else {
             console.warn(`[WARN] Propriedade não encontrada: ${k}`);
@@ -18,7 +18,7 @@ function getNestedProperty(obj, key) {
         }
     }, obj);
     
-    console.log("[DEBUG] Resultado final de getNestedProperty:", result);
+    //console.log("[DEBUG] Resultado final de getNestedProperty:", result);
     return result;
 }
 
@@ -42,7 +42,7 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
         // console.log(`Procurando chave ${serie.dataKey} em dadosProcessados`);
         const valor = getNestedProperty(dadosProcessados, serie.dataKey);
         if (valor !== undefined) {
-            console.log(`[DEBUG] Adicionando série geral: ${serie.name} com valor: ${valor}`);
+            //console.log(`[DEBUG] Adicionando série geral: ${serie.name} com valor: ${valor}`);
             seriesData.push({
                 name: serie.name,
                 data: [valor],
@@ -59,7 +59,7 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
         Object.keys(dadosProcessados.porURA).forEach(ura => {
             const seriesPorURA = kpiConfig.seriesPorURA(ura);
             seriesPorURA.forEach(serie => {
-                console.log(`Procurando chave ${serie.dataKey} para URA ${ura}`);
+                //console.log(`Procurando chave ${serie.dataKey} para URA ${ura}`);
                 const valor = getNestedProperty(dadosProcessados, serie.dataKey);
                 if (valor !== undefined) {
                     seriesData.push({
@@ -77,7 +77,7 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
         console.warn('Estrutura porURA ausente ou inválida em dadosProcessados:', dadosProcessados.porURA);
     }
 
-    console.log('Dados formatados para o Highcharts:', seriesData);
+    //console.log('Dados formatados para o Highcharts:', seriesData);
 
     Highcharts.chart('colunasChartContainer', {
         chart: {
@@ -149,21 +149,21 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
     let valorPonteiro;
 
     if (kpiId === '1101') {
-        console.log("[DEBUG] Tentando acessar a chave para KPI 1101:", kpiConfig.gauge.series[0].dataKey);
+        //console.log("[DEBUG] Tentando acessar a chave para KPI 1101:", kpiConfig.gauge.series[0].dataKey);
         valorPonteiro = getNestedProperty(dadosProcessados, kpiConfig.gauge.series[0].dataKey);
         
         if (valorPonteiro === undefined) {
             console.error("[ERROR] Chave não encontrada em dadosProcessados para KPI 1101:", kpiConfig.gauge.series[0].dataKey);
         } else {
             valorPonteiro = parseFloat(valorPonteiro);
-            console.log("[INFO] Valor do ponteiro KPI 1101:", valorPonteiro);
-            console.log("[DEBUG] Tipo de valor após o parseFloat:", typeof valorPonteiro);
+            //console.log("[INFO] Valor do ponteiro KPI 1101:", valorPonteiro);
+            //console.log("[DEBUG] Tipo de valor após o parseFloat:", typeof valorPonteiro);
         }
     } else if (kpiId === '1102') {
         const selectedURA = document.getElementById("seriesSelector").value;
     
         if (selectedURA === 'all') {
-            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+            //console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
     
             const totalPercentages = Object.values(dadosProcessados).reduce((acc, uraData) => {
                 return acc + parseFloat(uraData.porcentagem);
@@ -185,12 +185,12 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
     } else if (kpiId === '1104') {
         const selectedURA = document.getElementById("seriesSelector").value;
         // Log para verificar o valor selecionado pelo usuário
-        console.log("[DEBUG] URA Selecionada:", selectedURA);
+        //console.log("[DEBUG] URA Selecionada:", selectedURA);
 
         if (selectedURA === 'all') {
-            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+            //console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
         
-            console.log("[DEBUG] Chaves disponíveis em dadosProcessadosPonteiro:", Object.keys(dadosProcessados));
+            //console.log("[DEBUG] Chaves disponíveis em dadosProcessadosPonteiro:", Object.keys(dadosProcessados));
         
             // Calcular a média ponderada de chamadas abandonadas com mais de 1 minuto
             const totalAbandonadas = Object.values(dadosProcessados).reduce((acc, uraData) => {
@@ -218,15 +218,15 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
             valorPonteiro = Number(valorPonteiro) || 0;        
             
             // Log para confirmar o valor encontrado
-            console.log("[DEBUG] Valor do ponteiro para URA selecionada:", valorPonteiro);
-            console.log("[DEBUG] Configuração dos stops do gráfico:", kpiConfig.yAxis.stops);
+            //console.log("[DEBUG] Valor do ponteiro para URA selecionada:", valorPonteiro);
+            //console.log("[DEBUG] Configuração dos stops do gráfico:", kpiConfig.yAxis.stops);
 
         }
     } else if (kpiId === '1202') {
         const selectedURA = document.getElementById("seriesSelector").value;
     
         if (selectedURA === 'all') {
-            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+            //console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
     
             const totalPercentages = Object.values(dadosProcessados).reduce((acc, uraData) => {
                 return acc + parseFloat(uraData.porcentagem);
@@ -254,7 +254,7 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
         const selectedURA = document.getElementById("seriesSelector").value;
     
         if (selectedURA === 'all') {
-            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+            //console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
     
             const totalPercentages = Object.values(dadosProcessados).reduce((acc, uraData) => {
                 return acc + parseFloat(uraData.porcentagem);
@@ -282,7 +282,7 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
         const selectedURA = document.getElementById("seriesSelector").value;
     
         if (selectedURA === 'all') {
-            console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
+            //console.log("[INFO] URA selecionada é 'all', calculando valor consolidado.");
     
             const totalPercentages = Object.values(dadosProcessados).reduce((acc, uraData) => {
                 return acc + parseFloat(uraData.porcentagem);
@@ -292,7 +292,7 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
             valorPonteiro = totalURAs > 0 ? (totalPercentages / totalURAs).toFixed(2) : NaN;
             valorPonteiro = Number(valorPonteiro) || 0
             // Log para verificar o valor consolidado
-            console.log("[DEBUG] Valor do ponteiro consolidado para todas as URAs:", valorPonteiro);
+            //console.log("[DEBUG] Valor do ponteiro consolidado para todas as URAs:", valorPonteiro);
         } else {
             if (!dadosProcessados[selectedURA]) {
                 console.error("[ERROR] URA selecionada não encontrada nos dados processados:", selectedURA);
@@ -363,29 +363,39 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
 export function renderizarGraficoTendencia(kpiId, dadosProcessados) {
     const kpiConfig = kpiConfigurationsTendencia[kpiId];
 
+    // Corrige o formato dos dados processados, se necessário
     if (!dadosProcessados || typeof dadosProcessados !== 'object') {
         console.error('Dados processados inválidos:', dadosProcessados);
         return;
     }
 
-    const seriesData = [];
-    const categories = Object.keys(dadosProcessados).sort((a, b) => {
+    // Se os dados estiverem no formato chave-valor, converta para um array de objetos
+    if (!Array.isArray(dadosProcessados)) {
+        dadosProcessados = Object.keys(dadosProcessados).map(dataKey => {
+            return { data: dataKey, ...dadosProcessados[dataKey] };
+        });
+    }
+
+    const categories = dadosProcessados.map(item => item.data).sort((a, b) => {
         const dateA = new Date(a.split('/').reverse().join('-'));
         const dateB = new Date(b.split('/').reverse().join('-'));
         return dateA - dateB;
     });
-    
+
     console.log("[DEBUG] Categorias do eixo X ordenadas:", categories);
+
+    const seriesData = [];
 
     // Adicionar Séries
     kpiConfig.series.forEach(serie => {
         const valores = categories.map(data => {
+            const dataItem = dadosProcessados.find(item => item.data === data);
             if (serie.dataKey === 'metaDiaria') {
                 return serie.fixedValue !== undefined ? serie.fixedValue : 80; // Linha da Meta (Ajustável)
             }
-            const valor = dadosProcessados[data][serie.dataKey];
-            console.log(`[DEBUG] Valor para ${serie.name} em ${data}:`, valor); // Log dos valores
-            return valor !== undefined ? parseFloat(valor) : null;
+            const valor = dataItem ? parseFloat(dataItem[serie.dataKey]) : null;
+            console.log(`[DEBUG] Valor para ${serie.name} em ${data}:`, valor);
+            return valor !== undefined && !isNaN(valor) ? valor : null;
         });
 
         seriesData.push({
@@ -416,9 +426,9 @@ export function renderizarGraficoTendencia(kpiId, dadosProcessados) {
         },
         yAxis: {
             min: 0,
-            max: 120, // Ajuste o eixo Y para incluir a meta de 80%
+            max: 125, // Ajuste o eixo Y para incluir a meta de 80%
             title: {
-                text: kpiConfig.yAxisTitle || 'Disponibilidade (%)'
+                text: kpiConfig.yAxisTitle || 'Eficiência (%)'
             }
         },
         tooltip: {
@@ -440,6 +450,11 @@ export function renderizarGraficoTendencia(kpiId, dadosProcessados) {
                         fontWeight: 'bold',
                         color: kpiConfig.dataLabelColor || 'black',
                     }
+                },
+                enableMouseTracking: true, // Permite que pontos pequenos (como 100%) sejam interativos
+                marker: {
+                    enabled: true, // Exibe os marcadores nos pontos da linha
+                    radius: 4 // Tamanho do marcador
                 }
             }
         },
@@ -449,6 +464,8 @@ export function renderizarGraficoTendencia(kpiId, dadosProcessados) {
         }
     });
 }
+
+
 
 
 

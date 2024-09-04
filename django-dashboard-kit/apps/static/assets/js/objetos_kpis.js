@@ -651,7 +651,84 @@ const kpiConfigurationsTendencia = {
                 color: '#ff0000' // Vermelho
             }
         ]
+    },
+    '1104': {
+        title: 'KPI 11.04 - Tendência de abandono (Externo)',
+        chartType: 'line',
+        xAxisTitle: 'Data',
+        yAxisTitle: 'Eficiência (%)',
+        series: [
+            {
+                name: 'Meta',
+                dataKey: 'metaDiaria',
+                color: '#007bff', // Azul
+                fixedValue: 100 // Meta de 100% para KPI 1104
+            },
+            {
+                name: 'Eficiência Acumulada',
+                dataKey: 'percentual',
+                color: '#00ff00' // Verde
+            }
+        ]
+    },
+    '1201': {
+        title: 'KPI 12.01 - Tendência de Tempo Médio de 03 minutos de atendimento',
+        chartType: 'line',
+        xAxisTitle: 'Data',
+        yAxisTitle: 'Eficiência (%)',
+        series: [
+            {
+                name: 'Meta',
+                dataKey: 'metaDiaria',
+                color: '#ff0000', // Vermelho para a linha de meta
+                fixedValue: 80 // Meta de 80% de eficiência
+            },
+            {
+                name: 'Eficiência Acumulada',
+                dataKey: 'eficienciaPercentual',
+                color: '#00ff00' // Verde para a eficiência acumulada
+            }
+        ]
+    },
+    '1202': {
+        title: 'KPI 12.02 - Têndencia Espera Telefônica (Interno - 1 min)',
+        chartType: 'line',
+        xAxisTitle: 'Data',
+        yAxisTitle: 'Atendimento (%)',
+        series: [
+            {
+                name: 'Meta',
+                dataKey: 'metaDiaria',
+                color: '#007bff', // Azul
+                fixedValue: 100 // Meta de 100% para KPI 1102
+            },
+            {
+                name: 'Acumulado do Dia',
+                dataKey: 'atendimentoPercentual',
+                color: '#ff0000' // Vermelho
+            }
+        ]
+    },
+    '1204': {
+        title: 'KPI 12.04 - Tendência de abandono (Interno)',
+        chartType: 'line',
+        xAxisTitle: 'Data',
+        yAxisTitle: 'Atendimento (%)',
+        series: [
+            {
+                name: 'Meta',
+                dataKey: 'metaDiaria',
+                color: '#007bff', // Azul
+                fixedValue: 100 // Meta de 100% para KPI 1102
+            },
+            {
+                name: 'Acumulado do Dia',
+                dataKey: 'atendimentoPercentual',
+                color: '#ff0000' // Vermelho
+            }
+        ]
     }
+    
 };
 
 

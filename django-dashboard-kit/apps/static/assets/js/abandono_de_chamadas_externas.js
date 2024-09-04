@@ -1,7 +1,7 @@
 // Importando funções de módulos auxiliares
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentualAbandono, cumpreMeta } from './helpers.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
-import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro, renderizarGraficoTendencia } from './kpi_charts.js';
 
 
 export let dadosProcessadosPonteiro1104 = {};
@@ -143,6 +143,12 @@ export function buscarIndicadorChamadasAbandonadas(isManualSearch = false) {
                 // Processando os dados para o gráfico de ponteiro KPI 1104
                 const dadosProcessadosPonteiro = processarDadosParaGraficoPonteiro1104(data.ura_performance);
                 renderizarGraficoPonteiro('1104', dadosProcessadosPonteiro);
+
+
+                const dadosProcessadostendencia1104 = processarDadosParaGraficoTendencia1104(data.ura_performance);
+                // Renderizar o gráfico de tendência para o KPI 1104
+                renderizarGraficoTendencia('1104', dadosProcessadostendencia1104);
+
 
                 //console.log('Chamando renderizarTabelaIndicadorAbandonadas');
                 renderizarTabelaIndicadorAbandonadas(data.ura_performance);
@@ -310,6 +316,66 @@ function renderizarTabelaIndicadorAbandonadas(dados) {
     }
 }
 
+function processarDadosParaGraficoTendencia1104(dados) {
+    const resultadoTendencia = [];
+
+    // Mapeamento das URAs para combinar dados com e sem o sufixo "v3"
+    const mapeamentoURAs = {
+        "HM": "HM v3",
+        "HM v3": "HM v3",
+        "HSJC": "HSJC v3",
+        "HSJC v3": "HSJC v3",
+        "HSOR v3": "HSOR",
+        "HSOR": "HSOR"
+    };
+
+    // Inicializa um objeto para armazenar os dados agregados por data
+    const dadosPorData = {};
+
+    dados.forEach(item => {
+        if (item.tipo_atendimento === "Externo") {
+            const data = item.data;
+            const uraKey = mapeamentoURAs[item.ura] || item.ura;
+
+            // Inicializa os contadores para a data específica, se ainda não existir
+            if (!dadosPorData[data]) {
+                dadosPorData[data] = {
+                    data,
+                    ligacoesRecebidas: 0,
+                    desistenciasSuperior1Min: 0
+                };
+            }
+
+            // Calcula o número de ligações recebidas e atualiza os contadores
+            const ligacoesRecebidas = (item.atendidas_cognitiva || 0) + (item.abandonadas_cognitiva || 0);
+            dadosPorData[data].ligacoesRecebidas += ligacoesRecebidas;
+            dadosPorData[data].desistenciasSuperior1Min += item.abandonadas_cognitiva_acima_um_minuto || 0;
+        }
+    });
+
+    // Calcula o percentual de eficiência para cada data
+    for (const data in dadosPorData) {
+        const item = dadosPorData[data];
+        const percentual = item.desistenciasSuperior1Min === 0 
+            ? 100 // Se não houver desistências, a eficiência é 100%
+            : 100 - ((item.desistenciasSuperior1Min / item.ligacoesRecebidas) * 100);
+
+        // Adiciona o resultado ao array final
+        resultadoTendencia.push({
+            data: item.data,
+            percentual: percentual.toFixed(2) // Arredonda para duas casas decimais
+        });
+    }
+
+    // Ordena os resultados por data
+    resultadoTendencia.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+    // console.log('Estrutura final de dados processados para tendência:', JSON.stringify(resultadoTendencia, null, 2));
+    return resultadoTendencia;
+}
+
+
+
 // Adiciona os listeners para os botões de filtro e exportação
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -373,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('exportExcelAbandonadasKP1104').addEventListener('click', function() {
         const tabela = document.querySelector('#resultadoAbandonadasKPI1104 table');
         const wb = XLSX.utils.table_to_book(tabela, { sheet: "Sheet1" });
-        XLSX.writeFile(wb, 'indicadores_abandonadas.xlsx');
+        XLSX.writeFile(wb, 'KPI1104 - % Abandono de chamadas externas.xlsx');
     });
 
     // Inicializando o Flatpickr para a seleção de datas

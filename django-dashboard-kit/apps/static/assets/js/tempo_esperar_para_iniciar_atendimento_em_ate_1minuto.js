@@ -319,8 +319,6 @@ function processarDadosParaGrafico(dados) {
 
 
 
-
-
 // Função para habilitar/desabilitar botões
 function toggleButtons(enable = true) {
     // console.log('[DEBUG] toggleButtons chamado com enable:', enable);
@@ -350,7 +348,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
             }
-            
         });
     } else {
         console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
@@ -399,6 +396,18 @@ document.addEventListener('DOMContentLoaded', function() {
         locale: "pt"
     });
 
+    // Evento para exportar a tabela para Excel
+    document.getElementById('exportExcelEsperaKP1102').addEventListener('click', function() {
+        const tabela = document.querySelector('#resultadoEsperaKPI1102 table');
+        if (tabela) {
+            const wb = XLSX.utils.table_to_book(tabela, { sheet: "Indicadores KPI 1102" });
+            XLSX.writeFile(wb, 'KPI1102 - Atendimento em Menos de 1 Minuto.xlsx');
+        } else {
+            console.error("[ERROR] Tabela 'resultadoEsperaKPI1102' não encontrada.");
+        }
+    });
+
     // Chama a verificação inicial ao carregar a página
     verificarSeletorSeries();
 });
+

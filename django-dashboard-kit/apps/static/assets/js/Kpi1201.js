@@ -1,5 +1,5 @@
 import { mostrarLoadingSpinner, esconderLoadingSpinner, calcularPercentual, cumpreMeta } from './helpers.js';
-import { renderizarGraficoColunas, renderizarGraficoPonteiro } from './kpi_charts.js';
+import { renderizarGraficoColunas, renderizarGraficoPonteiro, renderizarGraficoTendencia } from './kpi_charts.js';
 import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeries, waitForChartRender } from './utils.js';
 
 
@@ -7,18 +7,18 @@ import { getCookie, csrftoken, formatDateToISOStringWithMilliseconds, filterSeri
 export let dadosProcessadosPonteiro1201 = {};
 
 export function processarDadosParaGraficoPonteiroKPI1201(dados) {
-    console.log("[DEBUG] Dados recebidos na função processarDadosParaGraficoPonteiroKPI1201:", dados);
+    // console.log("[DEBUG] Dados recebidos na função processarDadosParaGraficoPonteiroKPI1201:", dados);
 
     // Processar os dados usando a função de processamento que criamos
     const dadosProcessados = processarDadosParaGraficoBarrasKPI1201(dados);
-    console.log("[DEBUG] Dados processados por processarDadosParaGraficoBarrasKPI1201:", dadosProcessados);
+    // console.log("[DEBUG] Dados processados por processarDadosParaGraficoBarrasKPI1201:", dadosProcessados);
 
     const resultado = {};
 
     // Iterando sobre os dados processados por URA
     Object.keys(dadosProcessados.porURA).forEach(ura => {
         const uraData = dadosProcessados.porURA[ura];
-        console.log(`[DEBUG] Processando dados da URA: ${ura}`, uraData);
+        // console.log(`[DEBUG] Processando dados da URA: ${ura}`, uraData);
 
         // Calcular o tempo médio de atendimento em segundos
         const tempoMedio = uraData.totalLigacoes > 0 ? (uraData.tempoTotal / uraData.totalLigacoes).toFixed(2) : 0;
@@ -34,7 +34,7 @@ export function processarDadosParaGraficoPonteiroKPI1201(dados) {
         }
 
         // Log do cálculo do tempo médio e da porcentagem
-        console.log(`[processarDadosParaGraficoPonteiroKPI1201] URA: ${ura}, Tempo Médio (segundos): ${tempoMedio}, Porcentagem: ${porcentagem.toFixed(2)}%`);
+        // console.log(`[processarDadosParaGraficoPonteiroKPI1201] URA: ${ura}, Tempo Médio (segundos): ${tempoMedio}, Porcentagem: ${porcentagem.toFixed(2)}%`);
 
         // Armazenar o resultado para cada hospital/URA
         resultado[ura] = {
@@ -110,6 +110,7 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
     // console.log("[DEBUG] Data de Fim:", endDate);
 
     mostrarLoadingSpinner('loadingSpinnerKPI1201');
+    mostrarLoadingSpinner('loadingSpinnerMedidores');
 
     const payload = {
         dtStart: startDate,
@@ -144,6 +145,10 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
                 const dadosProcessadosPonteiro = processarDadosParaGraficoPonteiroKPI1201(data.ura_performance);
                 renderizarGraficoPonteiro('1201', dadosProcessadosPonteiro);
 
+
+                const dadosProcessadosTendencia = processarDadosParaGraficoTendencia1201(data.ura_performance);
+                renderizarGraficoTendencia('1201', dadosProcessadosTendencia)
+
                 document.getElementById('exportExcelKPI1201').style.display = 'block';
                 seriesSelectorContainer.style.display = 'block';
             } else {
@@ -155,6 +160,7 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
         })
         .finally(() => {
             esconderLoadingSpinner('loadingSpinnerKPI1201');
+            esconderLoadingSpinner('loadingSpinnerMedidores');
             toggleButtons(true); // Habilita os botões após a requisição
         });
     } else {
@@ -162,6 +168,62 @@ export function buscarIndicadorTempoMedio(isManualSearch = false) {
         toggleButtons(true); // Habilita os botões em caso de erro
     }
 }
+
+
+function processarDadosParaGraficoTendencia1201(dados) {
+    const resultadoTendencia = [];
+
+    // Inicializa um objeto para armazenar os dados por data
+    const dadosPorData = {};
+
+    dados.forEach(item => {
+        if (item.tipo_atendimento === "Interno") {
+            const data = item.data;  // Aqui assumimos que `data` está presente e no formato desejado
+
+            if (!dadosPorData[data]) {
+                dadosPorData[data] = {
+                    data,
+                    totalLigacoes: 0,
+                    tempoTotal: 0,
+                };
+            }
+
+            const tempoTotal = item.tempo_total_ligacao_cognitiva || 0;
+            const atendidas = item.atendidas_cognitiva || 0;
+
+            // Agrega os dados por data
+            dadosPorData[data].tempoTotal += tempoTotal;
+            dadosPorData[data].totalLigacoes += atendidas;
+        }
+    });
+
+    // Calcula a eficiência baseada no tempo médio por data
+    for (const data in dadosPorData) {
+        const item = dadosPorData[data];
+        const tempoMedio = item.totalLigacoes > 0 ? item.tempoTotal / item.totalLigacoes : 0;
+
+        // Calcula a eficiência
+        let eficiencia;
+        if (tempoMedio <= 180) {
+            eficiencia = 100; // Dentro da meta
+        } else {
+            eficiencia = (180 / tempoMedio) * 100; // Fora da meta, calcula a porcentagem de eficiência
+        }
+
+        resultadoTendencia.push({
+            data: item.data,
+            eficienciaPercentual: eficiencia.toFixed(2) // Arredondar para duas casas decimais
+        });
+    }
+
+    // Ordena o array de resultados por data
+    resultadoTendencia.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+    // Debug da estrutura final
+    console.log('Estrutura final de dados processados para tendência 1201:', JSON.stringify(resultadoTendencia, null, 2));
+    return resultadoTendencia;
+}
+
 
 
 // Função para desabilitar/habilitar botões
@@ -294,7 +356,7 @@ function processarDadosParaGraficoBarrasKPI1201(dados) {
             : 0;
     });
 
-    console.log('Dados processados para o gráfico KPI 1201:', JSON.stringify(resultado, null, 2));
+    // console.log('Dados processados para o gráfico KPI 1201:', JSON.stringify(resultado, null, 2));
     return resultado;
 }
 
@@ -351,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('exportExcelKPI1201').addEventListener('click', function() {
         const tabela = document.querySelector('#resultadoTempoMedioKPI1201 table');
         const wb = XLSX.utils.table_to_book(tabela, { sheet: "Sheet1" });
-        XLSX.writeFile(wb, 'indicadores_tempo_medio.xlsx');
+        XLSX.writeFile(wb, 'KPI1201 - Tempo Médio de 03 minutos de atendimento.xlsx');
     });
 
     flatpickr("#startDateKPI1201", {

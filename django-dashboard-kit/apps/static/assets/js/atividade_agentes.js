@@ -114,12 +114,12 @@ export function buscarDadosAgentes(isManualSearch = false) {
             
             const dadosConsolidados = consolidarDadosPorAgenteEData(data.agent_activity_list);
             const disponibilidadePorDia = calcularDisponibilidadeDiariaPorAgente(dadosConsolidados);
-            console.log("[INFO] Dados processados para o gráfico TENDENCIA:", disponibilidadePorDia);
+            // console.log("[INFO] Dados processados para o gráfico TENDENCIA:", disponibilidadePorDia);
             
             renderizarGraficoTendencia('1101', disponibilidadePorDia);
 
             // Renderizar o gráfico de colunas
-            console.log("[INFO] Dados processados para o gráfico:", dadosProcessados);
+            // console.log("[INFO] Dados processados para o gráfico:", dadosProcessados);
             renderizarGraficoColunas('1101', dadosProcessados);
 
 
@@ -398,7 +398,7 @@ function processarDadosParaGrafico(dados) {
         totalSegundosPausa += agente.tempoTotalPausaSegundos;
 
         // Log para verificar os valores
-        console.log(`[LOG] Agente: ${agente.nome} | Horas Trabalhadas: ${agente.tempoTotalLoginHoras} horas | Horas Pausa: ${agente.tempoTotalPausa}`);
+        // console.log(`[LOG] Agente: ${agente.nome} | Horas Trabalhadas: ${agente.tempoTotalLoginHoras} horas | Horas Pausa: ${agente.tempoTotalPausa}`);
     });
 
     // Cálculo da carga horária para o gráfico
@@ -416,7 +416,7 @@ function processarDadosParaGrafico(dados) {
     resultado.carga_horaria = parseFloat(resultado.carga_horaria.toFixed(2));
 
     // Log final para verificar os resultados
-    console.log("[LOG] Resultado Final para Gráfico:", resultado);
+    // console.log("[LOG] Resultado Final para Gráfico:", resultado);
 
     return resultado;
 }
@@ -459,7 +459,7 @@ function calcularDisponibilidadeDiariaPorAgente(dadosConsolidados) {
         resultadoPorDia[data].tempoPausaTotal += tempoPausa;
         resultadoPorDia[data].agentes.add(agente.nome);
 
-        console.log(`[DEBUG] Acumulado para ${data}: TempoLogadoTotal=${resultadoPorDia[data].tempoLogadoTotal}, TempoPausaTotal=${resultadoPorDia[data].tempoPausaTotal}, Agentes=${resultadoPorDia[data].agentes.size}`);
+        // console.log(`[DEBUG] Acumulado para ${data}: TempoLogadoTotal=${resultadoPorDia[data].tempoLogadoTotal}, TempoPausaTotal=${resultadoPorDia[data].tempoPausaTotal}, Agentes=${resultadoPorDia[data].agentes.size}`);
     });
 
     // Após agregar os dados, calculamos a carga horária e a disponibilidade diária
@@ -472,7 +472,7 @@ function calcularDisponibilidadeDiariaPorAgente(dadosConsolidados) {
         const disponibilidadePercentual = tempoDisponivel > 0 ? ((diaData.tempoLogadoTotal / tempoDisponivel) * 100) : 0;
         diaData.disponibilidadePercentual = disponibilidadePercentual.toFixed(2);
 
-        console.log(`[DEBUG] Resultados para ${data}: CargaHorariaTotal=${diaData.cargaHorariaTotal}, TempoDisponivel=${tempoDisponivel}, DisponibilidadePercentual=${diaData.disponibilidadePercentual}`);
+        // console.log(`[DEBUG] Resultados para ${data}: CargaHorariaTotal=${diaData.cargaHorariaTotal}, TempoDisponivel=${tempoDisponivel}, DisponibilidadePercentual=${diaData.disponibilidadePercentual}`);
     });
 
     console.log("[DEBUG] Resultado final por dia:", resultadoPorDia);
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.table_to_sheet(table, { raw: true });
         XLSX.utils.book_append_sheet(wb, ws, "Atividade_Agentes");
-        XLSX.writeFile(wb, 'atividade_agentes.xlsx');
+        XLSX.writeFile(wb, 'KPI1101 - % Ocupação.xlsx');
     });
 
     flatpickr("#startDate", {
