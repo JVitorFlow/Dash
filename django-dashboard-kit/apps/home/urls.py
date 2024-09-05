@@ -1,4 +1,5 @@
 from django.urls import path, include
+from django.shortcuts import redirect
 from rest_framework.routers import DefaultRouter
 from .views import ( IndexView, ClienteListView, ClienteDetailView, lista_atividades,
     adicionar_atividade, excluir_atividade, editar_atividade,
@@ -23,7 +24,7 @@ router.register(r'atividades', AtividadeViewSet)
 
 urlpatterns = [
     # Rotas da web
-    path('', IndexView.as_view(), name='home'),
+    path('', lambda request: redirect('ligobots:dashboard_kpi_ura'), name='home'),
     path('lista_clientes/', ClienteListView.as_view(), name='lista_clientes'),
     path('detalhe_cliente/<int:pk>/', ClienteDetailView.as_view(), name='detalhe_cliente'),
 
