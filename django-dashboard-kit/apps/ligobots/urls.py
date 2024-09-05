@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ( index, icons, tbl_bootstrap, chart_apex,  map_google, auth_signup, auth_signin, sample_page, DashboardKpiUraView)
+from .views import ( index, icons, tbl_bootstrap, chart_apex,  map_google, auth_signup, auth_signin, sample_page, DashboardKpiUraView, RelatorioURAView)
 from .views_api import (
     EmpresasOminiViewSet, PerfilUsuarioViewSet, LicencaViewSet, 
     CanalOminiViewSet, BotViewSet, BotCanalViewSet, LicencaUsuarioViewSet,
@@ -33,6 +33,7 @@ urlpatterns = [
     path('auth-signin/', auth_signin, name='auth_signin'),
     path('sample-page/', sample_page, name='sample_page'),
     path('dashboard-kpi-ura/', DashboardKpiUraView.as_view(), name='dashboard_kpi_ura'),
+    path('relatorio-ura/', RelatorioURAView.as_view(), name='relatorio_ura'),
     
     # Rotas da API
     path('api/', include(router.urls)),

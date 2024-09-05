@@ -395,12 +395,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     waitForChartRender(filterSeries);  // Chama filterSeries quando o gráfico estiver pronto
                 });
             } else {
-                console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+               // console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
             }
             
         });
     } else {
-        console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+        //console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
     }
 
 
@@ -421,7 +421,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Evento para verificar o KPI selecionado
-    kpiSelector.addEventListener('change', verificarSeletorSeries);
+    const kpiSelector = document.getElementById('kpiSelector');
+    if (kpiSelector) {
+        kpiSelector.addEventListener('change', verificarSeletorSeries);
+    } else {
+        // console.error('Elemento kpiSelector não encontrado.');
+    }
+
 
     // Listener para o botão "Aplicar Filtro" (usa datas manuais)
     filterButton.addEventListener('click', function() {

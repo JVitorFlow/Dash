@@ -396,11 +396,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     waitForChartRender(filterSeries);  // Chama filterSeries quando o gráfico estiver pronto
                 });
             } else {
-                console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+               // console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
             }
         });
     } else {
-        console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+       // console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
     }
 
     // Função para verificar o KPI selecionado e mostrar/esconder o seletor de séries

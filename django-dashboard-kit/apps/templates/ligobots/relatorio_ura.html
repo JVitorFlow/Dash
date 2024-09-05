@@ -1,0 +1,295 @@
+{% extends "layouts/base.html" %}
+
+{% load static %}
+
+{% block title %} Dashboard KPI URA {% endblock %}
+
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static 'assets/css/kpis.css' %}">
+{% endblock %}
+
+{% block content %}
+    <style>
+        .custom-card {
+            padding: 15px;
+            height: auto;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animação suave */
+        }
+        
+        .custom-card:hover {
+            transform: translateY(-5px); /* Animação de elevação ao passar o mouse */
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .custom-card .card-title {
+            font-size: 14px; /* Ajustar para melhor legibilidade */
+            color: #5a5a5a;  /* Cor mais sutil */
+        }
+        
+        .custom-card .card-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;  /* Cor mais escura para contraste */
+        }
+        
+        .ura-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: #0056b3; /* Cor de destaque */
+        }
+        
+        .input-group-text {
+            background-color: #0056b3;
+            color: #fff;
+        }
+        
+        .page-header-title h5 {
+            color: #0056b3;  /* Dar um destaque ao título principal */
+        }
+        
+        /* Botão de filtrar */
+        .btn-primary {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #004494;
+            border-color: #004494;
+        }
+        
+    </style>
+
+    <div class="pc-container">
+        <div class="pcoded-content">
+            <!-- [ Cabeçalho ] start -->
+            <div class="page-header mb-2" style="padding-bottom: 0px;">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="page-header-title">
+                                <h5 class="m-b-5">Painel de Controle URA</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'home:home' %}"><i class="fas fa-home"></i> Home</a></li>
+                                <li class="breadcrumb-item"><i class="fas fa-tachometer-alt"></i> Painel de Controle URA</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ Cabeçalho ] end -->
+
+            <!-- [ Filtros ] start -->
+            <div class="row mb-2">
+                <div class="col-md-3">
+                    <label for="select-periodo" class="form-label">Selecione o Período</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-calendar-alt"></i> <!-- Ícone de calendário -->
+                        </span>
+                        <select class="form-select" id="select-periodo">
+                            <option selected disabled>Selecione</option> <!-- Opcion "Selecione" -->
+                            <option value="today">Hoje</option>
+                            <option value="7">7 dias</option>
+                            <option value="15">15 dias</option>
+                            <option value="30">30 dias</option>
+                        </select>
+                    </div>
+                </div>
+                
+
+                <div class="col-md-3">
+                    <label for="startDate" class="form-label">De</label>
+                    <input type="datetime-local" class="form-control" id="startDate">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="endDate" class="form-label">Até</label>
+                    <input type="datetime-local" class="form-control" id="endDate">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="filtroRelatorioUra" class="form-label d-block">&nbsp;</label>
+                    <button class="btn btn-primary w-100" id="filtroRelatorioUra">Filtrar</button>
+                </div>
+            </div>
+            <!-- [ Filtros ] end -->
+            <div id="loadingSpinner" style="display:none; text-align: center; margin: 10px 0;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Carregando...</span>
+                </div>
+            </div>
+            <!-- [ Cards de Métricas ] start -->
+            <div id="tableMetrics">
+                <div class="row">
+                    <!-- HM Section -->
+                    <div class="col-lg-4 col-md-12">
+                        <div class="ura-header">HM</div>
+                        <!-- Card 1 - Processadas URA (HM) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-phone-alt"></i> Processadas URA
+                                </h5>
+                                <p class="card-text processadas-hm">0</p>
+                            </div>
+                        </div>
+                        <!-- Card 2 - Resolução Primeiro Contato (HM) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-check-circle"></i> Resolução Primeiro Contato
+                                </h5>
+                                <p class="card-text resolucao-hm">0%</p>
+                            </div>
+                        </div>
+                        <!-- Card 4 - Direcionadas para Humano (HM) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-user"></i> Direcionadas para Humano
+                                </h5>
+                                <p class="card-text direcionadas-humano-hm">0</p>
+                            </div>
+                        </div>
+                        <!-- Card 5 - Direcionadas para Ramal (HM) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-exchange-alt"></i> Direcionadas para Ramal
+                                </h5>
+                                <p class="card-text direcionadas-ramal-hm">0</p>
+                            </div>
+                        </div>
+                        <!-- Card 6 - Abandonadas URA (HM) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-times-circle"></i> Abandonadas URA
+                                </h5>
+                                <p class="card-text abandonadas-hm">0</p>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- HSJC Section -->
+                    <div class="col-lg-4 col-md-12">
+                        <div class="ura-header">HSJC</div>
+                        <!-- Card 1 - Processadas URA (HSJC) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-phone-alt"></i> Processadas URA
+                                </h5>
+                                <p class="card-text processadas-hsjc">0</p>
+                            </div>
+                        </div>
+                        <!-- Card 2 - Resolução Primeiro Contato (HSJC) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-check-circle"></i> Resolução Primeiro Contato
+                                </h5>
+                                <p class="card-text resolucao-hsjc">0%</p>
+                            </div>
+                        </div>
+                        <!-- Card 4 - Direcionadas para Humano (HSJC) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-user"></i> Direcionadas para Humano
+                                </h5>
+                                <p class="card-text direcionadas-humano-hsjc">0</p>
+                            </div>
+                        </div>
+                        <!-- Card 5 - Direcionadas para Ramal (HSJC) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-exchange-alt"></i> Direcionadas para Ramal
+                                </h5>
+                                <p class="card-text direcionadas-ramal-hsjc">0</p>
+                            </div>
+                        </div>
+                        <!-- Card 6 - Abandonadas URA (HSJC) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-times-circle"></i> Abandonadas URA
+                                </h5>
+                                <p class="card-text abandonadas-hsjc">0</p>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- HSOR Section -->
+                    <div class="col-lg-4 col-md-12">
+                        <div class="ura-header">HSOR</div>
+                        <!-- Card 1 - Processadas URA (HSOR) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-phone-alt"></i> Processadas URA
+                                </h5>
+                                <p class="card-text processadas-hsor">0</p>
+                            </div>
+                        </div>
+                        <!-- Card 2 - Resolução Primeiro Contato (HSOR) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-check-circle"></i> Resolução Primeiro Contato
+                                </h5>
+                                <p class="card-text resolucao-hsor">0%</p>
+                            </div>
+                        </div>
+                        <!-- Card 4 - Direcionadas para Humano (HSOR) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-user"></i> Direcionadas para Humano
+                                </h5>
+                                <p class="card-text direcionadas-humano-hsor">0</p>
+                            </div>
+                        </div>
+                        <!-- Card 5 - Direcionadas para Ramal (HSOR) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-exchange-alt"></i> Direcionadas para Ramal
+                                </h5>
+                                <p class="card-text direcionadas-ramal-hsor">0</p>
+                            </div>
+                        </div>
+                        <!-- Card 6 - Abandonadas URA (HSOR) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-times-circle"></i> Abandonadas URA
+                                </h5>
+                                <p class="card-text abandonadas-hsor">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>            
+            <!-- [ Cards de Métricas ] end -->
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+    <script id="indicadorDeDesempenhoURL" type="application/json">
+        {{ indicador_de_desempenho_url }}
+    </script>
+
+    <script type="module" src="{% static 'assets/js/relatorios_ura.js' %}"></script>
+{% endblock javascripts %}

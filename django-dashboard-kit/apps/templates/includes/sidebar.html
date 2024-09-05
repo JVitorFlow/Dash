@@ -6,11 +6,11 @@
 			<img src="{% static 'assets/images/user/LogoVertical_Wtime_EscritoBranco.png' %}" alt="Wtime Logo" class="logo">
 			<span class="logo_name">time DashboardX</span>
 		</div>
-
+		
 		<ul class="nav-links">
 			<li>
 				<a href="/" class="active">
-					<i class="material-icons-two-tone">dashboard</i>
+					<i class="fas fa-th-large"></i>
 					<span class="link_name">Dashboard</span>
 				</a>
 				<ul class="sub-menu blank">
@@ -20,7 +20,7 @@
 			<li>
 				<div class="iocn-link">
 					<a href="#">
-						<i class="material-icons-two-tone">business_center</i>
+						<i class="fas fa-briefcase"></i>
 						<span class="link_name">Clientes</span>
 					</a>
 					<i class="bx bxs-chevron-down arrow"></i>
@@ -31,7 +31,7 @@
 			</li>
 			<li>
 				<a href="{% url 'home:lista_projetos' %}">
-					<i class="material-icons-two-tone">assignment</i>
+					<i class="fas fa-tasks"></i>
 					<span class="link_name">Projetos</span>
 				</a>
 				<ul class="sub-menu blank">
@@ -40,13 +40,23 @@
 			</li>
 			<li>
 				<a href="{% url 'ligobots:dashboard_kpi_ura' %}">
-					<i class="material-icons-two-tone">headset_mic</i>
-					<span class="link_name">URA</span>
+					<i class="fas fa-tachometer-alt"></i>
+					<span class="link_name">Relatórios de KPIS</span>
 				</a>
 				<ul class="sub-menu blank">
-					<li><a class="link_name" href="{% url 'ligobots:dashboard_kpi_ura' %}">URA</a></li>
+					<li><a class="link_name" href="{% url 'ligobots:dashboard_kpi_ura' %}">Relatórios de KPIS</a></li>
 				</ul>
 			</li>
+			<li>
+				<a href="{% url 'ligobots:relatorio_ura' %}">
+					<i class="fas fa-headset"></i> 
+					<span class="link_name">Relatórios de URA</span>
+				</a>
+				<ul class="sub-menu blank">
+					<li><a class="link_name" href="{% url 'ligobots:relatorio_ura' %}">Relatórios de URA</a></li>
+				</ul>
+			</li>
+			
 			{% comment %} <li>
 				<a href="#">
 					<i class="material-icons-two-tone">chat_bubble</i>

@@ -256,7 +256,7 @@ function consolidarDadosPorAgenteEData(dados) {
                 tempoExcedentePausaSegundos: 0,
                 quantidadePausas: 0,
                 detalhesPausas: new Set(),
-                todosPeriodos: []
+                todosPeriodos: new Set() 
             };
             agentesConsolidados.push(agenteExistente);
         }
@@ -317,7 +317,13 @@ function consolidarDadosPorAgenteEData(dados) {
 
             lastLogoff = Math.max(lastLogoff || 0, periodo.logoffDate);
 
-            ag.todosPeriodos.push(`${periodo.loginDate.toLocaleDateString('pt-BR')} ${periodo.loginDate.toLocaleTimeString('pt-BR')} - ${periodo.logoffDate.toLocaleTimeString('pt-BR')}`);
+            // Verificar se a data de logoff é diferente da data de login
+            const logoffComData = periodo.loginDate.toLocaleDateString('pt-BR') !== periodo.logoffDate.toLocaleDateString('pt-BR') ?
+                `${periodo.logoffDate.toLocaleDateString('pt-BR')} ${periodo.logoffDate.toLocaleTimeString('pt-BR')}` :
+                `${periodo.logoffDate.toLocaleTimeString('pt-BR')}`;
+
+            // Atualizar o período com a data de logoff, caso seja em outro dia
+            ag.todosPeriodos.add(`${periodo.loginDate.toLocaleDateString('pt-BR')} ${periodo.loginDate.toLocaleTimeString('pt-BR')} - ${logoffComData}`);
         });
 
         // Considerando que 5h20min é o tempo efetivo esperado
@@ -340,7 +346,7 @@ function consolidarDadosPorAgenteEData(dados) {
         ag.horarioDeLogin = ag.periodosLogin[0].loginDate.toLocaleTimeString('pt-BR');
         ag.horarioDeLogoff = ag.periodosLogin[ag.periodosLogin.length - 1].logoffDate.toLocaleTimeString('pt-BR');
         ag.ocupacaoPercentual = ocupacaoPercentual;
-        ag.todosPeriodosFormatados = ag.todosPeriodos.join('<br>');
+        ag.todosPeriodosFormatados = Array.from(ag.todosPeriodos).join('<br>');
     });
 
     return agentesConsolidados;

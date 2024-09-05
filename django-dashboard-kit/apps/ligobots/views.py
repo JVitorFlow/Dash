@@ -3,6 +3,10 @@ from django.views.generic import TemplateView
 from .models import Ura
 from django.db.models import Count
 from django.urls import reverse_lazy
+from .services import obter_indicadores_de_desempenho
+from django.http import JsonResponse
+from .forms import RelatorioURAForm
+
 
 def index(request):
     return render(request, 'ligobots/index.html')
@@ -76,4 +80,14 @@ class DashboardKpiUraView(TemplateView):
             'indicador_de_desempenho_url': indicador_de_desempenho_url,
         })
 
+        return context
+
+
+class RelatorioURAView(TemplateView):
+    template_name = 'ligobots/relatorio_ura.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Passar a URL da API de indicadores para o template
+        context['indicador_de_desempenho_url'] = reverse_lazy('ligobots:indicadores_de_desempenho')
         return context

@@ -378,12 +378,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 seriesSelector.addEventListener('change', filterSeries);
                 console.log('[DEBUG] Evento de mudança de série vinculado');
             } else {
-                console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+                //console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
             }
             
         });
     } else {
-        console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+       // console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
     }
 
     // Função para verificar o KPI selecionado e mostrar/esconder o seletor de séries
@@ -403,7 +403,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Evento para verificar o KPI selecionado
-    kpiSelector.addEventListener('change', verificarSeletorSeries);
+    if (kpiSelector) {
+        kpiSelector.addEventListener('change', verificarSeletorSeries);
+    } else {
+        //console.error('Elemento kpiSelector não encontrado.');
+    }
 
     filterButton.addEventListener('click', function() {
         toggleButtons(false); // Desabilita os botões enquanto a requisição está em andamento

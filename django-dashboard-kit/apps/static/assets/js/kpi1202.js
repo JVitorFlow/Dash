@@ -362,12 +362,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 seriesSelector.addEventListener('change', filterSeries);
                 console.log('[DEBUG] Evento de mudança de série vinculado');
             } else {
-                console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+               // console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
             }
             
         });
     } else {
-        console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
+       // console.error("[ERROR] Elemento 'seriesSelector' não encontrado.");
     }
 
     // Função para verificar o KPI selecionado e mostrar/esconder o seletor de séries
