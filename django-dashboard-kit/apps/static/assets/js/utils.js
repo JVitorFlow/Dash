@@ -1,6 +1,6 @@
 import { dadosProcessadosPonteiro } from './tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js';
 import { dadosProcessadosPonteiro1104 } from './abandono_de_chamadas_externas.js';
-import { dadosProcessadosPonteiro1204 } from './kpi1204.js';
+import { dadosProcessadosPonteiro1204 } from './indicador1204.js';
 import { dadosProcessadosPonteiro1201 } from './Kpi1201.js';
 
 // Função para obter o valor de um cookie específico

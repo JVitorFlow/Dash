@@ -8,36 +8,38 @@
 		</div>
 		
 		<ul class="nav-links">
-			<li>
-				<a href="/" class="active">
-					<i class="fas fa-th-large"></i>
-					<span class="link_name">Dashboard</span>
-				</a>
-				<ul class="sub-menu blank">
-					<li><a class="link_name" href="/">Dashboard</a></li>
-				</ul>
-			</li>
-			<li>
-				<div class="iocn-link">
-					<a href="#">
-						<i class="fas fa-briefcase"></i>
-						<span class="link_name">Clientes</span>
+			{% if user.is_superuser %}
+				<li>
+					<a href="/" class="active">
+						<i class="fas fa-th-large"></i>
+						<span class="link_name">Dashboard</span>
 					</a>
-					<i class="bx bxs-chevron-down arrow"></i>
-				</div>
-				<ul class="sub-menu">
-					<li><a href="{% url 'home:lista_clientes' %}">Lista de Clientes</a></li>
-				</ul>
-			</li>
-			<li>
-				<a href="{% url 'home:lista_projetos' %}">
-					<i class="fas fa-tasks"></i>
-					<span class="link_name">Projetos</span>
-				</a>
-				<ul class="sub-menu blank">
-					<li><a class="link_name" href="{% url 'home:lista_projetos' %}">Projetos</a></li>
-				</ul>
-			</li>
+					<ul class="sub-menu blank">
+						<li><a class="link_name" href="/">Dashboard</a></li>
+					</ul>
+				</li>
+				<li>
+					<div class="iocn-link">
+						<a href="#">
+							<i class="fas fa-briefcase"></i>
+							<span class="link_name">Clientes</span>
+						</a>
+						<i class="bx bxs-chevron-down arrow"></i>
+					</div>
+					<ul class="sub-menu">
+						<li><a href="{% url 'home:lista_clientes' %}">Lista de Clientes</a></li>
+					</ul>
+				</li>
+				<li>
+					<a href="{% url 'home:lista_projetos' %}">
+						<i class="fas fa-tasks"></i>
+						<span class="link_name">Projetos</span>
+					</a>
+					<ul class="sub-menu blank">
+						<li><a class="link_name" href="{% url 'home:lista_projetos' %}">Projetos</a></li>
+					</ul>
+				</li>
+			{% endif %}
 			<li>
 				<a href="{% url 'ligobots:dashboard_kpi_ura' %}">
 					<i class="fas fa-tachometer-alt"></i>

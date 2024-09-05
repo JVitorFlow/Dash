@@ -3,10 +3,8 @@ from django.views.generic import TemplateView
 from .models import Ura
 from django.db.models import Count
 from django.urls import reverse_lazy
-from .services import obter_indicadores_de_desempenho
-from django.http import JsonResponse
-from .forms import RelatorioURAForm
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 def index(request):
     return render(request, 'ligobots/index.html')
@@ -33,8 +31,7 @@ def sample_page(request):
     return render(request, 'ligobots/sample-page.html')
 
 
-
-class DashboardKpiUraView(TemplateView):
+class DashboardKpiUraView(LoginRequiredMixin, TemplateView):
     template_name = 'ligobots/dashboard_kpi_ura.html'
 
     def get_context_data(self, **kwargs):
@@ -82,8 +79,7 @@ class DashboardKpiUraView(TemplateView):
 
         return context
 
-
-class RelatorioURAView(TemplateView):
+class RelatorioURAView(LoginRequiredMixin, TemplateView):
     template_name = 'ligobots/relatorio_ura.html'
 
     def get_context_data(self, **kwargs):
