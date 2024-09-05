@@ -25,7 +25,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:85', 
     'http://127.0.0.1', 
     'https://' + config('SERVER', default='127.0.0.1'),
-    'https://d250-2804-388-e052-50b7-ac38-3f28-c34f-a101.ngrok-free.app'
+    'http://187.108.196.100:85'
 ]
 # Application definition
 
@@ -85,8 +85,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_NAME', 'sgwtime'),
+	'USER': os.getenv('POSTGRES_USER', 'wtime'),
+	'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'wtimepassword'),
+	'HOST': os.getenv('POSTGRES_HOST', 'postgres_db'),
+	'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
 

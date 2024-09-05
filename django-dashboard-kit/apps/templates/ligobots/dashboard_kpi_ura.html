@@ -162,7 +162,7 @@
     <script src="{% static 'assets/js/tempo_medio_servico_por_atendente.js' %}"></script>
     <script type="module" src="{% static 'assets/js/tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js' %}"></script>
     <script type="module" src="{% static 'assets/js/Kpi1201.js' %}"></script>
-    <script type="module" src="{% static 'assets/js/Kpi1204.js' %}"></script>
+    <script type="module" src="{% static 'assets/js/indicador1204.js' %}"></script>
     <script type="module" src="{% static 'assets/js/Kpi1202.js' %}"></script>
     <script type="module" src="{% static 'assets/js/kpi_charts.js' %}"></script>
 
@@ -172,7 +172,7 @@
         import { buscarDadosAgentes } from '{% static "assets/js/atividade_agentes.js" %}';
         import { buscarIndicadorTempoEspera } from '{% static "assets/js/tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js" %}';
         import { buscarIndicadorTempoMedio } from '{% static "assets/js/Kpi1201.js" %}';
-        import {buscarIndicadorChamadasAbandonadasInternas} from '{% static "assets/js/Kpi1204.js" %}';
+        import {buscarIndicadorChamadasAbandonadasInternas} from '{% static "assets/js/indicador1204.js" %}';
         import {buscarIndicadorTempoEsperaKPI1202} from '{% static "assets/js/Kpi1202.js" %}';
 
         document.addEventListener('DOMContentLoaded', function() {
