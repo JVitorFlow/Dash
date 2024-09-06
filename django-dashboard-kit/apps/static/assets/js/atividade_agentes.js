@@ -218,14 +218,12 @@ function preencherTabelaAgentes(dados) {
     table.draw();
 }
 
+
 function consolidarDadosPorAgenteEData(dados) {
     const agentesConsolidados = [];
-
-    // E-mails a serem ignorados
     const emailsParaIgnorar = ["homolog.inovasaude@mail.com", "yara.bezerra@wtime.com.br"];
 
     dados.forEach(item => {
-        // Verifica se o e-mail está na lista de e-mails a serem ignorados
         if (emailsParaIgnorar.includes(item.nome)) {
             console.warn('[AVISO] Ignorando dados do usuário:', item.nome);
             return;
@@ -236,15 +234,30 @@ function consolidarDadosPorAgenteEData(dados) {
             return;
         }
 
-        const loginDate = new Date(item.login);
-        const logoffDate = new Date(item.logoff);
+        let loginDate = new Date(item.login);
+        let logoffDate = new Date(item.logoff);
 
         if (isNaN(loginDate.getTime()) || isNaN(logoffDate.getTime())) {
             console.warn('[AVISO] Datas inválidas para:', item.nome);
             return;
         }
 
-        const data = loginDate.toLocaleDateString('pt-BR');
+        // Regra de tolerância de 15 minutos para logoff
+        const toleranciaLogoff = 15 * 60 * 1000; // 15 minutos em milissegundos
+        const inicioDiaSeguinte = new Date(logoffDate);
+        inicioDiaSeguinte.setHours(0, 0, 0, 0); // Define 00:00:00 no dia do logoff
+
+        const limiteToleranciaLogoff = new Date(inicioDiaSeguinte.getTime() + toleranciaLogoff);
+
+        // Se o logoff for até 00:15:00, ajusta para o dia anterior
+        if (logoffDate <= limiteToleranciaLogoff) {
+            // Ajusta a data de logoff para o dia anterior
+            logoffDate.setDate(logoffDate.getDate() - 1);
+            logoffDate.setHours(23, 59, 59, 999); // Define 23:59:59 no dia anterior
+        }
+
+        // Usando a data de logoff para determinar o KPI
+        const data = logoffDate.toLocaleDateString('pt-BR');
         let agenteExistente = agentesConsolidados.find(ag => ag.nome === item.nome && ag.data === data);
 
         if (!agenteExistente) {
@@ -256,51 +269,80 @@ function consolidarDadosPorAgenteEData(dados) {
                 tempoExcedentePausaSegundos: 0,
                 quantidadePausas: 0,
                 detalhesPausas: new Set(),
-                todosPeriodos: new Set() 
+                todosPeriodos: new Set()
             };
             agentesConsolidados.push(agenteExistente);
         }
 
-        // Adicionando período de login ao registro geral e à lista de todos os períodos
+        // Adicionando período de login e logoff ao registro
         agenteExistente.periodosLogin.push({ loginDate, logoffDate });
 
-        // Tratando as pausas
+        // Tratando pausas (se houver)
         if (Array.isArray(item.agent_pause_list)) {
             item.agent_pause_list.forEach(pause => {
-                const pauseStart = new Date(pause.pause);
-                const pauseEnd = new Date(pause.unpause);
-                const pauseDurationSeconds = (pauseEnd - pauseStart) / 1000; // Tempo em segundos
+                let pauseStart = new Date(pause.pause);
+                let pauseEnd = new Date(pause.unpause);
+                let pauseDurationSeconds = (pauseEnd - pauseStart) / 1000;
 
-                let tempoExcedenteSegundos = 0;
-                let tempoSemImpactoSegundos = 0;
+                // Verifica se a pausa atravessa a meia-noite
+                if (pauseStart.toLocaleDateString('pt-BR') !== pauseEnd.toLocaleDateString('pt-BR')) {
+                    // Dividindo a pausa entre os dois dias
+                    const fimDiaPausa = new Date(pauseStart);
+                    fimDiaPausa.setHours(23, 59, 59, 999);
 
-                // Ajuste do tempo excedente para pausas de descanso e café
-                if (pause.motivo_pause.includes('Desc') && pauseDurationSeconds > 600) { // 10 minutos para descanso
-                    tempoExcedenteSegundos = pauseDurationSeconds - 600;
-                    tempoSemImpactoSegundos = 600; // Tempo sem impacto é o limite máximo (10 minutos)
-                } else if (pause.motivo_pause.includes('Café') && pauseDurationSeconds > 1200) { // 20 minutos para café
-                    tempoExcedenteSegundos = pauseDurationSeconds - 1200;
-                    tempoSemImpactoSegundos = 1200; // Tempo sem impacto é o limite máximo (20 minutos)
+                    const comecoDiaSeguinte = new Date(pauseEnd);
+                    comecoDiaSeguinte.setHours(0, 0, 0, 0);
+
+                    const pausaDia1Segundos = (fimDiaPausa - pauseStart) / 1000;
+                    const pausaDia2Segundos = (pauseEnd - comecoDiaSeguinte) / 1000;
+
+                    // Dividindo a pausa para o primeiro dia
+                    agenteExistente.tempoTotalPausaSegundos += pausaDia1Segundos;
+
+                    const detalhePausa1 = `${pauseStart.toLocaleTimeString('pt-BR')} - 23:59:59: ${pause.motivo_pause}`;
+                    if (!agenteExistente.detalhesPausas.has(detalhePausa1)) {
+                        agenteExistente.detalhesPausas.add(detalhePausa1);
+                        agenteExistente.quantidadePausas += 1;
+                    }
+
+                    // Processando a pausa do segundo dia (encontrar o agente do segundo dia)
+                    let agenteDia2 = agentesConsolidados.find(ag => ag.nome === item.nome && ag.data === pauseEnd.toLocaleDateString('pt-BR'));
+                    if (!agenteDia2) {
+                        agenteDia2 = {
+                            nome: item.nome || 'N/A',
+                            data: pauseEnd.toLocaleDateString('pt-BR'),
+                            periodosLogin: [],
+                            tempoTotalPausaSegundos: 0,
+                            tempoExcedentePausaSegundos: 0,
+                            quantidadePausas: 0,
+                            detalhesPausas: new Set(),
+                            todosPeriodos: new Set()
+                        };
+                        agentesConsolidados.push(agenteDia2);
+                    }
+
+                    agenteDia2.tempoTotalPausaSegundos += pausaDia2Segundos;
+                    const detalhePausa2 = `00:00:00 - ${pauseEnd.toLocaleTimeString('pt-BR')}: ${pause.motivo_pause}`;
+                    if (!agenteDia2.detalhesPausas.has(detalhePausa2)) {
+                        agenteDia2.detalhesPausas.add(detalhePausa2);
+                        agenteDia2.quantidadePausas += 1;
+                    }
                 } else {
-                    tempoSemImpactoSegundos = pauseDurationSeconds; // Pausas dentro do limite são consideradas sem impacto
-                }
-
-                const detalhePausa = `${pauseStart.toLocaleTimeString('pt-BR')} - ${pauseEnd.toLocaleTimeString('pt-BR')}: ${pause.motivo_pause}`;
-
-                if (!agenteExistente.detalhesPausas.has(detalhePausa)) {
-                    agenteExistente.detalhesPausas.add(detalhePausa);
-                    agenteExistente.tempoTotalPausaSegundos += pauseDurationSeconds;
-                    agenteExistente.tempoExcedentePausaSegundos += tempoExcedenteSegundos;
-                    agenteExistente.tempoSemImpactoSegundos = (agenteExistente.tempoSemImpactoSegundos || 0) + tempoSemImpactoSegundos;
-                    agenteExistente.quantidadePausas += 1;
+                    // Caso a pausa não cruze a meia-noite
+                    const detalhePausa = `${pauseStart.toLocaleTimeString('pt-BR')} - ${pauseEnd.toLocaleTimeString('pt-BR')}: ${pause.motivo_pause}`;
+                    if (!agenteExistente.detalhesPausas.has(detalhePausa)) {
+                        agenteExistente.detalhesPausas.add(detalhePausa);
+                        agenteExistente.tempoTotalPausaSegundos += pauseDurationSeconds;
+                        agenteExistente.quantidadePausas += 1;
+                    }
                 }
             });
         }
     });
 
+    // Processamento final para cada agente
     agentesConsolidados.forEach(ag => {
         ag.detalhesPausas = Array.from(ag.detalhesPausas);
-
         ag.periodosLogin.sort((a, b) => a.loginDate - b.loginDate);
 
         let tempoTotalLogadoSegundos = 0;
@@ -317,31 +359,24 @@ function consolidarDadosPorAgenteEData(dados) {
 
             lastLogoff = Math.max(lastLogoff || 0, periodo.logoffDate);
 
-            // Verificar se a data de logoff é diferente da data de login
             const logoffComData = periodo.loginDate.toLocaleDateString('pt-BR') !== periodo.logoffDate.toLocaleDateString('pt-BR') ?
                 `${periodo.logoffDate.toLocaleDateString('pt-BR')} ${periodo.logoffDate.toLocaleTimeString('pt-BR')}` :
                 `${periodo.logoffDate.toLocaleTimeString('pt-BR')}`;
 
-            // Atualizar o período com a data de logoff, caso seja em outro dia
             ag.todosPeriodos.add(`${periodo.loginDate.toLocaleDateString('pt-BR')} ${periodo.loginDate.toLocaleTimeString('pt-BR')} - ${logoffComData}`);
         });
 
-        // Considerando que 5h20min é o tempo efetivo esperado
         const TEMPO_EFETIVO_ATENDIMENTO_SEGUNDOS = 320 * 60; // 320 minutos = 5h20min
-
-        // Subtraindo todo o tempo de pausa (incluindo o tempo excedente) do tempo total logado
         const tempoLogadoEfetivoSegundos = tempoTotalLogadoSegundos - ag.tempoTotalPausaSegundos;
 
-        // Aqui, armazena tanto o valor em horas (para cálculos) quanto no formato "HH:MM:SS"
-        const tempoLogadoEfetivoHoras = tempoLogadoEfetivoSegundos / 3600; // Armazena em horas (para cálculos)
-        const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS_nova(tempoLogadoEfetivoSegundos); // Armazena em "HH:MM:SS"
+        const tempoLogadoEfetivoHoras = tempoLogadoEfetivoSegundos / 3600;
+        const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS_nova(tempoLogadoEfetivoSegundos);
 
-        // Calcula a ocupação baseada no tempo efetivo de 5h20min
         const ocupacaoPercentual = ((tempoLogadoEfetivoSegundos / TEMPO_EFETIVO_ATENDIMENTO_SEGUNDOS) * 100).toFixed(2);
 
-        ag.tempoTotalLogin = `${tempoLogadoEfetivoHoras.toFixed(6)} horas`; // Mantém o valor em horas para cálculos futuros
-        ag.tempoTotalLoginHoras = tempoLogadoEfetivoHoras.toFixed(6); // Valor em horas para cálculos
-        ag.tempoTotalLoginFormatado = tempoLogadoEfetivoFormatado; // Formato "HH:MM:SS"
+        ag.tempoTotalLogin = `${tempoLogadoEfetivoHoras.toFixed(6)} horas`;
+        ag.tempoTotalLoginHoras = tempoLogadoEfetivoHoras.toFixed(6);
+        ag.tempoTotalLoginFormatado = tempoLogadoEfetivoFormatado;
         ag.tempoTotalPausa = formatarHorasEmHHMMSS_nova(ag.tempoTotalPausaSegundos);
         ag.horarioDeLogin = ag.periodosLogin[0].loginDate.toLocaleTimeString('pt-BR');
         ag.horarioDeLogoff = ag.periodosLogin[ag.periodosLogin.length - 1].logoffDate.toLocaleTimeString('pt-BR');
@@ -351,8 +386,6 @@ function consolidarDadosPorAgenteEData(dados) {
 
     return agentesConsolidados;
 }
-
-
 
 
 // Função auxiliar para formatar tempo em HH:MM:SS

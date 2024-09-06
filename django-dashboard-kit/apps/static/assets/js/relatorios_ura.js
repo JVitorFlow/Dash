@@ -31,101 +31,270 @@ function formatDateToISOStringWithoutTimezone(dateString, isStartOfDay = true) {
 
 
 function somarMetricasPorURA(uraPerformance) {
-    // Inicializa os totais para cada URA
+    // Inicializa os totais para cada URA com distinção de "Interno" e "Externo"
     let totaisPorURA = {
         HM: {
-            recebidas: 0,
-            direcionadas_humano: 0,
-            direcionadas_ramal: 0,
-            ligacoes_interrompidas_pelo_cliente: 0,
-            tempo_total_ligacao: 0,
-            tempo_total_espera: 0,
-            total_uras: 0
+            interno: {
+                recebidas: 0,
+                atendidas_cognitiva: 0,
+                atendidas_tradicional: 0,
+                abandonadas_cognitiva_ate_um_minuto: 0,
+                abandonadas_cognitiva_acima_um_minuto: 0,
+                direcionadas_humano: 0,
+                direcionadas_ramal: 0,
+                ligacoes_interrompidas_pelo_cliente: 0,
+                tempo_total_ligacao: 0,
+                tempo_total_espera: 0,
+                total_uras: 0
+            },
+            externo: {
+                recebidas: 0,
+                atendidas_cognitiva: 0,
+                atendidas_tradicional: 0,
+                abandonadas_cognitiva_ate_um_minuto: 0,
+                abandonadas_cognitiva_acima_um_minuto: 0,
+                direcionadas_humano: 0,
+                direcionadas_ramal: 0,
+                ligacoes_interrompidas_pelo_cliente: 0,
+                tempo_total_ligacao: 0,
+                tempo_total_espera: 0,
+                total_uras: 0
+            },
+            geral: {   // Adicionando a chave "geral" para tratar os casos de `tipo_atendimento` vazio
+                recebidas: 0,
+                atendidas_cognitiva: 0,
+                atendidas_tradicional: 0,
+                abandonadas_cognitiva_ate_um_minuto: 0,
+                abandonadas_cognitiva_acima_um_minuto: 0,
+                direcionadas_humano: 0,
+                direcionadas_ramal: 0,
+                ligacoes_interrompidas_pelo_cliente: 0,
+                tempo_total_ligacao: 0,
+                tempo_total_espera: 0,
+                total_uras: 0
+            }
         },
         HSJC: {
-            recebidas: 0,
-            direcionadas_humano: 0,
-            direcionadas_ramal: 0,
-            ligacoes_interrompidas_pelo_cliente: 0,
-            tempo_total_ligacao: 0,
-            tempo_total_espera: 0,
-            total_uras: 0
+            interno: {
+                recebidas: 0,
+                atendidas_cognitiva: 0,
+                atendidas_tradicional: 0,
+                abandonadas_cognitiva_ate_um_minuto: 0,
+                abandonadas_cognitiva_acima_um_minuto: 0,
+                direcionadas_humano: 0,
+                direcionadas_ramal: 0,
+                ligacoes_interrompidas_pelo_cliente: 0,
+                tempo_total_ligacao: 0,
+                tempo_total_espera: 0,
+                total_uras: 0
+            },
+            externo: {
+                recebidas: 0,
+                atendidas_cognitiva: 0,
+                atendidas_tradicional: 0,
+                abandonadas_cognitiva_ate_um_minuto: 0,
+                abandonadas_cognitiva_acima_um_minuto: 0,
+                direcionadas_humano: 0,
+                direcionadas_ramal: 0,
+                ligacoes_interrompidas_pelo_cliente: 0,
+                tempo_total_ligacao: 0,
+                tempo_total_espera: 0,
+                total_uras: 0
+            },
+            geral: {   // Adicionando a chave "geral" para tratar os casos de `tipo_atendimento` vazio
+                recebidas: 0,
+                atendidas_cognitiva: 0,
+                atendidas_tradicional: 0,
+                abandonadas_cognitiva_ate_um_minuto: 0,
+                abandonadas_cognitiva_acima_um_minuto: 0,
+                direcionadas_humano: 0,
+                direcionadas_ramal: 0,
+                ligacoes_interrompidas_pelo_cliente: 0,
+                tempo_total_ligacao: 0,
+                tempo_total_espera: 0,
+                total_uras: 0
+            }
         },
         HSOR: {
-            recebidas: 0,
-            direcionadas_humano: 0,
-            direcionadas_ramal: 0,
-            ligacoes_interrompidas_pelo_cliente: 0,
-            tempo_total_ligacao: 0,
-            tempo_total_espera: 0,
-            total_uras: 0
+            interno: {
+                recebidas: 0,
+                atendidas_cognitiva: 0,
+                atendidas_tradicional: 0,
+                abandonadas_cognitiva_ate_um_minuto: 0,
+                abandonadas_cognitiva_acima_um_minuto: 0,
+                direcionadas_humano: 0,
+                direcionadas_ramal: 0,
+                ligacoes_interrompidas_pelo_cliente: 0,
+                tempo_total_ligacao: 0,
+                tempo_total_espera: 0,
+                total_uras: 0
+            },
+            externo: {
+                recebidas: 0,
+                atendidas_cognitiva: 0,
+                atendidas_tradicional: 0,
+                abandonadas_cognitiva_ate_um_minuto: 0,
+                abandonadas_cognitiva_acima_um_minuto: 0,
+                direcionadas_humano: 0,
+                direcionadas_ramal: 0,
+                ligacoes_interrompidas_pelo_cliente: 0,
+                tempo_total_ligacao: 0,
+                tempo_total_espera: 0,
+                total_uras: 0
+            },
+            geral: {   // Adicionando a chave "geral" para tratar os casos de `tipo_atendimento` vazio
+                recebidas: 0,
+                atendidas_cognitiva: 0,
+                atendidas_tradicional: 0,
+                abandonadas_cognitiva_ate_um_minuto: 0,
+                abandonadas_cognitiva_acima_um_minuto: 0,
+                direcionadas_humano: 0,
+                direcionadas_ramal: 0,
+                ligacoes_interrompidas_pelo_cliente: 0,
+                tempo_total_ligacao: 0,
+                tempo_total_espera: 0,
+                total_uras: 0
+            }
         }
     };
 
-    // Itera sobre todas as URAs e soma os valores por cada URA
+    // Itera sobre todas as URAs e classifica por tipo de atendimento (Interno ou Externo)
     uraPerformance.forEach(ura => {
         const key = ura.ura; // 'HM', 'HSJC', ou 'HSOR'
-        if (totaisPorURA[key]) {
-            totaisPorURA[key].recebidas += ura.recebidas || 0;
-            totaisPorURA[key].direcionadas_humano += ura.direcionadas_humano || 0;
-            totaisPorURA[key].direcionadas_ramal += ura.direcionadas_ramal || 0;
-            totaisPorURA[key].ligacoes_interrompidas_pelo_cliente += ura.ligacoes_interrompidas_pelo_cliente || 0;
-            totaisPorURA[key].tempo_total_ligacao += ura.tempo_total_ligacao || 0;
-            totaisPorURA[key].tempo_total_espera += ura.tempo_total_espera || 0;
-            totaisPorURA[key].total_uras += 1;
+        let tipo = (ura.tipo_atendimento || "").toLowerCase(); // Garante que seja string
+
+    
+        // Se o tipo de atendimento for vazio, trate como "geral"
+        if (!tipo) {
+            tipo = 'geral';
+        }
+    
+        if (totaisPorURA[key] && totaisPorURA[key][tipo]) {
+            totaisPorURA[key][tipo].recebidas += ura.recebidas || 0;
+            totaisPorURA[key][tipo].atendidas_cognitiva += ura.atendidas_cognitiva || 0;
+            totaisPorURA[key][tipo].atendidas_tradicional += (ura.recebidas || 0) - (ura.atendidas_cognitiva || 0);
+            totaisPorURA[key][tipo].abandonadas_cognitiva_ate_um_minuto += ura.abandonadas_cognitiva_ate_um_minuto || 0;
+            totaisPorURA[key][tipo].abandonadas_cognitiva_acima_um_minuto += ura.abandonadas_cognitiva_acima_um_minuto || 0;
+            totaisPorURA[key][tipo].direcionadas_humano += ura.direcionadas_humano || 0;
+            totaisPorURA[key][tipo].direcionadas_ramal += ura.direcionadas_ramal || 0;
+            totaisPorURA[key][tipo].ligacoes_interrompidas_pelo_cliente += ura.ligacoes_interrompidas_pelo_cliente || 0;
+            totaisPorURA[key][tipo].tempo_total_ligacao += ura.tempo_total_ligacao || 0;
+            totaisPorURA[key][tipo].tempo_total_espera += ura.tempo_total_espera || 0;
+            totaisPorURA[key][tipo].total_uras += 1;
         }
     });
+    
 
     // Calcula as médias para cada URA
     Object.keys(totaisPorURA).forEach(uraKey => {
         const ura = totaisPorURA[uraKey];
-        if (ura.total_uras > 0) {
-            ura.tempo_medio_ligacao = ura.tempo_total_ligacao / ura.total_uras;
-            ura.tempo_medio_espera = ura.tempo_total_espera / ura.total_uras;
+    
+        // Somar as métricas de "interno", "externo" e casos sem "tipo_atendimento"
+        const somaRecebidas = (ura.interno.recebidas || 0) + (ura.externo.recebidas || 0) + (ura.geral.recebidas || 0);
+        const somaDirecionadasHumano = (ura.interno.direcionadas_humano || 0) + (ura.externo.direcionadas_humano || 0) + (ura.geral.direcionadas_humano || 0);
+        const somaLigacoesInterrompidas = (ura.interno.ligacoes_interrompidas_pelo_cliente || 0) + (ura.externo.ligacoes_interrompidas_pelo_cliente || 0) + (ura.geral.ligacoes_interrompidas_pelo_cliente || 0);
+        const somaTempoTotalLigacao = (ura.interno.tempo_total_ligacao || 0) + (ura.externo.tempo_total_ligacao || 0) + (ura.geral.tempo_total_ligacao || 0);
+        const somaTempoTotalEspera = (ura.interno.tempo_total_espera || 0) + (ura.externo.tempo_total_espera || 0) + (ura.geral.tempo_total_espera || 0);
+        const totalUras = (ura.interno.total_uras || 0) + (ura.externo.total_uras || 0) + (ura.geral.total_uras || 0);
+    
+        // Calcular o tempo médio de ligação e espera
+        if (totalUras > 0) {
+            ura.tempo_medio_ligacao = somaTempoTotalLigacao / totalUras;
+            ura.tempo_medio_espera = somaTempoTotalEspera / totalUras;
         } else {
             ura.tempo_medio_ligacao = 0;
             ura.tempo_medio_espera = 0;
         }
-
+    
         // Cálculo da Resolução de Primeiro Contato para cada URA
-        if (ura.recebidas > 0) {
+        if (somaRecebidas > 0) {
             ura.resolucao_primeiro_contato = (
-                (ura.recebidas - ura.direcionadas_humano - ura.ligacoes_interrompidas_pelo_cliente)
-                / ura.recebidas
+                (somaRecebidas - somaDirecionadasHumano - somaLigacoesInterrompidas)
+                / somaRecebidas
             ) * 100;
         } else {
-            ura.resolucao_primeiro_contato = 0;  // Evita divisão por zero
+            ura.resolucao_primeiro_contato = 0;
         }
+    
+        // Log para verificar os cálculos
+        //console.log(`URA: ${uraKey}, Resolucao: ${ura.resolucao_primeiro_contato}`);
     });
+    
+    
+    
 
+    // console.log(totaisPorURA);
     return totaisPorURA;
+
 }
 
 
 // Função para manipular os dados somados e atualizar o HTML
 function atualizarDadosNaInterface(totaisPorURA) {
-    // Atualizar dados da URA HM
-    document.querySelector('.processadas-hm').innerText = totaisPorURA.HM.recebidas || 0;
-    document.querySelector('.resolucao-hm').innerText = `${totaisPorURA.HM.resolucao_primeiro_contato.toFixed(2)}%` || '0%';
-    document.querySelector('.direcionadas-humano-hm').innerText = totaisPorURA.HM.direcionadas_humano || 0;
-    document.querySelector('.direcionadas-ramal-hm').innerText = totaisPorURA.HM.direcionadas_ramal || 0;
-    document.querySelector('.abandonadas-hm').innerText = totaisPorURA.HM.ligacoes_interrompidas_pelo_cliente || 0;
+    // Função para somar valores de "interno", "externo" e "geral" para cada métrica
+    function somarInternoExternoGeral(ura) {
+        return {
+            recebidas: (ura.interno?.recebidas || 0) + (ura.externo?.recebidas || 0) + (ura.geral?.recebidas || 0),
+            atendidas_cognitiva: (ura.interno?.atendidas_cognitiva || 0) + (ura.externo?.atendidas_cognitiva || 0) + (ura.geral?.atendidas_cognitiva || 0),
+            atendidas_tradicional: (ura.interno?.atendidas_tradicional || 0) + (ura.externo?.atendidas_tradicional || 0) + (ura.geral?.atendidas_tradicional || 0),
+            direcionadas_humano: (ura.interno?.direcionadas_humano || 0) + (ura.externo?.direcionadas_humano || 0) + (ura.geral?.direcionadas_humano || 0),
+            direcionadas_ramal: (ura.interno?.direcionadas_ramal || 0) + (ura.externo?.direcionadas_ramal || 0) + (ura.geral?.direcionadas_ramal || 0),
+            ligacoes_interrompidas_pelo_cliente: (ura.interno?.ligacoes_interrompidas_pelo_cliente || 0) + (ura.externo?.ligacoes_interrompidas_pelo_cliente || 0) + (ura.geral?.ligacoes_interrompidas_pelo_cliente || 0),
+            abandonadas_cognitiva_ate_um_minuto: (ura.interno?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.externo?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.geral?.abandonadas_cognitiva_ate_um_minuto || 0),
+            abandonadas_cognitiva_acima_um_minuto: (ura.interno?.abandonadas_cognitiva_acima_um_minuto || 0) + (ura.externo?.abandonadas_cognitiva_acima_um_minuto || 0) + (ura.geral?.abandonadas_cognitiva_acima_um_minuto || 0),
+            resolucao_primeiro_contato: ura.resolucao_primeiro_contato || 0 // Pegar diretamente da métrica calculada
+        };
+    }
 
+    // Atualizar dados da URA HM
+    const totaisHM = somarInternoExternoGeral(totaisPorURA.HM);
+    document.querySelector('.processadas-hm').innerText = totaisHM.recebidas;
+    document.querySelector('.atendidas-cognitiva-hm').innerText = totaisHM.atendidas_cognitiva;
+    document.querySelector('.atendidas-tradicional-hm').innerText = totaisHM.atendidas_tradicional;
+    document.querySelector('.direcionadas-humano-hm').innerText = totaisHM.direcionadas_humano;
+    document.querySelector('.direcionadas-ramal-hm').innerText = totaisHM.direcionadas_ramal;
+    document.querySelector('.abandonadas-hm').innerText = totaisHM.ligacoes_interrompidas_pelo_cliente;
+    document.querySelector('.resolucao-hm').innerText = `${totaisHM.resolucao_primeiro_contato.toFixed(2)}%`;
+
+    // Atualizar abandonadas cognitivas para HM
+    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hm').innerText = totaisPorURA.HM.interno.abandonadas_cognitiva_ate_um_minuto || 0;
+    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-externo-hm').innerText = totaisPorURA.HM.externo.abandonadas_cognitiva_ate_um_minuto || 0;
+    document.querySelector('.abandonadas-cognitiva-acima-um-minuto-interno-hm').innerText = totaisPorURA.HM.interno.abandonadas_cognitiva_acima_um_minuto || 0;
+    document.querySelector('.abandonadas-cognitiva-acima-um-minuto-externo-hm').innerText = totaisPorURA.HM.externo.abandonadas_cognitiva_acima_um_minuto || 0;
 
     // Atualizar dados da URA HSJC
-    document.querySelector('.processadas-hsjc').innerText = totaisPorURA.HSJC.recebidas || 0;
-    document.querySelector('.resolucao-hsjc').innerText = `${totaisPorURA.HSJC.resolucao_primeiro_contato.toFixed(2)}%` || '0%';
-    document.querySelector('.direcionadas-humano-hsjc').innerText = totaisPorURA.HSJC.direcionadas_humano || 0;
-    document.querySelector('.direcionadas-ramal-hsjc').innerText = totaisPorURA.HSJC.direcionadas_ramal || 0;
-    document.querySelector('.abandonadas-hsjc').innerText = totaisPorURA.HSJC.ligacoes_interrompidas_pelo_cliente || 0;
+    const totaisHSJC = somarInternoExternoGeral(totaisPorURA.HSJC);
+    document.querySelector('.processadas-hsjc').innerText = totaisHSJC.recebidas;
+    document.querySelector('.atendidas-cognitiva-hsjc').innerText = totaisHSJC.atendidas_cognitiva;
+    document.querySelector('.atendidas-tradicional-hsjc').innerText = totaisHSJC.atendidas_tradicional;
+    document.querySelector('.direcionadas-humano-hsjc').innerText = totaisHSJC.direcionadas_humano;
+    document.querySelector('.direcionadas-ramal-hsjc').innerText = totaisHSJC.direcionadas_ramal;
+    document.querySelector('.abandonadas-hsjc').innerText = totaisHSJC.ligacoes_interrompidas_pelo_cliente;
+    document.querySelector('.resolucao-hsjc').innerText = `${totaisHSJC.resolucao_primeiro_contato.toFixed(2)}%`;
+
+    // Atualizar abandonadas cognitivas para HSJC
+    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsjc').innerText = totaisPorURA.HSJC.interno.abandonadas_cognitiva_ate_um_minuto || 0;
+    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-externo-hsjc').innerText = totaisPorURA.HSJC.externo.abandonadas_cognitiva_ate_um_minuto || 0;
+    document.querySelector('.abandonadas-cognitiva-acima-um-minuto-interno-hsjc').innerText = totaisPorURA.HSJC.interno.abandonadas_cognitiva_acima_um_minuto || 0;
+    document.querySelector('.abandonadas-cognitiva-acima-um-minuto-externo-hsjc').innerText = totaisPorURA.HSJC.externo.abandonadas_cognitiva_acima_um_minuto || 0;
 
     // Atualizar dados da URA HSOR
-    document.querySelector('.processadas-hsor').innerText = totaisPorURA.HSOR.recebidas || 0;
-    document.querySelector('.resolucao-hsor').innerText = `${totaisPorURA.HSOR.resolucao_primeiro_contato.toFixed(2)}%` || '0%';
-    document.querySelector('.direcionadas-humano-hsor').innerText = totaisPorURA.HSOR.direcionadas_humano || 0;
-    document.querySelector('.direcionadas-ramal-hsor').innerText = totaisPorURA.HSOR.direcionadas_ramal || 0;
-    document.querySelector('.abandonadas-hsor').innerText = totaisPorURA.HSOR.ligacoes_interrompidas_pelo_cliente || 0;
+    const totaisHSOR = somarInternoExternoGeral(totaisPorURA.HSOR);
+    document.querySelector('.processadas-hsor').innerText = totaisHSOR.recebidas;
+    document.querySelector('.atendidas-cognitiva-hsor').innerText = totaisHSOR.atendidas_cognitiva;
+    document.querySelector('.atendidas-tradicional-hsor').innerText = totaisHSOR.atendidas_tradicional;
+    document.querySelector('.direcionadas-humano-hsor').innerText = totaisHSOR.direcionadas_humano;
+    document.querySelector('.direcionadas-ramal-hsor').innerText = totaisHSOR.direcionadas_ramal;
+    document.querySelector('.abandonadas-hsor').innerText = totaisHSOR.ligacoes_interrompidas_pelo_cliente;
+    document.querySelector('.resolucao-hsor').innerText = `${totaisHSOR.resolucao_primeiro_contato.toFixed(2)}%`;
+
+    // Atualizar abandonadas cognitivas para HSOR
+    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsor').innerText = totaisPorURA.HSOR.interno.abandonadas_cognitiva_ate_um_minuto || 0;
+    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-externo-hsor').innerText = totaisPorURA.HSOR.externo.abandonadas_cognitiva_ate_um_minuto || 0;
+    document.querySelector('.abandonadas-cognitiva-acima-um-minuto-interno-hsor').innerText = totaisPorURA.HSOR.interno.abandonadas_cognitiva_acima_um_minuto || 0;
+    document.querySelector('.abandonadas-cognitiva-acima-um-minuto-externo-hsor').innerText = totaisPorURA.HSOR.externo.abandonadas_cognitiva_acima_um_minuto || 0;
 }
+
 
 
 

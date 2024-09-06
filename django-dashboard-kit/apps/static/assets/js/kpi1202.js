@@ -17,7 +17,7 @@ export function processarDadosParaGraficoPonteiro1202(dados) {
     // Iterando sobre os dados processados por URA
     Object.keys(dadosProcessados.porURA).forEach(ura => {
         const uraData = dadosProcessados.porURA[ura];
-        console.log(`[DEBUG] Processando dados da URA: ${ura}`, uraData);
+        // console.log(`[DEBUG] Processando dados da URA: ${ura}`, uraData);
 
         // Calcular a porcentagem de atendimentos realizados em menos de 1 minuto
         const atendidasInferior1Min = uraData.atendidasInferior1Min;
