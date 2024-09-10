@@ -46,18 +46,17 @@
             Buscar
         </button>
     </div>
+    <!-- Toggle switch para visualizar todos os KPIs -->
+    <div class="d-flex align-items-center">
+        <label id="toggleLabel" for="toggleKPIView" class="form-label mb-0 me-2" style="font-weight: 600; font-size: 0.9rem; color: #5a5a5a;">Ver Todos os KPIs</label>
+        <label class="switch">
+            <input type="checkbox" id="toggleKPIView">
+            <span class="slider round"></span>
+        </label>
+    </div>
+
 </div>
 
-<style>
-    #kpiSearchButton:hover {
-        background-color: #0056b3;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-    }
+<script>
 
-    select.form-select-sm:focus {
-        border-color: #80bdff;
-        outline: 0;
-        box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
-    }
-</style>
+</script>

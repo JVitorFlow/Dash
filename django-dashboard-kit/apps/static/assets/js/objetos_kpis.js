@@ -647,7 +647,7 @@ const kpiConfigurationsTendencia = {
             },
             {
                 name: 'Acumulado do Dia',
-                dataKey: 'atendimentoPercentual',
+                dataKey: 'percentual',
                 color: '#ff0000' // Vermelho
             }
         ]
@@ -662,7 +662,7 @@ const kpiConfigurationsTendencia = {
                 name: 'Meta',
                 dataKey: 'metaDiaria',
                 color: '#007bff', // Azul
-                fixedValue: 100 // Meta de 100% para KPI 1104
+                fixedValue: 95 // Meta de 100% para KPI 1104
             },
             {
                 name: 'Eficiência Acumulada',
@@ -704,7 +704,7 @@ const kpiConfigurationsTendencia = {
             },
             {
                 name: 'Acumulado do Dia',
-                dataKey: 'atendimentoPercentual',
+                dataKey: 'percentual',
                 color: '#ff0000' // Vermelho
             }
         ]
@@ -719,11 +719,11 @@ const kpiConfigurationsTendencia = {
                 name: 'Meta',
                 dataKey: 'metaDiaria',
                 color: '#007bff', // Azul
-                fixedValue: 100 // Meta de 100% para KPI 1102
+                fixedValue: 95 // Meta de 95% para KPI 1102
             },
             {
-                name: 'Acumulado do Dia',
-                dataKey: 'atendimentoPercentual',
+                name: 'Eficiência Acumulada',
+                dataKey: 'percentual',
                 color: '#ff0000' // Vermelho
             }
         ]

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+/* document.addEventListener('DOMContentLoaded', function () {
     let barChartInstance;  // Variável para armazenar a instância do gráfico
     let lastFetchedData;   // Variável para armazenar os dados recuperados da API
 
@@ -399,3 +399,21 @@ document.addEventListener('DOMContentLoaded', function () {
         locale: "pt"
     });
 }); 
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButton = document.getElementById('toggleIndicadorGraficosButton');
+    const indicadorGraficosSection = document.getElementById('indicadorGraficosURASection');
+
+    toggleButton.addEventListener('click', function() {
+        // Alterna a visibilidade da seção
+        if (indicadorGraficosSection.style.display === 'none') {
+            indicadorGraficosSection.style.display = 'block';
+            toggleButton.innerText = 'Ocultar Gráficos'; // Atualiza o texto do botão
+        } else {
+            indicadorGraficosSection.style.display = 'none';
+            toggleButton.innerText = 'Mostrar Gráficos'; // Atualiza o texto do botão
+        }
+    });
+});
+ */

@@ -4,6 +4,7 @@
 
 {% block extrahead %}
     <link rel="stylesheet" href="{% static 'assets/css/kpis.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/filtros.css' %}">
 {% endblock %}
 
 {% block title %} Dashboard KPI URA {% endblock %}
@@ -67,30 +68,40 @@
             </div>
             
             <!-- KPI 1101  -->
-            {% include 'includes/components/kpi11_01.html' %}
-        
+            <div id="kpi1101" class="kpi-container" style="display:none;">
+                {% include 'includes/components/kpi11_01.html' %}
+            </div>
+            
+            
+            <div id="kpi1102" class="kpi-container" style="display:none;">
+                <!-- KPI1102 -->
+                {% include 'includes/components/kpi11_02.html' %}
+            </div>
+
+            <div id="kpi1104" class="kpi-container" style="display:none;">
+                <!-- KPI1104 -->
+                {% include 'includes/components/kpi11_04.html' %}
+            </div>
+
+            <div id="kpi1201" class="kpi-container" style="display:none;">
+                <!-- KPI1201 -->
+                {% include 'includes/components/kpi12_01.html' %}
+            </div>
+            <div id="kpi1202" class="kpi-container" style="display:none;">
+                <!-- KPI1202 -->
+                {% include 'includes/components/kpi12_02.html' %}
+            </div>
+            
+            <div id="kpi1204" class="kpi-container" style="display:none;">
+                <!-- KPI1204 -->
+                {% include 'includes/components/kpi12_04.html' %}
+            </div>
+
             <!-- Indicadores de Desempenho de URA por Fila de Atendimento -->
-            {% include 'includes/components/indicador_graficos_ura.html' %}
-
+            {% comment %} {% include 'includes/components/indicador_graficos_ura.html' %} {% endcomment %}
+            
             <!-- Tempo médio de serviços por atendente -->
-            {% include 'includes/components/tempo_medio_servico_por_atendente.html' %}
-            
-            <!-- KPI1102 -->
-            {% include 'includes/components/kpi11_02.html' %}
-            
-            <!-- KPI1104 -->
-            {% include 'includes/components/kpi11_04.html' %}
-            
-            <!-- KPI1201 -->
-            {% include 'includes/components/kpi12_01.html' %}
-            
-            <!-- KPI1202 -->
-            {% include 'includes/components/kpi12_02.html' %}
-            <!-- KPI1204 -->
-            {% include 'includes/components/kpi12_04.html' %}
-
-            
-            
+            {% comment %} {% include 'includes/components/tempo_medio_servico_por_atendente.html' %}   {% endcomment %}    
             <!-- [ Main Content ] end -->
         </div>
     </div>
@@ -123,13 +134,13 @@
         {{ atividades_agentes_ura_url }}
     </script>
 
-    <script id="indicadorDesempenhoFilaUrlData" type="application/json">
+    {% comment %} <script id="indicadorDesempenhoFilaUrlData" type="application/json">
         {{ indicador_de_desempenho_por_fila_de_URA|escapejs }}
     </script>
     
     <script id="tempoMedioServicoAtendenteUrlData" type="application/json">
         {{ tempo_medio_servico_por_atendente_url }}
-    </script>
+    </script> {% endcomment %}
 
     <script id="tempoEsperaAtendimento1minutoExternoKPI1102" type="application/json">
         {{ indicador_de_desempenho_url }}
@@ -158,7 +169,7 @@
     <script type="module" src="{% static 'assets/js/atividade_agentes.js' %}"></script>
     
     <!-- Outros scripts personalizados -->
-    <script src="{% static 'assets/js/indicador_desempenho_por_fila_URA.js' %}"></script>
+    {% comment %} <script src="{% static 'assets/js/indicador_desempenho_por_fila_URA.js' %}"></script> {% endcomment %}
     <script src="{% static 'assets/js/tempo_medio_servico_por_atendente.js' %}"></script>
     <script type="module" src="{% static 'assets/js/tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js' %}"></script>
     <script type="module" src="{% static 'assets/js/Kpi1201.js' %}"></script>
@@ -176,50 +187,97 @@
         import {buscarIndicadorTempoEsperaKPI1202} from '{% static "assets/js/Kpi1202.js" %}';
 
         document.addEventListener('DOMContentLoaded', function() {
+            const toggleKPIView = document.getElementById('toggleKPIView');
+            const toggleLabel = document.getElementById('toggleLabel');
+            const kpiContainers = document.querySelectorAll('.kpi-container'); // Seleciona todos os containers de KPI
+        
+            // Função para exibir todos os KPIs
+            function mostrarTodosKPIs() {
+                kpiContainers.forEach(function(container) {
+                    container.style.display = 'block'; // Exibe todos os KPIs
+                });
+            }
+        
+            // Função para ocultar todos os KPIs
+            function ocultarTodosKPIs() {
+                kpiContainers.forEach(function(container) {
+                    container.style.display = 'none'; // Oculta todos os KPIs
+                });
+            }
+        
+            // Atualiza o texto do rótulo e controla a exibição dos KPIs
+            toggleKPIView.addEventListener('change', function() {
+                if (toggleKPIView.checked) {
+                    toggleLabel.textContent = 'Exibindo Todos os KPIs';
+                    mostrarTodosKPIs(); // Mostra todos os KPIs
+                } else {
+                    toggleLabel.textContent = 'Ver Todos os KPIs';
+                    ocultarTodosKPIs(); // Oculta todos os KPIs
+                    // Exibir apenas o KPI selecionado
+                    const selectedKPI = document.getElementById('kpiSelector').value.trim();
+                    const kpiToShow = document.getElementById(`kpi${selectedKPI}`);
+                    if (kpiToShow) {
+                        kpiToShow.style.display = 'block'; // Exibe o KPI selecionado
+                    }
+                }
+            });
+        
+            // Lógica para o botão "Buscar"
             document.getElementById('kpiSearchButton').addEventListener('click', function() {
                 const selectedKPI = document.getElementById('kpiSelector').value.trim();
-                console.log("[INFO] KPI Selecionado no case:", selectedKPI);
-    
+                console.log("[INFO] KPI Selecionado:", selectedKPI);
+        
+                // Se o toggle não estiver ativado, mostra apenas o KPI selecionado
+                if (!toggleKPIView.checked) {
+                    ocultarTodosKPIs(); // Oculta todos os KPIs
+                    const kpiToShow = document.getElementById(`kpi${selectedKPI}`);
+                    if (kpiToShow) {
+                        kpiToShow.style.display = 'block'; // Exibe o KPI selecionado
+                    }
+                } else {
+                    // Se o toggle estiver ativado, exibe todos os KPIs
+                    mostrarTodosKPIs();
+                }
+        
+                // Continuar chamando as funções específicas para o KPI selecionado
                 switch (selectedKPI) {
                     case '1101':
-                        // console.log('Entrou no case 1');
-                        // Chamar a função relacionada ao KPI 11.01 (Ocupação por Atendente)
                         if (typeof buscarDadosAgentes === 'function') {
-                            buscarDadosAgentes(); // Função específica para este KPI
-                        } else {
-                            console.error('Função buscarDadosAgentes não está definida');
+                            buscarDadosAgentes(); // Função para KPI 1101
                         }
                         break;
                     case '1102':
-                        // console.log('Entrou no case 2');
                         if (typeof buscarIndicadorTempoEspera === 'function') {
-                            buscarIndicadorTempoEspera(); // Função específica para este KPI
-                        } else {
-                            console.error('Função buscarIndicadorTempoEspera não está definida');
+                            buscarIndicadorTempoEspera(); // Função para KPI 1102
                         }
                         break;
                     case '1104':
-                        // console.log('Entrou no case 4');
-                        buscarIndicadorChamadasAbandonadas(); // Função específica para este KPI
+                        if (typeof buscarIndicadorChamadasAbandonadas === 'function') {
+                            buscarIndicadorChamadasAbandonadas(); // Função para KPI 1104
+                        }
                         break;
                     case '1201':
-                        // console.log('Entrou no case 1201');
-                        buscarIndicadorTempoMedio(); // Função específica para este KPI
-                        break;
-                    case '1204':
-                        // console.log('Entrou no case 1204');
-                        buscarIndicadorChamadasAbandonadasInternas(); // Função específica para este KPI
+                        if (typeof buscarIndicadorTempoMedio === 'function') {
+                            buscarIndicadorTempoMedio(); // Função para KPI 1201
+                        }
                         break;
                     case '1202':
-                        console.log('Entrou no case 1202');
-                        buscarIndicadorTempoEsperaKPI1202(); // Função específica para este KPI
+                        if (typeof buscarIndicadorTempoEsperaKPI1202 === 'function') {
+                            buscarIndicadorTempoEsperaKPI1202(); // Função para KPI 1202
+                        }
+                        break;
+                    case '1204':
+                        if (typeof buscarIndicadorChamadasAbandonadasInternas === 'function') {
+                            buscarIndicadorChamadasAbandonadasInternas(); // Função para KPI 1204
+                        }
                         break;
                     default:
                         console.error('KPI não reconhecido:', selectedKPI);
                         break;
-                    }
+                }
             });
         });
+        
     </script>
     <style>
         #colunasChartContainer {

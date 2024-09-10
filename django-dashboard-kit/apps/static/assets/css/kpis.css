@@ -395,3 +395,7 @@ canvas {
 #seriesSelectorContainer {
     display: none;
 }
+.emphasis {
+    font-weight: bold;
+    color: #000; /* Ou qualquer outra cor desejada */
+}

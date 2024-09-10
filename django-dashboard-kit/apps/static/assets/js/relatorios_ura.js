@@ -207,14 +207,14 @@ function somarMetricasPorURA(uraPerformance) {
         }
     
         // Cálculo da Resolução de Primeiro Contato para cada URA
-        if (somaRecebidas > 0) {
+        /* if (somaRecebidas > 0) {
             ura.resolucao_primeiro_contato = (
                 (somaRecebidas - somaDirecionadasHumano - somaLigacoesInterrompidas)
                 / somaRecebidas
             ) * 100;
         } else {
             ura.resolucao_primeiro_contato = 0;
-        }
+        } */
     
         // Log para verificar os cálculos
         //console.log(`URA: ${uraKey}, Resolucao: ${ura.resolucao_primeiro_contato}`);
@@ -242,7 +242,7 @@ function atualizarDadosNaInterface(totaisPorURA) {
             ligacoes_interrompidas_pelo_cliente: (ura.interno?.ligacoes_interrompidas_pelo_cliente || 0) + (ura.externo?.ligacoes_interrompidas_pelo_cliente || 0) + (ura.geral?.ligacoes_interrompidas_pelo_cliente || 0),
             abandonadas_cognitiva_ate_um_minuto: (ura.interno?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.externo?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.geral?.abandonadas_cognitiva_ate_um_minuto || 0),
             abandonadas_cognitiva_acima_um_minuto: (ura.interno?.abandonadas_cognitiva_acima_um_minuto || 0) + (ura.externo?.abandonadas_cognitiva_acima_um_minuto || 0) + (ura.geral?.abandonadas_cognitiva_acima_um_minuto || 0),
-            resolucao_primeiro_contato: ura.resolucao_primeiro_contato || 0 // Pegar diretamente da métrica calculada
+            // resolucao_primeiro_contato: ura.resolucao_primeiro_contato || 0 // Pegar diretamente da métrica calculada
         };
     }
 
@@ -254,7 +254,7 @@ function atualizarDadosNaInterface(totaisPorURA) {
     document.querySelector('.direcionadas-humano-hm').innerText = totaisHM.direcionadas_humano;
     document.querySelector('.direcionadas-ramal-hm').innerText = totaisHM.direcionadas_ramal;
     document.querySelector('.abandonadas-hm').innerText = totaisHM.ligacoes_interrompidas_pelo_cliente;
-    document.querySelector('.resolucao-hm').innerText = `${totaisHM.resolucao_primeiro_contato.toFixed(2)}%`;
+    // document.querySelector('.resolucao-hm').innerText = `${totaisHM.resolucao_primeiro_contato.toFixed(2)}%`;
 
     // Atualizar abandonadas cognitivas para HM
     document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hm').innerText = totaisPorURA.HM.interno.abandonadas_cognitiva_ate_um_minuto || 0;
@@ -270,7 +270,7 @@ function atualizarDadosNaInterface(totaisPorURA) {
     document.querySelector('.direcionadas-humano-hsjc').innerText = totaisHSJC.direcionadas_humano;
     document.querySelector('.direcionadas-ramal-hsjc').innerText = totaisHSJC.direcionadas_ramal;
     document.querySelector('.abandonadas-hsjc').innerText = totaisHSJC.ligacoes_interrompidas_pelo_cliente;
-    document.querySelector('.resolucao-hsjc').innerText = `${totaisHSJC.resolucao_primeiro_contato.toFixed(2)}%`;
+    // document.querySelector('.resolucao-hsjc').innerText = `${totaisHSJC.resolucao_primeiro_contato.toFixed(2)}%`;
 
     // Atualizar abandonadas cognitivas para HSJC
     document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsjc').innerText = totaisPorURA.HSJC.interno.abandonadas_cognitiva_ate_um_minuto || 0;
@@ -286,7 +286,7 @@ function atualizarDadosNaInterface(totaisPorURA) {
     document.querySelector('.direcionadas-humano-hsor').innerText = totaisHSOR.direcionadas_humano;
     document.querySelector('.direcionadas-ramal-hsor').innerText = totaisHSOR.direcionadas_ramal;
     document.querySelector('.abandonadas-hsor').innerText = totaisHSOR.ligacoes_interrompidas_pelo_cliente;
-    document.querySelector('.resolucao-hsor').innerText = `${totaisHSOR.resolucao_primeiro_contato.toFixed(2)}%`;
+    // document.querySelector('.resolucao-hsor').innerText = `${totaisHSOR.resolucao_primeiro_contato.toFixed(2)}%`;
 
     // Atualizar abandonadas cognitivas para HSOR
     document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsor').innerText = totaisPorURA.HSOR.interno.abandonadas_cognitiva_ate_um_minuto || 0;
@@ -340,7 +340,7 @@ document.getElementById('filtroRelatorioUra').addEventListener('click', function
 
     const tableContent = document.getElementById('tableMetrics');
     if (tableContent) {
-        tableContent.style.display = 'none';
+        tableContent.style.display = 'none'; 
     }
 
     // Enviar a requisição para a API
@@ -434,5 +434,30 @@ document.getElementById('select-periodo').addEventListener('change', function() 
         startDateInput.value = '';
         endDateInput.value = '';
     }
+});
+
+// Função para baixar a área específica como PNG
+document.getElementById('download-png').addEventListener('click', function() {
+    const downloadButton = this;
+    downloadButton.disabled = true; // Desabilitar o botão
+
+    const reportSection = document.getElementById('tableMetrics');
+
+    html2canvas(reportSection, {
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        width: reportSection.offsetWidth,
+        height: reportSection.offsetHeight
+    }).then(function(canvas) {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL("image/png");
+        link.download = 'relatorio-ura.png';
+        link.click();
+
+        downloadButton.disabled = false; // Reabilitar o botão após a conclusão
+    }).catch(function(error) {
+        console.error("Erro ao capturar a tela:", error);
+        downloadButton.disabled = false; // Reabilitar o botão em caso de erro
+    });
 });
 
