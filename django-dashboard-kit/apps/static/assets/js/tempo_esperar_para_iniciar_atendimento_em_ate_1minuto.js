@@ -33,7 +33,7 @@ export function processarDadosParaGraficoPonteiro(dados) {
     });
 
     // Log do final do processamento
-    console.log("[processarDadosParaGraficoPonteiro] Processamento concluído. Resultado:", resultado);
+    // console.log("[processarDadosParaGraficoPonteiro] Processamento concluído. Resultado:", resultado);
 
     dadosProcessadosPonteiro = resultado;
 
@@ -75,21 +75,21 @@ export async function buscarIndicadorTempoEspera(isManualSearch = false) {
     }
 
     try {
-        console.log("[INFO] Iniciando busca de Indicador de Tempo de Espera");
+        /* console.log("[INFO] Iniciando busca de Indicador de Tempo de Espera");
         console.log("[DEBUG] Data de Início:", startDate);
-        console.log("[DEBUG] Data de Fim:", endDate);
+        console.log("[DEBUG] Data de Fim:", endDate); */
 
         mostrarLoadingSpinner('loadingSpinnerEsperaKPI1102');
         mostrarLoadingSpinner('loadingSpinnerMedidores');
 
         const payload = { dtStart: startDate, dtFinish: endDate };
-        console.log("[DEBUG] Payload enviado:", JSON.stringify(payload));
+        // console.log("[DEBUG] Payload enviado:", JSON.stringify(payload));
 
         const urlElement = document.getElementById('tempoEsperaAtendimento1minutoExternoKPI1102');
 
         if (urlElement) {
             const urlApi = urlElement.textContent.trim();
-            console.log("[INFO] URL da API chamada:", urlApi);
+            // console.log("[INFO] URL da API chamada:", urlApi);
 
             const response = await fetch(urlApi, {
                 method: 'POST',
@@ -107,9 +107,9 @@ export async function buscarIndicadorTempoEspera(isManualSearch = false) {
                 console.log("[DEBUG] Dados recebidos da API:", data);
 
                 if (data.errcode === 0) {
-                    console.log("[INFO] Processando dados para o gráfico");
+                    // console.log("[INFO] Processando dados para o gráfico");
                     const dadosParaGraficoPonteiro = processarDadosParaGraficoPonteiro(data.ura_performance);
-                    console.log("[INFO] Dados processados para o gráfico de ponteiro:", dadosParaGraficoPonteiro);
+                    // console.log("[INFO] Dados processados para o gráfico de ponteiro:", dadosParaGraficoPonteiro);
                     renderizarGraficoPonteiro('1102', dadosParaGraficoPonteiro);
 
                     const dadosParaGraficoTendencia = processarDadosParaGraficoTendencia(data.ura_performance);
@@ -192,7 +192,7 @@ function processarDadosParaGraficoTendencia(dados) {
     resultadoTendencia.sort((a, b) => new Date(a.data) - new Date(b.data));
 
     // Debug da estrutura final
-    console.log('Estrutura final de dados processados para tendência:', JSON.stringify(resultadoTendencia, null, 2));
+    //console.log('Estrutura final de dados processados para tendência 1102:', JSON.stringify(resultadoTendencia, null, 2));
     return resultadoTendencia;
 }
 
@@ -313,7 +313,7 @@ function processarDadosParaGrafico(dados) {
     });
 
     // Debug da estrutura final
-    console.log('Estrutura final de dados processados:', JSON.stringify(resultado, null, 2));
+    // console.log('Estrutura final de dados processados:', JSON.stringify(resultado, null, 2));
     return resultado;
 }
 

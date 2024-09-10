@@ -26,7 +26,7 @@ export function processarDadosParaGraficoPonteiro1104(dados) {
             : 0;
 
         // Log do cálculo da porcentagem
-        console.log(`[processarDadosParaGraficoPonteiro1104] URA: ${uraNormalizada}, Porcentagem Abandonadas > 1 Min: ${porcentagem.toFixed(2)}%`);
+        // console.log(`[processarDadosParaGraficoPonteiro1104] URA: ${uraNormalizada}, Porcentagem Abandonadas > 1 Min: ${porcentagem.toFixed(2)}%`);
 
         // Armazenar o resultado para cada hospital/URA
         resultado[uraNormalizada] = {
@@ -37,7 +37,7 @@ export function processarDadosParaGraficoPonteiro1104(dados) {
     });
 
     // Log do final do processamento
-    console.log("[processarDadosParaGraficoPonteiro1104] Processamento concluído. Resultado:", resultado);
+    // console.log("[processarDadosParaGraficoPonteiro1104] Processamento concluído. Resultado:", resultado);
 
     dadosProcessadosPonteiro1104 = resultado;
 
@@ -222,7 +222,7 @@ function processarDadosKPI1104(dados) {
         }
     });
 
-    console.log("Dados processados para o gráfico KPI 1104:", resultado);
+    // console.log("Dados processados para o gráfico KPI 1104:", resultado);
     return resultado;
 }
 
@@ -370,7 +370,7 @@ function processarDadosParaGraficoTendencia1104(dados) {
     // Ordena os resultados por data
     resultadoTendencia.sort((a, b) => new Date(a.data) - new Date(b.data));
 
-    // console.log('Estrutura final de dados processados para tendência:', JSON.stringify(resultadoTendencia, null, 2));
+    //console.log('Estrutura final de dados processados para tendência 1104:', JSON.stringify(resultadoTendencia, null, 2));
     return resultadoTendencia;
 }
 

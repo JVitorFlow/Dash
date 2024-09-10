@@ -6,6 +6,7 @@
 
 {% block extrahead %}
     <link rel="stylesheet" href="{% static 'assets/css/kpis.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -115,9 +116,9 @@
                     <input type="datetime-local" class="form-control" id="endDate">
                 </div>
 
-                <div class="col-md-2">
-                    <label for="filtroRelatorioUra" class="form-label d-block">&nbsp;</label>
-                    <button class="btn btn-primary w-100" id="filtroRelatorioUra">Filtrar</button>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100 me-2" id="filtroRelatorioUra">Filtrar</button>
+                    <button class="btn btn-success w-100" id="download-png">📥 Baixar Relatório</button>
                 </div>
             </div>
             <!-- [ Filtros ] end -->
@@ -158,14 +159,14 @@
                             </div>
                         </div>
                         <!-- Card 2 - Resolução Primeiro Contato (HM) -->
-                        <div class="card custom-card mb-2">
+                        {% comment %} <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-check-circle"></i> Resolução Primeiro Contato
                                 </h5>
                                 <p class="card-text resolucao-hm">0%</p>
                             </div>
-                        </div>
+                        </div> {% endcomment %}
                         <!-- Card 4 - Direcionadas para Humano (HM) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
@@ -184,20 +185,11 @@
                                 <p class="card-text direcionadas-ramal-hm">0</p>
                             </div>
                         </div>
-                        <!-- Card 6 - Abandonadas URA (HM) -->
-                        <div class="card custom-card mb-2">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-times-circle"></i> Abandonadas URA
-                                </h5>
-                                <p class="card-text abandonadas-hm">0</p>
-                            </div>
-                        </div>
                         <!-- Card - Abandonadas Cognitiva Até 1 Minuto (HM) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <i class="fas fa-clock"></i> Abandonadas Cognitiva Até 1 Minuto
+                                    <i class="fas fa-clock"></i> Abandonadas Cognitiva <span class="emphasis">Inferior</span> 1 Minuto</h6>
                                 </h5>
                                 <!-- Exibição de Interno e Externo dentro do mesmo card -->
                                 <div class="row">
@@ -216,7 +208,7 @@
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <i class="fas fa-hourglass"></i> Abandonadas Cognitiva Acima de 1 Minuto
+                                    <i class="fas fa-hourglass"></i> Abandonadas Cognitiva <span class="emphasis">Superior</span> 1 Minuto</h6>
                                 </h5>
                                 <!-- Exibição de Interno e Externo dentro do mesmo card -->
                                 <div class="row">
@@ -229,6 +221,14 @@
                                         <p class="card-text abandonadas-cognitiva-acima-um-minuto-externo-hm">0</p>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-times-circle"></i> Paciente interrompeu a navegação
+                                </h5>
+                                <p class="card-text abandonadas-hm">0</p>
                             </div>
                         </div>
                     </div>
@@ -262,14 +262,14 @@
                             </div>
                         </div>
                         <!-- Card 2 - Resolução Primeiro Contato (HSJC) -->
-                        <div class="card custom-card mb-2">
+                        {% comment %} <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-check-circle"></i> Resolução Primeiro Contato
                                 </h5>
                                 <p class="card-text resolucao-hsjc">0%</p>
                             </div>
-                        </div>
+                        </div> {% endcomment %}
                         <!-- Card 4 - Direcionadas para Humano (HSJC) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
@@ -288,20 +288,12 @@
                                 <p class="card-text direcionadas-ramal-hsjc">0</p>
                             </div>
                         </div>
-                        <!-- Card 6 - Abandonadas URA (HSJC) -->
-                        <div class="card custom-card mb-2">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-times-circle"></i> Abandonadas URA
-                                </h5>
-                                <p class="card-text abandonadas-hsjc">0</p>
-                            </div>
-                        </div>
+                        
                         <!-- Card - Abandonadas Cognitiva Até 1 Minuto (HSJC) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <i class="fas fa-clock"></i> Abandonadas Cognitiva Até 1 Minuto
+                                    <i class="fas fa-clock"></i> Abandonadas Cognitiva <span class="emphasis">Inferior</span> 1 Minuto</h6>
                                 </h5>
                                 <!-- Exibição de Interno e Externo dentro do mesmo card -->
                                 <div class="row">
@@ -320,7 +312,7 @@
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <i class="fas fa-hourglass"></i> Abandonadas Cognitiva Acima de 1 Minuto
+                                    <i class="fas fa-hourglass"></i> Abandonadas Cognitiva <span class="emphasis">Superior</span> 1 Minuto</h6>
                                 </h5>
                                 <!-- Exibição de Interno e Externo dentro do mesmo card -->
                                 <div class="row">
@@ -333,6 +325,14 @@
                                         <p class="card-text abandonadas-cognitiva-acima-um-minuto-externo-hsjc">0</p>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-times-circle"></i> Paciente interrompeu a navegação
+                                </h5>
+                                <p class="card-text abandonadas-hsjc">0</p>
                             </div>
                         </div>
                     </div>
@@ -366,14 +366,14 @@
                             </div>
                         </div>
                         <!-- Card 2 - Resolução Primeiro Contato (HSOR) -->
-                        <div class="card custom-card mb-2">
+                        {% comment %} <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-check-circle"></i> Resolução Primeiro Contato
                                 </h5>
                                 <p class="card-text resolucao-hsor">0%</p>
                             </div>
-                        </div>
+                        </div> {% endcomment %}
                         <!-- Card 4 - Direcionadas para Humano (HSOR) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
@@ -392,20 +392,12 @@
                                 <p class="card-text direcionadas-ramal-hsor">0</p>
                             </div>
                         </div>
-                        <!-- Card 6 - Abandonadas URA (HSOR) -->
-                        <div class="card custom-card mb-2">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-times-circle"></i> Abandonadas URA
-                                </h5>
-                                <p class="card-text abandonadas-hsor">0</p>
-                            </div>
-                        </div>
+                        
                         <!-- Card - Abandonadas Cognitiva Até 1 Minuto (HSOR) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <i class="fas fa-clock"></i> Abandonadas Cognitiva Até 1 Minuto
+                                    <i class="fas fa-clock"></i> Abandonadas Cognitiva <span class="emphasis">Inferior</span> 1 Minuto</h6>
                                 </h5>
                                 <!-- Exibição de Interno e Externo dentro do mesmo card -->
                                 <div class="row">
@@ -424,7 +416,7 @@
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <i class="fas fa-hourglass"></i> Abandonadas Cognitiva Acima de 1 Minuto
+                                    <i class="fas fa-hourglass"></i> Abandonadas Cognitiva <span class="emphasis">Superior</span> 1 Minuto</h6>
                                 </h5>
                                 <!-- Exibição de Interno e Externo dentro do mesmo card -->
                                 <div class="row">
@@ -437,6 +429,15 @@
                                         <p class="card-text abandonadas-cognitiva-acima-um-minuto-externo-hsor">0</p>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        <!-- Card - Paciente interrompeu a navegação (HSOR) -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-times-circle"></i> Paciente interrompeu a navegação
+                                </h5>
+                                <p class="card-text abandonadas-hsor">0</p>
                             </div>
                         </div>
                     </div>

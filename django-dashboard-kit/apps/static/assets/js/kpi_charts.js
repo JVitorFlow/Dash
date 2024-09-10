@@ -382,7 +382,8 @@ export function renderizarGraficoTendencia(kpiId, dadosProcessados) {
         return dateA - dateB;
     });
 
-    console.log("[DEBUG] Categorias do eixo X ordenadas:", categories);
+    // console.log("[DEBUG] Categorias (datas) após ordenação:", categories);
+
 
     const seriesData = [];
 
@@ -405,7 +406,7 @@ export function renderizarGraficoTendencia(kpiId, dadosProcessados) {
         });
     });
 
-    console.log("[INFO] Dados formatados para o gráfico de tendência:", seriesData);
+    // console.log("[INFO] Dados formatados para o gráfico de tendência:", seriesData);
 
     Highcharts.chart('tendenciaChartContainer', {
         chart: {

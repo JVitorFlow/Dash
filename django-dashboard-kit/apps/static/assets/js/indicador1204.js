@@ -90,9 +90,9 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
                 startDate = `${selectedAno}-${selectedMes}-01T00:00:00`;
                 endDate = new Date(selectedAno, selectedMes, 0).toISOString().replace(/T.*/, 'T23:59:59');
 
-                console.log("[INFO] Datas geradas para o KPI 12.04");
+                /* console.log("[INFO] Datas geradas para o KPI 12.04");
                 console.log("[DEBUG] Data de Início:", startDate);
-                console.log("[DEBUG] Data de Fim:", endDate);
+                console.log("[DEBUG] Data de Fim:", endDate); */
             } else {
                 alert('Por favor, selecione o mês e o ano.');
                 console.error("[ERROR] Mês ou ano não selecionado.");
@@ -118,7 +118,7 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
         const urlElement = document.getElementById('tempoChamadasAbandonadasInternasKPI1204');
         if (urlElement) {
             const urlApi = urlElement.textContent.trim();
-            console.log("[INFO] URL da API carregada:", urlApi);
+            // console.log("[INFO] URL da API carregada:", urlApi);
 
             const response = await fetch(urlApi, {
                 method: 'POST',
@@ -132,8 +132,8 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
             const data = await response.json();
 
             if (data.errcode === 0) {
-                console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
-                console.log('Chamando renderizarTabelaIndicadorAbandonadasInternas');
+                /* console.log('Dados recebidos do JSON:', JSON.stringify(data, null, 2));
+                console.log('Chamando renderizarTabelaIndicadorAbandonadasInternas'); */
 
                 const dadosProcessados = processarDadosKPI1204(data.ura_performance);
                 renderizarGraficoColunas('1204', dadosProcessados);
@@ -322,11 +322,16 @@ function processarDadosParaGraficoTendencia1204(dados) {
 
     // Inicializa um objeto para armazenar os dados agregados por data
     const dadosPorData = {};
+    const DEBUG_MODE = false;
+
+    // console.log("[DEBUG] Dados recebidos para processarDadosParaGraficoTendencia1204:", dados);
 
     dados.forEach(item => {
         if (item.tipo_atendimento === "Interno") {
             const data = item.data;
             const uraKey = mapeamentoURAs[item.ura] || item.ura;
+
+            console.log(`[DEBUG] Processando item para a data: ${data}, URA: ${uraKey}`);
 
             // Inicializa os contadores para a data específica, se ainda não existir
             if (!dadosPorData[data]) {
@@ -337,25 +342,53 @@ function processarDadosParaGraficoTendencia1204(dados) {
                 };
             }
 
-            // Calcula o número de ligações recebidas e atualiza os contadores
-            const ligacoesRecebidas = (item.atendidas_cognitiva || 0) + (item.abandonadas_cognitiva || 0);
-            dadosPorData[data].ligacoesRecebidas += ligacoesRecebidas;
-            dadosPorData[data].desistenciasSuperior1Min += item.abandonadas_cognitiva_acima_um_minuto || 0;
+            // Verifica se ligacoesAtendidas e abandonadas_cognitiva são números antes de somar
+            const ligacoesAtendidas = Number(item.atendidas_cognitiva) || 0;
+            const abandonadasCognitiva =  Number(item.abandonadas_cognitiva) || 0;
+
+            // Calcula o número de ligações recebidas (ligacoesAtendidas + abandonadasCognitiva)
+            const ligacoesRecebidas = ligacoesAtendidas + abandonadasCognitiva;
+
+            // Adicionando verificação e log para evitar NaN
+            if (ligacoesRecebidas > 0) {
+                dadosPorData[data].ligacoesRecebidas += ligacoesRecebidas;
+                if (DEBUG_MODE) {
+                    console.log(`[DEBUG] Atualizando ligacoesRecebidas para a data ${data}:`, dadosPorData[data].ligacoesRecebidas);
+                }
+            }
+
+            // Verifica e soma as desistências acima de 1 minuto
+            const desistenciasSuperior1Min = Number(item.abandonadas_cognitiva_acima_um_minuto) || 0;
+            if (desistenciasSuperior1Min > 0) {
+                dadosPorData[data].desistenciasSuperior1Min += desistenciasSuperior1Min;
+                if (DEBUG_MODE) {
+                    console.log(`[DEBUG] Atualizando desistenciasSuperior1Min para a data ${data}:`, dadosPorData[data].desistenciasSuperior1Min);
+                }
+            }
         }
     });
 
     // Calcula o percentual de eficiência para cada data
     for (const data in dadosPorData) {
         const item = dadosPorData[data];
+        
+        //console.log(`[DEBUG] Calculando percentual para a data ${data} - ligacoesRecebidas: ${item.ligacoesRecebidas}, desistenciasSuperior1Min: ${item.desistenciasSuperior1Min}`);
+        
         const percentual = item.desistenciasSuperior1Min === 0 
             ? 100 // Se não houver desistências, a eficiência é 100%
             : 100 - ((item.desistenciasSuperior1Min / item.ligacoesRecebidas) * 100);
 
         // Adiciona o resultado ao array final
-        resultadoTendencia.push({
-            data: item.data,
-            percentual: percentual.toFixed(2) // Arredonda para duas casas decimais
-        });
+        if (!isNaN(percentual)) {
+            // console.log(`[DEBUG] Percentual calculado para a data ${data}: ${percentual}`);
+            // Adiciona o resultado ao array final
+            resultadoTendencia.push({
+                data: item.data,
+                percentual: percentual.toFixed(2) // Arredonda para duas casas decimais
+            });
+        } else {
+            console.warn(`[WARN] Percentual calculado como NaN para a data ${data}, ignorando.`);
+        }
     }
 
     // Ordena os resultados por data
