@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'crispy_forms',
     'crispy_bootstrap4',
+    'django_celery_beat',
+    'django_celery_results',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -232,3 +234,13 @@ BOTERIA_COMPANY_ID = config('BOTERIA_COMPANY_ID')
 BOTERIA_TOKEN_DASHBOARD = config('BOTERIA_TOKEN_DASHBOARD')
 SECTOR_ID = config('SECTOR_ID')
 UUID = config('UUID')
+
+
+# Configurações do RabbitMQ
+CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq:5672//'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'America/Sao_Paulo'  # Ajuste conforme sua localização
+CELERY_ENABLE_UTC = False  # Ajuste se o seu projeto não for usar UTC

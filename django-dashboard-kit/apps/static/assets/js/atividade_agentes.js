@@ -49,8 +49,8 @@ export function buscarDadosAgentes(isManualSearch = false) {
         }
     }
 
-    console.log("[DEBUG] Data de Início (sem ajuste para UTC):", startDate);
-    console.log("[DEBUG] Data de Fim (sem ajuste para UTC):", endDate);
+    //console.log("[DEBUG] Data de Início (sem ajuste para UTC):", startDate);
+    // console.log("[DEBUG] Data de Fim (sem ajuste para UTC):", endDate);
 
 
     mostrarLoadingSpinner('loadingSpinnerMedidores');

@@ -46,6 +46,44 @@ services:
     depends_on: 
       - dashboard_app
 
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+    - "15672:15672"
+    - "5672:5672"
+    networks:
+      - db_network
+      - web_network
+
+  celery:
+    container_name: celery
+    build: .
+    command: celery -A core worker -l info
+    restart: always
+    depends_on:
+      - dashboard_app
+      - rabbitmq
+    volumes:
+      - .:/app
+    networks:
+      - db_network
+      - web_network
+    
+  celery_beat:
+    container_name: celery_beat
+    build: .
+    command: celery -A core beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    restart: always
+    depends_on:
+      - dashboard_app
+      - rabbitmq
+    volumes:
+      - .:/app
+    networks:
+      - db_network
+      - web_network
+
 networks:
   db_network:
     driver: bridge

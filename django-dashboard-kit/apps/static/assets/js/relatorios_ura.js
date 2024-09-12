@@ -240,7 +240,7 @@ function atualizarDadosNaInterface(totaisPorURA) {
             direcionadas_humano: (ura.interno?.direcionadas_humano || 0) + (ura.externo?.direcionadas_humano || 0) + (ura.geral?.direcionadas_humano || 0),
             direcionadas_ramal: (ura.interno?.direcionadas_ramal || 0) + (ura.externo?.direcionadas_ramal || 0) + (ura.geral?.direcionadas_ramal || 0),
             ligacoes_interrompidas_pelo_cliente: (ura.interno?.ligacoes_interrompidas_pelo_cliente || 0) + (ura.externo?.ligacoes_interrompidas_pelo_cliente || 0) + (ura.geral?.ligacoes_interrompidas_pelo_cliente || 0),
-            abandonadas_cognitiva_ate_um_minuto: (ura.interno?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.externo?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.geral?.abandonadas_cognitiva_ate_um_minuto || 0),
+            //abandonadas_cognitiva_ate_um_minuto: (ura.interno?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.externo?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.geral?.abandonadas_cognitiva_ate_um_minuto || 0),
             abandonadas_cognitiva_acima_um_minuto: (ura.interno?.abandonadas_cognitiva_acima_um_minuto || 0) + (ura.externo?.abandonadas_cognitiva_acima_um_minuto || 0) + (ura.geral?.abandonadas_cognitiva_acima_um_minuto || 0),
             // resolucao_primeiro_contato: ura.resolucao_primeiro_contato || 0 // Pegar diretamente da métrica calculada
         };
@@ -257,8 +257,8 @@ function atualizarDadosNaInterface(totaisPorURA) {
     // document.querySelector('.resolucao-hm').innerText = `${totaisHM.resolucao_primeiro_contato.toFixed(2)}%`;
 
     // Atualizar abandonadas cognitivas para HM
-    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hm').innerText = totaisPorURA.HM.interno.abandonadas_cognitiva_ate_um_minuto || 0;
-    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-externo-hm').innerText = totaisPorURA.HM.externo.abandonadas_cognitiva_ate_um_minuto || 0;
+    // document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hm').innerText = totaisPorURA.HM.interno.abandonadas_cognitiva_ate_um_minuto || 0;
+    // document.querySelector('.abandonadas-cognitiva-ate-um-minuto-externo-hm').innerText = totaisPorURA.HM.externo.abandonadas_cognitiva_ate_um_minuto || 0;
     document.querySelector('.abandonadas-cognitiva-acima-um-minuto-interno-hm').innerText = totaisPorURA.HM.interno.abandonadas_cognitiva_acima_um_minuto || 0;
     document.querySelector('.abandonadas-cognitiva-acima-um-minuto-externo-hm').innerText = totaisPorURA.HM.externo.abandonadas_cognitiva_acima_um_minuto || 0;
 
@@ -273,8 +273,8 @@ function atualizarDadosNaInterface(totaisPorURA) {
     // document.querySelector('.resolucao-hsjc').innerText = `${totaisHSJC.resolucao_primeiro_contato.toFixed(2)}%`;
 
     // Atualizar abandonadas cognitivas para HSJC
-    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsjc').innerText = totaisPorURA.HSJC.interno.abandonadas_cognitiva_ate_um_minuto || 0;
-    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-externo-hsjc').innerText = totaisPorURA.HSJC.externo.abandonadas_cognitiva_ate_um_minuto || 0;
+    // document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsjc').innerText = totaisPorURA.HSJC.interno.abandonadas_cognitiva_ate_um_minuto || 0;
+    // document.querySelector('.abandonadas-cognitiva-ate-um-minuto-externo-hsjc').innerText = totaisPorURA.HSJC.externo.abandonadas_cognitiva_ate_um_minuto || 0;
     document.querySelector('.abandonadas-cognitiva-acima-um-minuto-interno-hsjc').innerText = totaisPorURA.HSJC.interno.abandonadas_cognitiva_acima_um_minuto || 0;
     document.querySelector('.abandonadas-cognitiva-acima-um-minuto-externo-hsjc').innerText = totaisPorURA.HSJC.externo.abandonadas_cognitiva_acima_um_minuto || 0;
 
@@ -289,8 +289,8 @@ function atualizarDadosNaInterface(totaisPorURA) {
     // document.querySelector('.resolucao-hsor').innerText = `${totaisHSOR.resolucao_primeiro_contato.toFixed(2)}%`;
 
     // Atualizar abandonadas cognitivas para HSOR
-    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsor').innerText = totaisPorURA.HSOR.interno.abandonadas_cognitiva_ate_um_minuto || 0;
-    document.querySelector('.abandonadas-cognitiva-ate-um-minuto-externo-hsor').innerText = totaisPorURA.HSOR.externo.abandonadas_cognitiva_ate_um_minuto || 0;
+    // document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsor').innerText = totaisPorURA.HSOR.interno.abandonadas_cognitiva_ate_um_minuto || 0;
+    // document.querySelector('.abandonadas-cognitiva-ate-um-minuto-externo-hsor').innerText = totaisPorURA.HSOR.externo.abandonadas_cognitiva_ate_um_minuto || 0;
     document.querySelector('.abandonadas-cognitiva-acima-um-minuto-interno-hsor').innerText = totaisPorURA.HSOR.interno.abandonadas_cognitiva_acima_um_minuto || 0;
     document.querySelector('.abandonadas-cognitiva-acima-um-minuto-externo-hsor').innerText = totaisPorURA.HSOR.externo.abandonadas_cognitiva_acima_um_minuto || 0;
 }
