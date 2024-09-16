@@ -1,7 +1,6 @@
 import { csrftoken } from './utils.js';
 
-// Função para formatar data sem os milissegundos
-function formatDateToISOStringWithoutTimezone(dateString, isStartOfDay = true) {
+function formatDateToLocalISOString(dateString) {
     if (!dateString) {
         console.error("Data inválida fornecida:", dateString);
         return null;
@@ -9,14 +8,7 @@ function formatDateToISOStringWithoutTimezone(dateString, isStartOfDay = true) {
 
     const date = new Date(dateString);
 
-    if (isStartOfDay) {
-        // Manter as horas selecionadas pelo usuário
-        date.setHours(0, 0, 0, 0);
-    } else {
-        date.setHours(23, 59, 59, 999);
-    }
-
-    // Formata manualmente a data sem aplicar o UTC
+    // Formata manualmente a data sem converter para UTC
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -24,8 +16,8 @@ function formatDateToISOStringWithoutTimezone(dateString, isStartOfDay = true) {
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
 
-    // Retorna no formato desejado
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
+    // Retorna a data formatada preservando o fuso horário local
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
 
 
@@ -44,6 +36,7 @@ function somarMetricasPorURA(uraPerformance) {
                 direcionadas_ramal: 0,
                 ligacoes_interrompidas_pelo_cliente: 0,
                 tempo_total_ligacao: 0,
+                tempo_total_ligacao_cognitiva: 0,
                 tempo_total_espera: 0,
                 total_uras: 0
             },
@@ -57,6 +50,7 @@ function somarMetricasPorURA(uraPerformance) {
                 direcionadas_ramal: 0,
                 ligacoes_interrompidas_pelo_cliente: 0,
                 tempo_total_ligacao: 0,
+                tempo_total_ligacao_cognitiva: 0,
                 tempo_total_espera: 0,
                 total_uras: 0
             },
@@ -70,6 +64,7 @@ function somarMetricasPorURA(uraPerformance) {
                 direcionadas_ramal: 0,
                 ligacoes_interrompidas_pelo_cliente: 0,
                 tempo_total_ligacao: 0,
+                tempo_total_ligacao_cognitiva: 0,
                 tempo_total_espera: 0,
                 total_uras: 0
             }
@@ -85,6 +80,7 @@ function somarMetricasPorURA(uraPerformance) {
                 direcionadas_ramal: 0,
                 ligacoes_interrompidas_pelo_cliente: 0,
                 tempo_total_ligacao: 0,
+                tempo_total_ligacao_cognitiva: 0,
                 tempo_total_espera: 0,
                 total_uras: 0
             },
@@ -98,6 +94,7 @@ function somarMetricasPorURA(uraPerformance) {
                 direcionadas_ramal: 0,
                 ligacoes_interrompidas_pelo_cliente: 0,
                 tempo_total_ligacao: 0,
+                tempo_total_ligacao_cognitiva: 0,
                 tempo_total_espera: 0,
                 total_uras: 0
             },
@@ -111,6 +108,7 @@ function somarMetricasPorURA(uraPerformance) {
                 direcionadas_ramal: 0,
                 ligacoes_interrompidas_pelo_cliente: 0,
                 tempo_total_ligacao: 0,
+                tempo_total_ligacao_cognitiva: 0,
                 tempo_total_espera: 0,
                 total_uras: 0
             }
@@ -126,6 +124,7 @@ function somarMetricasPorURA(uraPerformance) {
                 direcionadas_ramal: 0,
                 ligacoes_interrompidas_pelo_cliente: 0,
                 tempo_total_ligacao: 0,
+                tempo_total_ligacao_cognitiva: 0,
                 tempo_total_espera: 0,
                 total_uras: 0
             },
@@ -139,6 +138,7 @@ function somarMetricasPorURA(uraPerformance) {
                 direcionadas_ramal: 0,
                 ligacoes_interrompidas_pelo_cliente: 0,
                 tempo_total_ligacao: 0,
+                tempo_total_ligacao_cognitiva: 0,
                 tempo_total_espera: 0,
                 total_uras: 0
             },
@@ -152,6 +152,7 @@ function somarMetricasPorURA(uraPerformance) {
                 direcionadas_ramal: 0,
                 ligacoes_interrompidas_pelo_cliente: 0,
                 tempo_total_ligacao: 0,
+                tempo_total_ligacao_cognitiva: 0,
                 tempo_total_espera: 0,
                 total_uras: 0
             }
@@ -179,60 +180,78 @@ function somarMetricasPorURA(uraPerformance) {
             totaisPorURA[key][tipo].direcionadas_ramal += ura.direcionadas_ramal || 0;
             totaisPorURA[key][tipo].ligacoes_interrompidas_pelo_cliente += ura.ligacoes_interrompidas_pelo_cliente || 0;
             totaisPorURA[key][tipo].tempo_total_ligacao += ura.tempo_total_ligacao || 0;
+            
+            totaisPorURA[key][tipo].tempo_total_ligacao_cognitiva  += ura.tempo_total_ligacao_cognitiva || 0;
             totaisPorURA[key][tipo].tempo_total_espera += ura.tempo_total_espera || 0;
             totaisPorURA[key][tipo].total_uras += 1;
         }
     });
     
+    
 
     // Calcula as médias para cada URA
     Object.keys(totaisPorURA).forEach(uraKey => {
         const ura = totaisPorURA[uraKey];
-    
-        // Somar as métricas de "interno", "externo" e casos sem "tipo_atendimento"
-        const somaRecebidas = (ura.interno.recebidas || 0) + (ura.externo.recebidas || 0) + (ura.geral.recebidas || 0);
-        const somaDirecionadasHumano = (ura.interno.direcionadas_humano || 0) + (ura.externo.direcionadas_humano || 0) + (ura.geral.direcionadas_humano || 0);
-        const somaLigacoesInterrompidas = (ura.interno.ligacoes_interrompidas_pelo_cliente || 0) + (ura.externo.ligacoes_interrompidas_pelo_cliente || 0) + (ura.geral.ligacoes_interrompidas_pelo_cliente || 0);
-        const somaTempoTotalLigacao = (ura.interno.tempo_total_ligacao || 0) + (ura.externo.tempo_total_ligacao || 0) + (ura.geral.tempo_total_ligacao || 0);
-        const somaTempoTotalEspera = (ura.interno.tempo_total_espera || 0) + (ura.externo.tempo_total_espera || 0) + (ura.geral.tempo_total_espera || 0);
-        const totalUras = (ura.interno.total_uras || 0) + (ura.externo.total_uras || 0) + (ura.geral.total_uras || 0);
-    
-        // Calcular o tempo médio de ligação e espera
-        if (totalUras > 0) {
-            ura.tempo_medio_ligacao = somaTempoTotalLigacao / totalUras;
-            ura.tempo_medio_espera = somaTempoTotalEspera / totalUras;
-        } else {
-            ura.tempo_medio_ligacao = 0;
-            ura.tempo_medio_espera = 0;
-        }
-    
-        // Cálculo da Resolução de Primeiro Contato para cada URA
-        /* if (somaRecebidas > 0) {
-            ura.resolucao_primeiro_contato = (
-                (somaRecebidas - somaDirecionadasHumano - somaLigacoesInterrompidas)
-                / somaRecebidas
-            ) * 100;
-        } else {
-            ura.resolucao_primeiro_contato = 0;
-        } */
-    
-        // Log para verificar os cálculos
-        //console.log(`URA: ${uraKey}, Resolucao: ${ura.resolucao_primeiro_contato}`);
+        
+        ['interno', 'externo', 'geral'].forEach(tipo => {
+            const totals = ura[tipo];
+
+            const somaAtendidasCognitiva = totals.atendidas_cognitiva;
+            const somaTempoTotalLigacaoCognitiva = totals.tempo_total_ligacao_cognitiva;
+            
+            // Calcula o tempo médio de ligação cognitiva
+            totals.tempo_medio_ligacao_cognitiva = somaAtendidasCognitiva > 0 
+                ? somaTempoTotalLigacaoCognitiva / somaAtendidasCognitiva 
+                : 0;
+
+            // Exibe o resultado
+            //console.log(`URA: ${uraKey}, Tipo: ${tipo}`);
+            //console.log(`  Tempo Médio Ligação Cognitiva: ${totals.tempo_medio_ligacao_cognitiva.toFixed(2)} segundos`);
+        });
     });
     
-    
-    
-
     // console.log(totaisPorURA);
     return totaisPorURA;
 
 }
+
+function formatTime(seconds) {
+    // Verifica se o valor é válido ou é zero
+    if (seconds === 0 || isNaN(seconds)) {
+        return "0 min 0s";
+    }
+
+    const mins = Math.floor(seconds / 60); // Calcula os minutos inteiros
+    const secs = Math.floor(seconds % 60); // Calcula os segundos restantes
+
+    // Retorna a string formatada com minutos e segundos
+    return `${mins} min ${secs}s`;
+}
+
+
 
 
 // Função para manipular os dados somados e atualizar o HTML
 function atualizarDadosNaInterface(totaisPorURA) {
     // Função para somar valores de "interno", "externo" e "geral" para cada métrica
     function somarInternoExternoGeral(ura) {
+        console.log("Processando URA:", ura);
+        
+
+        const tempoTotalEsperaInterno = ura.interno?.tempo_total_espera || 0;
+        const tempoTotalEsperaExterno = ura.externo?.tempo_total_espera || 0;
+
+        const chamadasInterno = ura.interno?.recebidas || 0;
+        const chamadasExterno = ura.externo?.recebidas || 0;
+
+        // Cálculo do tempo médio de espera unificado entre interno e externo com base no tempo total de espera
+        const tempoMediaEsperaUnificado = 
+            (chamadasInterno + chamadasExterno) > 0 
+            ? (tempoTotalEsperaInterno + tempoTotalEsperaExterno) / (chamadasInterno + chamadasExterno)
+            : 0;
+
+        console.log(`Interno: ${tempoTotalEsperaInterno}, Externo: ${tempoTotalEsperaExterno}, Unificado: ${tempoMediaEsperaUnificado}`);
+
         return {
             recebidas: (ura.interno?.recebidas || 0) + (ura.externo?.recebidas || 0) + (ura.geral?.recebidas || 0),
             atendidas_cognitiva: (ura.interno?.atendidas_cognitiva || 0) + (ura.externo?.atendidas_cognitiva || 0) + (ura.geral?.atendidas_cognitiva || 0),
@@ -242,19 +261,45 @@ function atualizarDadosNaInterface(totaisPorURA) {
             ligacoes_interrompidas_pelo_cliente: (ura.interno?.ligacoes_interrompidas_pelo_cliente || 0) + (ura.externo?.ligacoes_interrompidas_pelo_cliente || 0) + (ura.geral?.ligacoes_interrompidas_pelo_cliente || 0),
             //abandonadas_cognitiva_ate_um_minuto: (ura.interno?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.externo?.abandonadas_cognitiva_ate_um_minuto || 0) + (ura.geral?.abandonadas_cognitiva_ate_um_minuto || 0),
             abandonadas_cognitiva_acima_um_minuto: (ura.interno?.abandonadas_cognitiva_acima_um_minuto || 0) + (ura.externo?.abandonadas_cognitiva_acima_um_minuto || 0) + (ura.geral?.abandonadas_cognitiva_acima_um_minuto || 0),
-            // resolucao_primeiro_contato: ura.resolucao_primeiro_contato || 0 // Pegar diretamente da métrica calculada
+            
+            tempo_media_espera_interno: chamadasInterno > 0 ? tempoTotalEsperaInterno / chamadasInterno : 0,
+            tempo_media_espera_externo: chamadasExterno > 0 ? tempoTotalEsperaExterno / chamadasExterno : 0,
+            tempo_media_espera_unificado: tempoMediaEsperaUnificado
+        };
+    }
+
+    // Função para pegar o tempo médio de ligação cognitiva apenas para o tipo "interno".
+    function pegarTempoMedioCognitivoInterno(ura) {
+        return ura.interno?.tempo_medio_ligacao_cognitiva || 0;
+    }
+
+    // Função para pegar o tempo médio de espera para "interno", "externo" e "geral"
+    function pegarTempoMedioEspera(ura) {
+        return {
+            interno: ura.interno?.tempo_media_espera || 0,
+            externo: ura.externo?.tempo_media_espera || 0,
+            geral: ura.geral?.tempo_media_espera || 0
         };
     }
 
     // Atualizar dados da URA HM
     const totaisHM = somarInternoExternoGeral(totaisPorURA.HM);
+    const tempoMedioCognitivoInternoHM = pegarTempoMedioCognitivoInterno(totaisPorURA.HM);
+    
+
+
     document.querySelector('.processadas-hm').innerText = totaisHM.recebidas;
     document.querySelector('.atendidas-cognitiva-hm').innerText = totaisHM.atendidas_cognitiva;
     document.querySelector('.atendidas-tradicional-hm').innerText = totaisHM.atendidas_tradicional;
     document.querySelector('.direcionadas-humano-hm').innerText = totaisHM.direcionadas_humano;
     document.querySelector('.direcionadas-ramal-hm').innerText = totaisHM.direcionadas_ramal;
     document.querySelector('.abandonadas-hm').innerText = totaisHM.ligacoes_interrompidas_pelo_cliente;
-    // document.querySelector('.resolucao-hm').innerText = `${totaisHM.resolucao_primeiro_contato.toFixed(2)}%`;
+    document.querySelector('.tempo-medio-cognitiva-hm').innerText = formatTime(tempoMedioCognitivoInternoHM);
+    
+
+    document.querySelector('.tempo-medio-espera-unificado-hm').innerText = formatTime(totaisHM.tempo_media_espera_unificado);
+    document.querySelector('.tempo-medio-espera-interno-hm').innerText = formatTime(totaisHM.tempo_media_espera_interno);
+    document.querySelector('.tempo-medio-espera-externo-hm').innerText = formatTime(totaisHM.tempo_media_espera_externo);
 
     // Atualizar abandonadas cognitivas para HM
     // document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hm').innerText = totaisPorURA.HM.interno.abandonadas_cognitiva_ate_um_minuto || 0;
@@ -264,13 +309,22 @@ function atualizarDadosNaInterface(totaisPorURA) {
 
     // Atualizar dados da URA HSJC
     const totaisHSJC = somarInternoExternoGeral(totaisPorURA.HSJC);
+    const tempoMedioCognitivoInternoHSJC = pegarTempoMedioCognitivoInterno(totaisPorURA.HSJC);
+
+
     document.querySelector('.processadas-hsjc').innerText = totaisHSJC.recebidas;
     document.querySelector('.atendidas-cognitiva-hsjc').innerText = totaisHSJC.atendidas_cognitiva;
     document.querySelector('.atendidas-tradicional-hsjc').innerText = totaisHSJC.atendidas_tradicional;
     document.querySelector('.direcionadas-humano-hsjc').innerText = totaisHSJC.direcionadas_humano;
     document.querySelector('.direcionadas-ramal-hsjc').innerText = totaisHSJC.direcionadas_ramal;
     document.querySelector('.abandonadas-hsjc').innerText = totaisHSJC.ligacoes_interrompidas_pelo_cliente;
-    // document.querySelector('.resolucao-hsjc').innerText = `${totaisHSJC.resolucao_primeiro_contato.toFixed(2)}%`;
+    document.querySelector('.tempo-medio-cognitiva-hsjc').innerText = formatTime(tempoMedioCognitivoInternoHSJC);
+
+
+
+    document.querySelector('.tempo-medio-espera-unificado-hsjc').innerText = formatTime(totaisHM.tempo_media_espera_unificado);
+    document.querySelector('.tempo-medio-espera-interno-hsjc').innerText = formatTime(totaisHM.tempo_media_espera_interno);
+    document.querySelector('.tempo-medio-espera-externo-hsjc').innerText = formatTime(totaisHM.tempo_media_espera_externo);
 
     // Atualizar abandonadas cognitivas para HSJC
     // document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsjc').innerText = totaisPorURA.HSJC.interno.abandonadas_cognitiva_ate_um_minuto || 0;
@@ -280,13 +334,21 @@ function atualizarDadosNaInterface(totaisPorURA) {
 
     // Atualizar dados da URA HSOR
     const totaisHSOR = somarInternoExternoGeral(totaisPorURA.HSOR);
+    const tempoMedioCognitivoInternoHSOR = pegarTempoMedioCognitivoInterno(totaisPorURA.HSOR);
+
+
     document.querySelector('.processadas-hsor').innerText = totaisHSOR.recebidas;
     document.querySelector('.atendidas-cognitiva-hsor').innerText = totaisHSOR.atendidas_cognitiva;
     document.querySelector('.atendidas-tradicional-hsor').innerText = totaisHSOR.atendidas_tradicional;
     document.querySelector('.direcionadas-humano-hsor').innerText = totaisHSOR.direcionadas_humano;
     document.querySelector('.direcionadas-ramal-hsor').innerText = totaisHSOR.direcionadas_ramal;
     document.querySelector('.abandonadas-hsor').innerText = totaisHSOR.ligacoes_interrompidas_pelo_cliente;
-    // document.querySelector('.resolucao-hsor').innerText = `${totaisHSOR.resolucao_primeiro_contato.toFixed(2)}%`;
+    document.querySelector('.tempo-medio-cognitiva-hsor').innerText = formatTime(tempoMedioCognitivoInternoHSOR);
+
+    document.querySelector('.tempo-medio-espera-unificado-hsor').innerText = formatTime(totaisHM.tempo_media_espera_unificado);
+    document.querySelector('.tempo-medio-espera-interno-hsor').innerText = formatTime(totaisHM.tempo_media_espera_interno);
+    document.querySelector('.tempo-medio-espera-externo-hsor').innerText = formatTime(totaisHM.tempo_media_espera_externo);
+
 
     // Atualizar abandonadas cognitivas para HSOR
     // document.querySelector('.abandonadas-cognitiva-ate-um-minuto-interno-hsor').innerText = totaisPorURA.HSOR.interno.abandonadas_cognitiva_ate_um_minuto || 0;
@@ -317,11 +379,11 @@ document.getElementById('filtroRelatorioUra').addEventListener('click', function
 
 
     // Formatar as datas no formato ISO 8601
-    const startISO = formatDateToISOStringWithoutTimezone(startDate, true);
-    const endISO = formatDateToISOStringWithoutTimezone(endDate, false);
+    const startISO = formatDateToLocalISOString(startDate);
+    const endISO = formatDateToLocalISOString(endDate);
 
-    //console.log("Data de Início:", startISO);
-    // console.log("Data de Fim:", endISO);
+    console.log("Data de Início:", startISO);
+    console.log("Data de Fim:", endISO);
 
     // Criar o payload
     const payload = {
@@ -330,7 +392,7 @@ document.getElementById('filtroRelatorioUra').addEventListener('click', function
     };
 
     // Log para depuração
-    // console.log("Payload para API:", payload);
+    console.log("Payload para API:", payload);
 
     const urlElement = document.getElementById('indicadorDeDesempenhoURL');
     const urlApi = urlElement.textContent.trim();
@@ -359,20 +421,33 @@ document.getElementById('filtroRelatorioUra').addEventListener('click', function
         return response.json();
     })
     .then(data => {
-        //console.log("Dados recebidos do backend:", data);
-        // Chamar a função para somar as métricas por URA
-        const totaisPorURA = somarMetricasPorURA(data.ura_performance);
-        
-        // Atualizar a interface com os dados
-        atualizarDadosNaInterface(totaisPorURA);
+        console.log("Dados recebidos do backend:", data);
+
+        // Verificar se há dados retornados
+        if (data.ura_performance && data.ura_performance.length > 0) {
+            // Chamar a função para somar as métricas por URA
+            const totaisPorURA = somarMetricasPorURA(data.ura_performance);
+            
+            // Atualizar a interface com os dados
+            atualizarDadosNaInterface(totaisPorURA);
+            
+            // Mostrar a tabela de métricas
+            if (tableContent) {
+                tableContent.style.display = 'block';
+            }
+
+            noDataMessage.style.display = 'none'; // Ocultar mensagem de "Nenhum dado encontrado"
+        } else {
+            // Se não houver dados, mostrar a mensagem
+            noDataMessage.style.display = 'block';
+            if (tableContent) {
+                tableContent.style.display = 'none';
+            }
+        }
 
         // Reativar o botão de filtrar e ocultar o spinner após o carregamento dos dados
         filterButton.disabled = false;
-        // Ocultar o spinner de carregamento e mostrar a tabela
         spinner.style.display = 'none';
-        if (tableContent) {
-            tableContent.style.display = 'block';
-        }
     })
     .catch(error => {
         console.error("Erro ao buscar dados:", error);
@@ -458,6 +533,20 @@ document.getElementById('download-png').addEventListener('click', function() {
     }).catch(function(error) {
         console.error("Erro ao capturar a tela:", error);
         downloadButton.disabled = false; // Reabilitar o botão em caso de erro
+    });
+});
+
+// Seleciona todos os botões "Ver detalhes"
+document.querySelectorAll('.toggle-details').forEach(button => {
+    button.addEventListener('click', function() {
+        const details = this.previousElementSibling; // Seleciona a div de detalhes anterior ao botão
+        if (details.style.display === 'none' || details.style.display === '') {
+            details.style.display = 'block';
+            this.textContent = 'Ocultar detalhes'; // Troca o texto do botão
+        } else {
+            details.style.display = 'none';
+            this.textContent = 'Ver detalhes'; // Retorna ao texto original
+        }
     });
 });
 
