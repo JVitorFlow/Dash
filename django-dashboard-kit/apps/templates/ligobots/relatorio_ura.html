@@ -64,6 +64,14 @@
             background-color: #004494;
             border-color: #004494;
         }
+
+        #noDataMessage {
+            font-size: 1.1rem;
+            padding: 15px;
+            background-color: #ffc107; /* Cor amarela de alerta */
+            color: #000;
+            border-radius: 5px;
+        }
         
     </style>
 
@@ -122,6 +130,9 @@
                 </div>
             </div>
             <!-- [ Filtros ] end -->
+            <div id="noDataMessage" class="alert alert-warning" style="display: none; text-align: center;">
+                Nenhum dado encontrado para o intervalo de datas selecionado.
+            </div>
             <div id="loadingSpinner" style="display:none; text-align: center; margin: 10px 0;">
                 <div class="spinner-border text-primary" role="status">
                     <span class="sr-only">Carregando...</span>
@@ -145,6 +156,29 @@
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
+                                    <i class="fas fa-clock"></i> 12.01 Tempo Médio Ligação Cognitiva Interno
+                                </h5>
+                                <p class="card-text tempo-medio-cognitiva-hm">0</p>
+                            </div>
+                        </div>
+                        <!-- Card Unificado para Tempo Médio de Resposta da URA -->
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-clock"></i> Tempo até Saudação da URA Cognitiva 
+                                </h5>
+                                <p class="card-text tempo-medio-espera-unificado-hm">0 min 0s</p>
+                                <div class="details" style="display:none;">
+                                    <p><strong>Interno:</strong> <span class="tempo-medio-espera-interno-hm">0 min 0s</span></p>
+                                    <p><strong>Externo:</strong> <span class="tempo-medio-espera-externo-hm">0 min 0s</span></p>
+                                </div>
+                                <button class="btn btn-link toggle-details">Ver detalhes</button>
+                            </div>
+                        </div>
+
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
                                     <i class="fas fa-brain"></i> URA Cognitiva
                                 </h5>
                                 <p class="card-text atendidas-cognitiva-hm">0</p>
@@ -158,15 +192,6 @@
                                 <p class="card-text atendidas-tradicional-hm">0</p>
                             </div>
                         </div>
-                        <!-- Card 2 - Resolução Primeiro Contato (HM) -->
-                        {% comment %} <div class="card custom-card mb-2">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-check-circle"></i> Resolução Primeiro Contato
-                                </h5>
-                                <p class="card-text resolucao-hm">0%</p>
-                            </div>
-                        </div> {% endcomment %}
                         <!-- Card 4 - Direcionadas para Humano (HM) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
@@ -243,6 +268,27 @@
                                     <i class="fas fa-phone-alt"></i> Entrantes na URA
                                 </h5>
                                 <p class="card-text processadas-hsjc">0</p>
+                            </div>
+                        </div>
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-clock"></i> 12.01 Tempo Médio Ligação Cognitiva Interno
+                                </h5>
+                                <p class="card-text tempo-medio-cognitiva-hsjc">0</p>
+                            </div>
+                        </div>
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-clock"></i> Tempo até Saudação da URA Cognitiva
+                                </h5>
+                                <p class="card-text tempo-medio-espera-unificado-hsjc">0 min 0s</p>
+                                <div class="details" style="display:none;">
+                                    <p><strong>Interno:</strong> <span class="tempo-medio-espera-interno-hsjc">0 min 0s</span></p>
+                                    <p><strong>Externo:</strong> <span class="tempo-medio-espera-externo-hsjc">0 min 0s</span></p>
+                                </div>
+                                <button class="btn btn-link toggle-details">Ver detalhes</button>
                             </div>
                         </div>
                         <div class="card custom-card mb-2">
@@ -352,6 +398,27 @@
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
+                                    <i class="fas fa-clock"></i> 12.01 Tempo Médio Ligação Cognitiva Interno
+                                </h5>
+                                <p class="card-text tempo-medio-cognitiva-hsor">0</p>
+                            </div>
+                        </div>
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-clock"></i> Tempo até Saudação da URA Cognitiva
+                                </h5>
+                                <p class="card-text tempo-medio-espera-unificado-hsor">0 min 0s</p>
+                                <div class="details" style="display:none;">
+                                    <p><strong>Interno:</strong> <span class="tempo-medio-espera-interno-hsor">0 min 0s</span></p>
+                                    <p><strong>Externo:</strong> <span class="tempo-medio-espera-externo-hsor">0 min 0s</span></p>
+                                </div>
+                                <button class="btn btn-link toggle-details">Ver detalhes</button>
+                            </div>
+                        </div>
+                        <div class="card custom-card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">
                                     <i class="fas fa-brain"></i> URA Cognitiva
                                 </h5>
                                 <p class="card-text atendidas-cognitiva-hsor">0</p>
@@ -365,15 +432,6 @@
                                 <p class="card-text atendidas-tradicional-hsor">0</p>
                             </div>
                         </div>
-                        <!-- Card 2 - Resolução Primeiro Contato (HSOR) -->
-                        {% comment %} <div class="card custom-card mb-2">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="fas fa-check-circle"></i> Resolução Primeiro Contato
-                                </h5>
-                                <p class="card-text resolucao-hsor">0%</p>
-                            </div>
-                        </div> {% endcomment %}
                         <!-- Card 4 - Direcionadas para Humano (HSOR) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
