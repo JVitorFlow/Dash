@@ -7,19 +7,11 @@
 {% block extrahead %}
     <link rel="stylesheet" href="{% static 'assets/css/kpis.css' %}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 {% endblock %}
 
 {% block content %}
     <style>
-        .custom-card {
-            padding: 15px;
-            height: auto;
-            border-radius: 8px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
-            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animação suave */
-        }
-        
         .custom-card:hover {
             transform: translateY(-5px); /* Animação de elevação ao passar o mouse */
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
@@ -72,7 +64,9 @@
             color: #000;
             border-radius: 5px;
         }
-        
+        .ura-header {
+            text-align: center; /* Centraliza o texto horizontalmente */
+        }
     </style>
 
     <div class="pc-container">
@@ -94,42 +88,6 @@
                 </div>
             </div>
             <!-- [ Cabeçalho ] end -->
-
-            <!-- [ Filtros ] start -->
-            <div class="row mb-2">
-                <div class="col-md-3">
-                    <label for="select-periodo" class="form-label">Selecione o Período</label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="fas fa-calendar-alt"></i> <!-- Ícone de calendário -->
-                        </span>
-                        <select class="form-select" id="select-periodo">
-                            <option selected disabled>Selecione</option> <!-- Opcion "Selecione" -->
-                            <option value="today">Hoje</option>
-                            <option value="7">7 dias</option>
-                            <option value="15">15 dias</option>
-                            <option value="30">30 dias</option>
-                        </select>
-                    </div>
-                </div>
-                
-
-                <div class="col-md-3">
-                    <label for="startDate" class="form-label">De</label>
-                    <input type="datetime-local" class="form-control" id="startDate">
-                </div>
-
-                <div class="col-md-3">
-                    <label for="endDate" class="form-label">Até</label>
-                    <input type="datetime-local" class="form-control" id="endDate">
-                </div>
-
-                <div class="col-md-3 d-flex align-items-end">
-                    <button class="btn btn-primary w-100 me-2" id="filtroRelatorioUra">Filtrar</button>
-                    <button class="btn btn-success w-100" id="download-png">📥 Baixar Relatório</button>
-                </div>
-            </div>
-            <!-- [ Filtros ] end -->
             <div id="noDataMessage" class="alert alert-warning" style="display: none; text-align: center;">
                 Nenhum dado encontrado para o intervalo de datas selecionado.
             </div>
@@ -138,12 +96,49 @@
                     <span class="sr-only">Carregando...</span>
                 </div>
             </div>
-            <!-- [ Cards de Métricas ] start -->
             <div id="tableMetrics">
+                <!-- [ Filtros ] start -->
+                <div class="row mb-2">
+                    <div class="col-md-3">
+                        <label for="select-periodo" class="form-label">Selecione o Período</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-calendar-alt"></i> <!-- Ícone de calendário -->
+                            </span>
+                            <select class="form-select" id="select-periodo">
+                                <option selected disabled>Selecione</option> <!-- Opcion "Selecione" -->
+                                <option value="today">Hoje</option>
+                                <option value="7">7 dias</option>
+                                <option value="15">15 dias</option>
+                                <option value="30">30 dias</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+
+                    <div class="col-md-3">
+                        <label for="startDate" class="form-label">De</label>
+                        <input type="datetime-local" class="form-control" id="startDate">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="endDate" class="form-label">Até</label>
+                        <input type="datetime-local" class="form-control" id="endDate">
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100 me-2" id="filtroRelatorioUra">Filtrar</button>
+                        <button class="btn btn-success w-100" id="download-png">📥 Baixar Relatório</button>
+                    </div>
+                </div>
+                <!-- [ Filtros ] end -->
+                
+                <!-- [ Cards de Métricas ] start -->
+            
                 <div class="row">
                     <!-- HM Section -->
                     <div class="col-lg-4 col-md-12">
-                        <div class="ura-header">HM</div>
+                        <div class="ura-header">8 - HM – SÃO PAULO</div>
                         <!-- Card 1 - Entrantes na URA (HM) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
@@ -181,33 +176,69 @@
                                 <h5 class="card-title">
                                     <i class="fas fa-brain"></i> URA Cognitiva
                                 </h5>
-                                <p class="card-text atendidas-cognitiva-hm">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text atendidas-cognitiva-hm" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-cognitiva-hm" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
+                        
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-phone"></i> URA Tradicional
                                 </h5>
-                                <p class="card-text atendidas-tradicional-hm">0</p>
+                        
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <!-- Valor principal, inicialmente 0 -->
+                                    <p class="card-text atendidas-tradicional-hm" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                        
+                                    <p class="percentage-text-hm" style="font-size: 1.5rem; font-weight: bold; margin: 0;">
+                                        0%
+                                    </p>                         
+                                </div>
                             </div>
                         </div>
+                        
+                        
+                        
+                        
                         <!-- Card 4 - Direcionadas para Humano (HM) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-user"></i> Direcionadas para Humano
                                 </h5>
-                                <p class="card-text direcionadas-humano-hm">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text direcionadas-humano-hm" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-humano-hm" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         <!-- Card 5 - Direcionadas para Ramal (HM) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <i class="fas fa-exchange-alt"></i> Direcionadas para Ramal
+                                    <i class="fas fa-phone-alt"></i> Direcionadas para Ramal
                                 </h5>
-                                <p class="card-text direcionadas-ramal-hm">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text direcionadas-ramal-hm" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-ramal-hm" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         <!-- Card - Abandonadas Cognitiva Até 1 Minuto (HM) -->
@@ -253,14 +284,24 @@
                                 <h5 class="card-title">
                                     <i class="fas fa-times-circle"></i> Paciente interrompeu a navegação
                                 </h5>
-                                <p class="card-text abandonadas-hm">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <!-- Valor principal -->
+                                    <p class="card-text abandonadas-hm" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <!-- Porcentagem -->
+                                    <p class="percentage-abandonadas-hm" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
+                        
                     </div>
                 
                     <!-- HSJC Section -->
                     <div class="col-lg-4 col-md-12">
-                        <div class="ura-header">HSJC</div>
+                        <div class="ura-header">5 – HRSJC – SÃO JOSÉ DOS CAMPOS</div>
                         <!-- Card 1 - Entrantes na URA (HSJC) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
@@ -296,15 +337,30 @@
                                 <h5 class="card-title">
                                     <i class="fas fa-brain"></i> URA Cognitiva
                                 </h5>
-                                <p class="card-text atendidas-cognitiva-hsjc">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text atendidas-cognitiva-hsjc" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-cognitiva-hsjc" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
+                        <!-- URA Tradicional (HSJC) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-phone"></i> URA Tradicional
                                 </h5>
-                                <p class="card-text atendidas-tradicional-hsjc">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text atendidas-tradicional-hsjc" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-tradicional-hsjc" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         <!-- Card 2 - Resolução Primeiro Contato (HSJC) -->
@@ -316,22 +372,36 @@
                                 <p class="card-text resolucao-hsjc">0%</p>
                             </div>
                         </div> {% endcomment %}
-                        <!-- Card 4 - Direcionadas para Humano (HSJC) -->
+                        <!-- Direcionadas para Humano (HSJC) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-user"></i> Direcionadas para Humano
                                 </h5>
-                                <p class="card-text direcionadas-humano-hsjc">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text direcionadas-humano-hsjc" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-humano-hsjc" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                        <!-- Card 5 - Direcionadas para Ramal (HSJC) -->
+                        <!-- Direcionadas para Ramal (HSJC) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-exchange-alt"></i> Direcionadas para Ramal
                                 </h5>
-                                <p class="card-text direcionadas-ramal-hsjc">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text direcionadas-ramal-hsjc" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-ramal-hsjc" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         
@@ -373,19 +443,27 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Paciente interrompeu a navegação (HSJC) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-times-circle"></i> Paciente interrompeu a navegação
                                 </h5>
-                                <p class="card-text abandonadas-hsjc">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text abandonadas-hsjc" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-abandonadas-hsjc" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 
                     <!-- HSOR Section -->
                     <div class="col-lg-4 col-md-12">
-                        <div class="ura-header">HSOR</div>
+                        <div class="ura-header">6 – HSOR – SOROCABA</div>
                         <!-- Card 1 - Entrantes na URA (HSOR) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
@@ -416,38 +494,68 @@
                                 <button class="btn btn-link toggle-details">Ver detalhes</button>
                             </div>
                         </div>
+                        <!-- URA Cognitiva (HSOR) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-brain"></i> URA Cognitiva
                                 </h5>
-                                <p class="card-text atendidas-cognitiva-hsor">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text atendidas-cognitiva-hsor" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-cognitiva-hsor" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
+                        <!-- URA Tradicional (HSOR) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-phone"></i> URA Tradicional
                                 </h5>
-                                <p class="card-text atendidas-tradicional-hsor">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text atendidas-tradicional-hsor" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-tradicional-hsor" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                        <!-- Card 4 - Direcionadas para Humano (HSOR) -->
+                        <!-- Direcionadas para Humano (HSOR) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-user"></i> Direcionadas para Humano
                                 </h5>
-                                <p class="card-text direcionadas-humano-hsor">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text direcionadas-humano-hsor" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-humano-hsor" style="font-size: 1.2rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                        <!-- Card 5 - Direcionadas para Ramal (HSOR) -->
+                        <!-- Direcionadas para Ramal (HSOR) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-exchange-alt"></i> Direcionadas para Ramal
                                 </h5>
-                                <p class="card-text direcionadas-ramal-hsor">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text direcionadas-ramal-hsor" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-ramal-hsor" style="font-size: 1.2rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         
@@ -489,13 +597,20 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Card - Paciente interrompeu a navegação (HSOR) -->
+                        <!-- Paciente interrompeu a navegação (HSOR) -->
                         <div class="card custom-card mb-2">
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <i class="fas fa-times-circle"></i> Paciente interrompeu a navegação
                                 </h5>
-                                <p class="card-text abandonadas-hsor">0</p>
+                                <div class="content-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+                                    <p class="card-text abandonadas-hsor" style="font-size: 2rem; font-weight: bold; margin: 0;">
+                                        0
+                                    </p>
+                                    <p class="percentage-abandonadas-hsor" style="font-size: 1.5rem; font-weight: bold; margin-left: 10px;">
+                                        0%
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

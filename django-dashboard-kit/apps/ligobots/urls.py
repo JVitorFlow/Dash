@@ -1,12 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ( index, icons, tbl_bootstrap, chart_apex,  map_google, auth_signup, auth_signin, sample_page, DashboardKpiUraView, RelatorioURAView)
+from .views import ( index, icons, tbl_bootstrap, chart_apex,  map_google, auth_signup, auth_signin, sample_page, DashboardKpiUraView, RelatorioURAView, LigacoesAbandonadasView)
 from .views_api import (
     EmpresasOminiViewSet, PerfilUsuarioViewSet, LicencaViewSet, 
     CanalOminiViewSet, BotViewSet, BotCanalViewSet, LicencaUsuarioViewSet,
     URAViewSet, RPAViewSet, empresas_view, quantidade_mensagens_por_bot_e_canal_view, sessoes_view,
     atividade_agentes_ura_view, indicador_de_desempenho_por_fila_de_URA_view, tempo_medio_servico_por_atendente_view,
-    indicadores_de_desempenho_view
+    indicadores_de_desempenho_view, obter_chamadas_ivr_view
 )
 app_name = 'ligobots'
 
@@ -34,6 +34,7 @@ urlpatterns = [
     path('sample-page/', sample_page, name='sample_page'),
     path('dashboard-kpi-ura/', DashboardKpiUraView.as_view(), name='dashboard_kpi_ura'),
     path('relatorio-ura/', RelatorioURAView.as_view(), name='relatorio_ura'),
+    path('abandonadas-ura/', LigacoesAbandonadasView.as_view(), name='abandono_ura'),
     
     # Rotas da API
     path('api/', include(router.urls)),
@@ -44,6 +45,7 @@ urlpatterns = [
     path('api/indicador_de_desempenho_por_fila_de_URA/', indicador_de_desempenho_por_fila_de_URA_view, name='indicador_de_desempenho_por_fila_de_URA'),
     path('api/tempo-medio-servico-por-atendente/', tempo_medio_servico_por_atendente_view, name='tempo_medio_servico_por_atendente'),
     path('api/indicadores-de-desempenho/', indicadores_de_desempenho_view, name='indicadores_de_desempenho'),
+    path('api/obter_chamadas_ivr/', obter_chamadas_ivr_view, name='obter_chamadas_ivr'),
 
 ]
 
