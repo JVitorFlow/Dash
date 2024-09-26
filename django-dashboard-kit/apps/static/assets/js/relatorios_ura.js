@@ -229,8 +229,6 @@ function formatTime(seconds) {
 }
 
 
-
-
 // Função para manipular os dados somados e atualizar o HTML
 function atualizarDadosNaInterface(totaisPorURA) {
     // Função para somar valores de "interno", "externo" e "geral" para cada métrica
@@ -286,16 +284,45 @@ function atualizarDadosNaInterface(totaisPorURA) {
     const totaisHM = somarInternoExternoGeral(totaisPorURA.HM);
     const tempoMedioCognitivoInternoHM = pegarTempoMedioCognitivoInterno(totaisPorURA.HM);
     
+    const percentageTradicionalHM = totaisHM.recebidas > 0 
+    ? ((totaisHM.atendidas_tradicional / totaisHM.recebidas) * 100).toFixed(2) 
+    : 0;
 
+    const percentageCognitivaHM = totaisHM.recebidas > 0 
+        ? ((totaisHM.atendidas_cognitiva / totaisHM.recebidas) * 100).toFixed(2) 
+        : 0;
+    
+    const percentageHumanoHM = totaisHM.recebidas > 0 
+        ? ((totaisHM.direcionadas_humano / totaisHM.recebidas) * 100).toFixed(2) 
+        : 0;
+
+    const percentageRamalHM = totaisHM.recebidas > 0 
+        ? ((totaisHM.direcionadas_ramal / totaisHM.recebidas) * 100).toFixed(2) 
+        : 0;
+
+    const percentagePacienteInterrompeu = totaisHM.recebidas > 0 
+        ? ((totaisHM.ligacoes_interrompidas_pelo_cliente / totaisHM.recebidas) * 100).toFixed(2) 
+        : 0;
 
     document.querySelector('.processadas-hm').innerText = totaisHM.recebidas;
+
     document.querySelector('.atendidas-cognitiva-hm').innerText = totaisHM.atendidas_cognitiva;
+    document.querySelector('.percentage-cognitiva-hm').textContent = `${percentageCognitivaHM}%`;
+
     document.querySelector('.atendidas-tradicional-hm').innerText = totaisHM.atendidas_tradicional;
+    document.querySelector('.percentage-text-hm').textContent = `${percentageTradicionalHM}%`;
+
     document.querySelector('.direcionadas-humano-hm').innerText = totaisHM.direcionadas_humano;
-    document.querySelector('.direcionadas-ramal-hm').innerText = totaisHM.direcionadas_ramal;
-    document.querySelector('.abandonadas-hm').innerText = totaisHM.ligacoes_interrompidas_pelo_cliente;
-    document.querySelector('.tempo-medio-cognitiva-hm').innerText = formatTime(tempoMedioCognitivoInternoHM);
+    document.querySelector('.percentage-humano-hm').textContent = `${percentageHumanoHM}%`;
+
     
+    document.querySelector('.direcionadas-ramal-hm').innerText = totaisHM.direcionadas_ramal;
+    document.querySelector('.percentage-ramal-hm').textContent = `${percentageRamalHM}%`;
+
+    document.querySelector('.abandonadas-hm').innerText = totaisHM.ligacoes_interrompidas_pelo_cliente;
+    document.querySelector('.percentage-abandonadas-hm').textContent = `${percentagePacienteInterrompeu}%`;
+
+    document.querySelector('.tempo-medio-cognitiva-hm').innerText = formatTime(tempoMedioCognitivoInternoHM);
 
     document.querySelector('.tempo-medio-espera-unificado-hm').innerText = formatTime(totaisHM.tempo_media_espera_unificado);
     document.querySelector('.tempo-medio-espera-interno-hm').innerText = formatTime(totaisHM.tempo_media_espera_interno);
@@ -311,13 +338,45 @@ function atualizarDadosNaInterface(totaisPorURA) {
     const totaisHSJC = somarInternoExternoGeral(totaisPorURA.HSJC);
     const tempoMedioCognitivoInternoHSJC = pegarTempoMedioCognitivoInterno(totaisPorURA.HSJC);
 
+    const percentageTradicionalHSJC = totaisHSJC.recebidas > 0 
+    ? ((totaisHSJC.atendidas_tradicional / totaisHSJC.recebidas) * 100).toFixed(2) 
+    : 0;
+
+    const percentageCognitivaHSJC = totaisHSJC.recebidas > 0 
+        ? ((totaisHSJC.atendidas_cognitiva / totaisHSJC.recebidas) * 100).toFixed(2) 
+        : 0;
+    
+    const percentageHumanoHSJC = totaisHSJC.recebidas > 0 
+        ? ((totaisHSJC.direcionadas_humano / totaisHSJC.recebidas) * 100).toFixed(2) 
+        : 0;
+
+    const percentageRamalHSJC = totaisHSJC.recebidas > 0 
+        ? ((totaisHSJC.direcionadas_ramal / totaisHSJC.recebidas) * 100).toFixed(2) 
+        : 0;
+
+    const percentagePacienteInterrompeuHSJC = totaisHSJC.recebidas > 0 
+        ? ((totaisHSJC.ligacoes_interrompidas_pelo_cliente / totaisHSJC.recebidas) * 100).toFixed(2) 
+        : 0;
+
 
     document.querySelector('.processadas-hsjc').innerText = totaisHSJC.recebidas;
+    
     document.querySelector('.atendidas-cognitiva-hsjc').innerText = totaisHSJC.atendidas_cognitiva;
+    document.querySelector('.percentage-cognitiva-hsjc').innerText = `${percentageCognitivaHSJC}%`;
+
     document.querySelector('.atendidas-tradicional-hsjc').innerText = totaisHSJC.atendidas_tradicional;
+    document.querySelector('.percentage-tradicional-hsjc').innerText = `${percentageTradicionalHSJC}%`;
+
     document.querySelector('.direcionadas-humano-hsjc').innerText = totaisHSJC.direcionadas_humano;
+    document.querySelector('.percentage-humano-hsjc').innerText = `${percentageHumanoHSJC}%`;
+
     document.querySelector('.direcionadas-ramal-hsjc').innerText = totaisHSJC.direcionadas_ramal;
+    document.querySelector('.percentage-ramal-hsjc').innerText = `${percentageRamalHSJC}%`;
+
+    
     document.querySelector('.abandonadas-hsjc').innerText = totaisHSJC.ligacoes_interrompidas_pelo_cliente;
+    document.querySelector('.percentage-abandonadas-hsjc').innerText = `${percentagePacienteInterrompeuHSJC}%`;
+
     document.querySelector('.tempo-medio-cognitiva-hsjc').innerText = formatTime(tempoMedioCognitivoInternoHSJC);
 
 
@@ -336,13 +395,43 @@ function atualizarDadosNaInterface(totaisPorURA) {
     const totaisHSOR = somarInternoExternoGeral(totaisPorURA.HSOR);
     const tempoMedioCognitivoInternoHSOR = pegarTempoMedioCognitivoInterno(totaisPorURA.HSOR);
 
+    const percentageTradicionalHSOR = totaisHSOR.recebidas > 0 
+    ? ((totaisHSOR.atendidas_tradicional / totaisHSOR.recebidas) * 100).toFixed(2) 
+    : 0;
+
+    const percentageCognitivaHSOR = totaisHSOR.recebidas > 0 
+        ? ((totaisHSOR.atendidas_cognitiva / totaisHSOR.recebidas) * 100).toFixed(2) 
+        : 0;
+    
+    const percentageHumanoHSOR = totaisHSOR.recebidas > 0 
+        ? ((totaisHSOR.direcionadas_humano / totaisHSOR.recebidas) * 100).toFixed(2) 
+        : 0;
+
+    const percentageRamalHSOR = totaisHSOR.recebidas > 0 
+        ? ((totaisHSOR.direcionadas_ramal / totaisHSOR.recebidas) * 100).toFixed(2) 
+        : 0;
+
+    const percentagePacienteInterrompeuHSOR = totaisHSOR.recebidas > 0 
+        ? ((totaisHSOR.ligacoes_interrompidas_pelo_cliente / totaisHSOR.recebidas) * 100).toFixed(2) 
+        : 0;
 
     document.querySelector('.processadas-hsor').innerText = totaisHSOR.recebidas;
+    
     document.querySelector('.atendidas-cognitiva-hsor').innerText = totaisHSOR.atendidas_cognitiva;
+    document.querySelector('.percentage-cognitiva-hsor').innerText = `${percentageCognitivaHSOR}%`;
+    
     document.querySelector('.atendidas-tradicional-hsor').innerText = totaisHSOR.atendidas_tradicional;
+    document.querySelector('.percentage-tradicional-hsor').innerText = `${percentageTradicionalHSOR}%`;
+
     document.querySelector('.direcionadas-humano-hsor').innerText = totaisHSOR.direcionadas_humano;
+    document.querySelector('.percentage-humano-hsor').innerText = `${percentageHumanoHSOR}%`;
+    
     document.querySelector('.direcionadas-ramal-hsor').innerText = totaisHSOR.direcionadas_ramal;
+    document.querySelector('.percentage-ramal-hsor').innerText = `${percentageRamalHSOR}%`;
+    
     document.querySelector('.abandonadas-hsor').innerText = totaisHSOR.ligacoes_interrompidas_pelo_cliente;
+    document.querySelector('.percentage-abandonadas-hsor').innerText = `${percentagePacienteInterrompeuHSOR}%`;
+    
     document.querySelector('.tempo-medio-cognitiva-hsor').innerText = formatTime(tempoMedioCognitivoInternoHSOR);
 
     document.querySelector('.tempo-medio-espera-unificado-hsor').innerText = formatTime(totaisHM.tempo_media_espera_unificado);
@@ -382,8 +471,8 @@ document.getElementById('filtroRelatorioUra').addEventListener('click', function
     const startISO = formatDateToLocalISOString(startDate);
     const endISO = formatDateToLocalISOString(endDate);
 
-    console.log("Data de Início:", startISO);
-    console.log("Data de Fim:", endISO);
+    // console.log("Data de Início:", startISO);
+    // console.log("Data de Fim:", endISO);
 
     // Criar o payload
     const payload = {
@@ -392,7 +481,7 @@ document.getElementById('filtroRelatorioUra').addEventListener('click', function
     };
 
     // Log para depuração
-    console.log("Payload para API:", payload);
+    // console.log("Payload para API:", payload);
 
     const urlElement = document.getElementById('indicadorDeDesempenhoURL');
     const urlApi = urlElement.textContent.trim();
@@ -511,30 +600,75 @@ document.getElementById('select-periodo').addEventListener('change', function() 
     }
 });
 
-// Função para baixar a área específica como PNG
 document.getElementById('download-png').addEventListener('click', function() {
     const downloadButton = this;
-    downloadButton.disabled = true; // Desabilitar o botão
+    downloadButton.disabled = true; // Desabilitar o botão durante a captura
 
     const reportSection = document.getElementById('tableMetrics');
 
-    html2canvas(reportSection, {
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        width: reportSection.offsetWidth,
-        height: reportSection.offsetHeight
-    }).then(function(canvas) {
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL("image/png");
-        link.download = 'relatorio-ura.png';
-        link.click();
+    // Salvar estilos originais
+    const originalStyles = {
+        width: reportSection.style.width,
+        transform: reportSection.style.transform,
+        zoom: reportSection.style.zoom,
+        position: reportSection.style.position,
+        left: reportSection.style.left,
+        top: reportSection.style.top,
+    };
 
-        downloadButton.disabled = false; // Reabilitar o botão após a conclusão
-    }).catch(function(error) {
-        console.error("Erro ao capturar a tela:", error);
-        downloadButton.disabled = false; // Reabilitar o botão em caso de erro
-    });
+    // Definir estilos fixos para captura
+    reportSection.style.width = '1920px'; // Largura fixa
+    reportSection.style.transform = 'scale(1)'; // Remover transformações de escala
+    reportSection.style.zoom = 1; // Garantir zoom 1:1
+    reportSection.style.position = 'relative'; // Garantir que a posição seja relativa
+    reportSection.style.left = '0';
+    reportSection.style.top = '0';
+
+    // Rolagem para o topo
+    window.scrollTo(0, 0);
+
+    // Aguarde um pequeno intervalo para garantir que os estilos sejam aplicados
+    setTimeout(function() {
+        html2canvas(reportSection, {
+            scrollX: -window.scrollX,
+            scrollY: -window.scrollY,
+            scale: 3, // Aumentar para melhorar a resolução (tente 3, 4 ou 5)
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: null,
+        }).then(function(canvas) {
+            // Restaurar estilos originais
+            Object.assign(reportSection.style, originalStyles);
+
+            // Converter o canvas em imagem e iniciar o download
+            const imgData = canvas.toDataURL('image/png');
+
+            // Criar um link temporário para download
+            const link = document.createElement('a');
+            link.href = imgData;
+            link.download = 'dashboard.png';
+
+            // Adicionar o link ao documento e simular o clique
+            document.body.appendChild(link);
+            link.click();
+
+            // Remover o link do documento
+            document.body.removeChild(link);
+
+            downloadButton.disabled = false; // Reabilitar o botão
+        }).catch(function(error) {
+            console.error("Erro ao capturar a tela:", error);
+
+            // Restaurar estilos originais em caso de erro
+            Object.assign(reportSection.style, originalStyles);
+
+            downloadButton.disabled = false; // Reabilitar o botão em caso de erro
+        });
+    }, 500); // Intervalo de 500ms para garantir que os estilos sejam aplicados
 });
+
+
+
 
 // Seleciona todos os botões "Ver detalhes"
 document.querySelectorAll('.toggle-details').forEach(button => {
