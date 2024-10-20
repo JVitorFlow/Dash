@@ -1,0 +1,129 @@
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Para uma rolagem mais suave em dispositivos móveis */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th, table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+#progressBarContainer {
+    width: 100%;
+    background-color: #f3f3f3;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999; /* Para garantir que fique acima de outros elementos */
+}
+
+#progressBar {
+    height: 5px;
+    width: 0%;
+    background-color: #007bff; /* Cor da barra */
+    transition: width 0.4s ease; /* Transição suave da barra */
+}
+
+.modal-body ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.modal-body li {
+    margin-bottom: 10px;
+}
+
+.modal-body hr {
+    border: 0;
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 10px 0;
+}
+
+table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
+  table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+  }
+  
+
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: auto; /* Ativa a rolagem horizontal em telas pequenas */
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    tr {
+        margin-bottom: 15px;
+    }
+
+    td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        padding-left: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    table thead {
+      display: none;
+    }
+    table tbody tr {
+      display: block;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    table tbody tr td {
+      display: block;
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
+    }
+    table tbody tr td:before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      width: 50%;
+      padding-left: 15px;
+      font-weight: bold;
+      text-align: left;
+    }
+  }
+  

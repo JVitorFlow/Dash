@@ -59,14 +59,24 @@
 				</ul>
 			</li>
 			<li>
-				<a href="{% url 'ligobots:abandono_ura' %}">
+				<a href="{% url 'relatorios:abandonadas_ura' %}">
 					<i class="fas fa-phone-slash"></i>
 					<span class="link_name">Abandonos URA</span>
 				</a>
 				<ul class="sub-menu blank">
-					<li><a class="link_name" href="{% url 'ligobots:abandono_ura' %}">Abandonos URA</a></li>
+					<li><a class="link_name" href="{% url 'relatorios:abandonadas_ura' %}">Abandonos URA</a></li>
 				</ul>
 			</li>
+			<li>
+				<a href="{% url 'relatorios:jornada_ura' %}">
+					<i class="fas fa-route"></i> 
+					<span class="link_name">Jornada da URA</span>
+				</a>
+				<ul class="sub-menu blank">
+					<li><a class="link_name" href="{% url 'relatorios:jornada_ura' %}">Jornada da URA</a></li>
+				</ul>
+			</li>
+			
 			
 			{% comment %} <li>
 				<a href="#">

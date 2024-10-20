@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'apps.home',
     'apps.ligobots',
+    'apps.relatorios',
     'rest_framework',
     'crispy_forms',
     'crispy_bootstrap4',
