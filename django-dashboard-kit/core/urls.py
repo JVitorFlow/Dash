@@ -10,6 +10,7 @@ urlpatterns = [
     path("", include("apps.authentication.urls")), 
     path("", include("apps.home.urls")),
     path('ligobots/', include('apps.ligobots.urls', namespace='ligobots')),
+    path('relatorios/', include('apps.relatorios.urls', namespace='relatorios')),
 ]
 
 if settings.DEBUG:

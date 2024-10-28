@@ -1,0 +1,336 @@
+/* Configuração das tabelas */
+.table-responsive {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th, table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Configuração da barra de progresso */
+#progressBarContainer {
+    width: 100%;
+    background-color: #f3f3f3;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999; /* Para garantir que fique acima de outros elementos */
+}
+
+#progressBar {
+    height: 5px;
+    width: 0%;
+    background-color: #007bff; /* Cor da barra */
+    transition: width 0.4s ease; /* Transição suave da barra */
+}
+
+.modal-body ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.modal-body li {
+    margin-bottom: 10px;
+}
+
+.modal-body hr {
+    border: 0;
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 10px 0;
+}
+
+table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    table tbody tr {
+        margin-bottom: 15px;
+    }
+
+    table tbody tr td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    table tbody tr td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        padding-left: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+}
+
+/* Customização do Modal */
+.modal-dialog {
+    max-width: 90%;
+    margin: 1.75rem auto;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.modal-section-title {
+    font-size: 1.15rem;
+    margin-bottom: 10px;
+    color: #0056b3;
+}
+
+/* Tabela de Transferências */
+.modal-table {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.modal-table thead th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+}
+
+.modal-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.modal-table tbody tr:nth-child(odd) {
+    background-color: #fff;
+}
+
+.modal-table td {
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.modal-table th,
+.modal-table td {
+    border: 1px solid #ddd;
+}
+
+/* Espaçamento entre seções */
+.transferencia-section {
+    margin-bottom: 30px;
+}
+
+/* Melhorar a responsividade com Flexbox */
+@media (max-width: 1024px) {
+    .transferencia-container {
+        flex-direction: column; /* Colocar as tabelas em formato de coluna em telas menores */
+    }
+}
+
+/* Customização dos Botões */
+.btn-close {
+    background-color: transparent;
+    border: none;
+    font-size: 1.25rem;
+}
+
+.modal-footer .modern-button {
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.modal-footer .modern-button:hover {
+    background-color: #0056b3;
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Customização do Modal */
+.modern-modal {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+.modal-header, .modal-footer {
+    border: none;
+    padding: 1.5rem;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.modal-section-title {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    color: #0056b3;
+}
+
+/* Flexbox para organização das tabelas */
+.transferencia-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap; /* Permitir que as tabelas quebrem a linha em telas menores */
+}
+
+.transferencia-section {
+    flex: 1;
+    min-width: 250px;
+    max-width: 32%; /* Garantir que as tabelas ocupem até um terço do modal */
+    margin-bottom: 15px;
+}
+
+/* Estilização das Tabelas */
+.modern-table {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.modern-table thead th {
+    background-color: #e9ecef;
+    font-weight: bold;
+    padding: 10px;
+    text-align: center;
+}
+
+.modern-table tbody td {
+    padding: 12px 10px;
+    background-color: #fff;
+    text-align: center;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modern-table tbody tr {
+    margin-bottom: 10px;
+}
+
+/* Ajuste para Telas Menores */
+@media only screen and (max-width: 768px) {
+    .transferencia-section {
+        max-width: 100%; /* Colocar as tabelas em 100% da largura em telas menores */
+    }
+
+    table thead {
+        display: none;
+    }
+
+    table tbody tr {
+        display: block;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    table tbody tr td {
+        display: block;
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    table tbody tr td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 15px;
+        font-weight: bold;
+        text-align: left;
+    }
+}
+
+/* Tabela de Chamadas Recorrentes */
+#tabelaRecorrencias {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#tabelaRecorrencias th, #tabelaRecorrencias td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+#tabelaRecorrencias th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+#tabelaRecorrencias tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#tabelaRecorrencias tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+    #tabelaRecorrencias, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    #tabelaRecorrencias tr {
+        margin-bottom: 15px;
+    }
+
+    #tabelaRecorrencias td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    #tabelaRecorrencias td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        padding-left: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+}

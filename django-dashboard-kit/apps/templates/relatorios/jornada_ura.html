@@ -1,0 +1,261 @@
+{% extends "layouts/base.html" %}
+
+{% load static %}
+{% load custom_filters %}
+
+{% block title %} Jornada URA {% endblock %}
+
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static 'assets/css/relatorio.css' %}">
+    <script src="{% static 'assets/js/relatorio/jornadaUsuario.js' %}"></script> <!-- JS separado -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+{% endblock extrahead %}
+
+{% block content %}
+    <div class="pc-container">
+        <div class="pcoded-content">
+            <!-- Cabeçalho -->
+            <div class="page-header mb-2" style="padding-bottom: 0px;">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="page-header-title">
+                                <h5 class="m-b-5">Jornada do Usuário na URA</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="{% url 'home:home' %}"><i class="fas fa-home"></i> Home</a>
+                                </li>
+                                <li class="breadcrumb-item"><i class="fas fa-route"></i> Jornada URA</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <form id="filter-form" method="POST" action="{% url 'relatorios:jornada_ura' %}">
+                {% csrf_token %}
+                <div class="row mb-3"> <!-- Alterado para mb-3 para mais espaçamento -->
+                    <div class="col-md-3 mb-2"> <!-- Adicionada classe mb-2 para dar espaçamento -->
+                        <label for="select-periodo" class="form-label">Selecione o Período</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <select class="form-select" id="select-periodo" name="select_periodo">
+                                <option selected disabled>Selecione</option>
+                                <option value="today">Hoje</option>
+                                <option value="yesterday">Ontem</option>
+                                <option value="7">Últimos 7 dias</option>
+                                <option value="15">Últimos 15 dias</option>
+                                <option value="30">Últimos 30 dias</option>
+                            </select>
+                        </div>
+                    </div>
+            
+                    <!-- Novo campo de seleção de hospital -->
+                    <div class="col-md-3 mb-2"> <!-- Adicionada classe mb-2 para espaçamento -->
+                        <label for="select-hospital" class="form-label">Selecione o Hospital</label>
+                        <select class="form-select" id="select-hospital" name="nm_flow_ivr">
+                            <option value="" selected>Selecione o Hospital</option>
+                            <option value="HM">Hospital da Mulher</option>
+                            <option value="HSOR">Hospital Sorocaba</option>
+                            <option value="HSJC">Hospital São José dos Campos</option>
+                        </select>
+                    </div>
+            
+                    <div class="col-md-3 mb-2"> <!-- Adicionada classe mb-2 para espaçamento -->
+                        <label for="startDate" class="form-label">De</label>
+                        <input type="datetime-local" class="form-control" id="startDate" name="dt_start">
+                    </div>
+            
+                    <div class="col-md-3 mb-2"> <!-- Adicionada classe mb-2 para espaçamento -->
+                        <label for="endDate" class="form-label">Até</label>
+                        <input type="datetime-local" class="form-control" id="endDate" name="dt_finish">
+                    </div>
+            
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary w-100" id="filter-button">Filtrar</button>
+                    </div>
+                </div>
+                <!-- Local para a mensagem de erro -->
+                <div class="col-md-12 mt-2">
+                    <div id="hospital-error" class="alert alert-danger d-none" role="alert">
+                        Por favor, selecione um hospital antes de filtrar.
+                    </div>
+                </div>
+            </form>
+
+            <!-- Botão para abrir o modal -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <button type="button" class="btn btn-info" id="abrirModalTransferencias">
+                        Ver Transferências
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal para exibir as transferências -->
+            <div class="modal fade" id="transferenciasModal" tabindex="-1" aria-labelledby="transferenciasModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content modern-modal">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="transferenciasModalLabel">Transferências por Ramal, Setor e Destino</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="transferencia-container">
+                                <!-- Transferências por Ramal -->
+                                <div class="table-responsive transferencia-section">
+                                    <h6 class="modal-section-title">Transferências por Ramal</h6>
+                                    <table class="table modern-table" id="tabelaRamal">
+                                        <thead>
+                                            <tr>
+                                                <th>Ramal</th>
+                                                <th>Total</th>
+                                                <th>Cognitiva</th>
+                                                <th>Tradicional</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabelaRamalBody"></tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Transferências por Setor -->
+                                <div class="table-responsive transferencia-section">
+                                    <h6 class="modal-section-title">Transferências por Setor</h6>
+                                    <table class="table modern-table" id="tabelaSetor">
+                                        <thead>
+                                            <tr>
+                                                <th>Setor</th>
+                                                <th>Total</th>
+                                                <th>Ramal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabelaSetorBody"></tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Transferências por Destino (URA Tradicional) -->
+                                <div class="table-responsive transferencia-section">
+                                    <h6 class="modal-section-title">Transferências por Destino (URA Tradicional)</h6>
+                                    <table class="table modern-table" id="tabelaDestino">
+                                        <thead>
+                                            <tr>
+                                                <th>Destino</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabelaDestinoBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Chamadas Recorrentes Detalhadas -->
+                            <div class="table-responsive mt-4">
+                                <h6 class="modal-section-title">Chamadas Recorrentes Detalhadas</h6>
+                                <table id="tabelaRecorrencias" class="table modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Telefone</th>
+                                            <th>Total de Chamadas</th>
+                                            <th>Cognitiva</th>
+                                            <th>Tradicional</th>
+                                            <th>Duração Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabelaRecorrenciasBody"></tbody>
+                                </table>                                
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary modern-button" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensagens de Erro -->
+            {% if error_message %}
+            <div class="alert alert-danger mt-3" role="alert">
+                {{ error_message }}
+            </div>
+            {% endif %}
+
+            <!-- Barra de Progresso -->
+            <div id="progressBarContainer" style="display:none;">
+                <div id="progressBar" style="width:0%; height:5px; background-color: #007bff;"></div>
+            </div>
+
+            <!-- Tabela de Jornada URA -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Jornada do Usuário</h5>
+                    <button type="button" class="btn btn-success float-end" id="download-excel">
+                        <i class="fas fa-file-excel"></i> Baixar Relatório
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="loadingMessage" style="display: none;">Carregando dados, por favor aguarde...</div>
+                    <div class="table-responsive">
+                        <table id="jornadaUraTable" class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Did</th>
+                                    <th>Telefone</th>
+                                    <th>Tipo de Atendimento</th>
+                                    <th>ID Único da Chamada</th>
+                                    <th>Duração</th>
+                                    <th>Transferido Para</th>
+                                    <th>Tipo de Ura</th>
+                                    <th>Ramal</th>
+                                    <th>Setor</th>
+                                    <th>Audio Capturado</th>
+                                    <th>HOSPITAL</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jornadaUraBody">
+                                <!-- Os dados da jornada da URA serão preenchidos dinamicamente aqui -->
+                            </tbody>
+                        </table>                        
+                    </div>                    
+                </div>
+            </div>
+
+            <!-- Modal de Detalhes -->
+            <div class="modal fade" id="detalhesModal" tabindex="-1" aria-labelledby="detalhesModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="detalhesModalLabel">Detalhes da Jornada</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul id="detalhesJornada">
+                                <!-- Os detalhes da jornada serão inseridos dinamicamente aqui -->
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Div para mostrar as mensagens de status da tarefa -->
+            <div id="statusMessage" class="mt-3"></div>
+        </div>
+    </div>
+
+    <script>
+        var taskId = "{{ task_id|safe }}";
+    </script>
+
+{% endblock content %}

@@ -1,0 +1,70 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Progresso do Relatório {% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Status do Relatório</h1>
+
+    <p>{{ status }}</p>
+
+    {% if resultado %}
+    <h2>Relatório Concluído</h2>
+
+    <!-- Tabela de Abandonos Cognitivos -->
+    <h3>Abandonos Cognitivos</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID Chamada</th>
+                <th>Número Cliente</th>
+                <th>Data Início</th>
+                <th>Data Fim</th>
+                <th>Tipo Abandono</th>
+                <th>Nome URA</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for chamada in resultado.abandonos_cognitivos %}
+            <tr>
+                <td>{{ chamada.id_chamada }}</td>
+                <td>{{ chamada.numero_cliente }}</td>
+                <td>{{ chamada.data_hora_inicio }}</td>
+                <td>{{ chamada.data_hora_fim }}</td>
+                <td>{{ chamada.tipo_abandono }}</td>
+                <td>{{ chamada.nome_ura }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Tabela de Interrupções pelo Cliente -->
+    <h3>Interrupções pelo Cliente</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID Chamada</th>
+                <th>Número Cliente</th>
+                <th>Data Início</th>
+                <th>Data Fim</th>
+                <th>Tipo Abandono</th>
+                <th>Nome URA</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for chamada in resultado.interrompidas_cliente %}
+            <tr>
+                <td>{{ chamada.id_chamada }}</td>
+                <td>{{ chamada.numero_cliente }}</td>
+                <td>{{ chamada.data_hora_inicio }}</td>
+                <td>{{ chamada.data_hora_fim }}</td>
+                <td>{{ chamada.tipo_abandono }}</td>
+                <td>{{ chamada.nome_ura }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% endif %}
+</div>
+{% endblock %}

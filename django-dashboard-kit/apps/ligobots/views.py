@@ -4,32 +4,6 @@ from .models import Ura
 from django.db.models import Count
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .services import processar_chamadas_abandonadas, obter_chamadas_ivr, obter_token_autenticacao
-from datetime import datetime
-
-def index(request):
-    return render(request, 'ligobots/index.html')
-
-def icons(request):
-    return render(request, 'ligobots/icon-feather.html')
-
-def tbl_bootstrap(request):
-    return render(request, 'ligobots/tbl_bootstrap.html')
-
-def chart_apex(request):
-    return render(request, 'ligobots/chart-apex.html')
-
-def map_google(request):
-    return render(request, 'ligobots/map-google.html')
-
-def auth_signup(request):
-    return render(request, 'ligobots/auth-signup.html')
-
-def auth_signin(request):
-    return render(request, 'ligobots/auth-signin.html')
-
-def sample_page(request):
-    return render(request, 'ligobots/sample-page.html')
 
 
 class DashboardKpiUraView(LoginRequiredMixin, TemplateView):
@@ -89,61 +63,5 @@ class RelatorioURAView(LoginRequiredMixin, TemplateView):
         context['indicador_de_desempenho_url'] = reverse_lazy('ligobots:indicadores_de_desempenho')
         return context
     
-class LigacoesAbandonadasView(LoginRequiredMixin, TemplateView):
-    template_name = 'ligobots/chamadas_abandonadas.html'
 
-    def post(self, request, *args, **kwargs):
-        dt_start = request.POST.get('dt_start')
-        dt_finish = request.POST.get('dt_finish')
-        call_filter_list = {'call_data.code_status_ivr': 10003}
-
-        # Validação básica dos dados do formulário
-        if not dt_start or not dt_finish:
-            error_message = "Por favor, preencha as datas corretamente."
-            return render(request, self.template_name, {'error_message': error_message})
-
-        # Formatando as datas para o formato exigido pela API: "YYYY-MM-DD HH:MM:SS"
-        try:
-            dt_start_obj = datetime.strptime(dt_start, '%Y-%m-%dT%H:%M')  # 'dt_start' recebido no formato HTML5
-            dt_finish_obj = datetime.strptime(dt_finish, '%Y-%m-%dT%H:%M')  # 'dt_finish' recebido no formato HTML5
-
-            # Formatação final para a API
-            dt_start_formatted = dt_start_obj.strftime('%Y-%m-%d %H:%M:%S')
-            dt_finish_formatted = dt_finish_obj.strftime('%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            error_message = "Formato de data inválido. Por favor, use o formato correto de data e hora."
-            return render(request, self.template_name, {'error_message': error_message})
-
-        # Autenticação e obtenção do token
-        token = obter_token_autenticacao()
-        if not token:
-            error_message = "Falha ao obter o token."
-            return render(request, self.template_name, {'error_message': error_message})
-
-        # Chamar diretamente a função para obter as chamadas
-        chamadas_ivr = obter_chamadas_ivr(token, dt_start_formatted, dt_finish_formatted, call_filter_list)
-
-        if isinstance(chamadas_ivr, dict) and chamadas_ivr.get('status') == 'erro':
-            error_message = chamadas_ivr['mensagem']
-            return render(request, self.template_name, {'error_message': error_message})
-
-        # Processar as chamadas abandonadas
-        resultado_abandonos = processar_chamadas_abandonadas(chamadas_ivr)
-
-        if isinstance(resultado_abandonos, dict) and resultado_abandonos.get('status') == 'erro':
-            error_message = resultado_abandonos['mensagem']
-            return render(request, self.template_name, {'error_message': error_message})
-
-        # Separar os dados de abandonos cognitivos e interrompidas do cliente para renderização
-        abandonos_cognitivos = resultado_abandonos.get('abandonos_cognitivos', [])
-        interrompidas_cliente = resultado_abandonos.get('interrompidas_cliente', [])
-
-        # Renderizar os dados processados no template
-        return render(request, self.template_name, {
-            'abandonos_cognitivos': abandonos_cognitivos,
-            'interrompidas_cliente': interrompidas_cliente
-        })
-
-    def get(self, request, *args, **kwargs):
-        # Renderiza o template com o formulário vazio
-        return render(request, self.template_name)
+    
