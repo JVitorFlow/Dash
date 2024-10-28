@@ -167,7 +167,107 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     };
+
+
+    // Vincular eventos ao botão de detalhes
+    document.querySelectorAll('.detalhes-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const jornada = JSON.parse(this.getAttribute('data-jornada'));
+            exibirDetalhes(jornada);  // Passa a jornada diretamente para exibir os detalhes
+        });
+    });
+
+    // Função para exibir os detalhes da jornada
+    function exibirDetalhes(jornada) {
+        console.log("Exibindo detalhes para a chamada:", jornada);
     
+        const detalhesJornada = document.getElementById('detalhesJornada');
+        if (!detalhesJornada) {
+            console.error("Elemento 'detalhesJornada' não encontrado.");
+            return;
+        }
+    
+        // Limpar o conteúdo anterior
+        detalhesJornada.innerHTML = '';
+    
+        // Criar uma lista ordenada para os eventos
+        const ol = document.createElement('ol');
+        ol.style.paddingLeft = "20px";  // Para criar espaço à esquerda
+    
+        jornada.eventos.forEach(evento => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div>
+                    <strong>Etapa:</strong> ${evento.step_name} <br>
+                    <strong>Data:</strong> ${new Date(evento.executed_at).toLocaleString()} <br>
+                    <hr>
+                </div>
+            `;
+            ol.appendChild(li);
+        });
+    
+        detalhesJornada.appendChild(ol);
+    
+        // Exibir o modal
+        const modal = new bootstrap.Modal(document.getElementById('detalhesModal'));
+        modal.show();
+    }
+
+    // Adiciona funcionalidade para preenchimento automático ao selecionar o período
+    elements.selectPeriodo.addEventListener('change', function () {
+        const periodo = this.value;
+        const now = new Date();
+        let startDate = new Date();
+        let endDate = new Date();
+
+        switch (periodo) {
+            case 'today':
+                startDate.setHours(0, 0, 0, 0);
+                endDate = now;
+                break;
+            case 'yesterday':
+                startDate.setDate(now.getDate() - 1);
+                startDate.setHours(0, 0, 0, 0);
+                endDate.setDate(now.getDate() - 1);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case '7':
+                startDate.setDate(now.getDate() - 7);
+                startDate.setHours(0, 0, 0, 0);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case '15':
+                startDate.setDate(now.getDate() - 15);
+                startDate.setHours(0, 0, 0, 0);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case '30':
+                startDate.setDate(now.getDate() - 30);
+                startDate.setHours(0, 0, 0, 0);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            default:
+                startDate = null;
+                endDate = null;
+                break;
+        }
+
+        if (startDate && endDate) {
+            elements.startDate.value = ajustarDataLocal(startDate);
+            elements.endDate.value = ajustarDataLocal(endDate);
+        } else {
+            elements.startDate.value = '';
+            elements.endDate.value = '';
+        }
+    });
+
+    // Função para ajustar a data local sem UTC
+    function ajustarDataLocal(data) {
+        const timezoneOffset = data.getTimezoneOffset() * 60000;
+        return new Date(data.getTime() - timezoneOffset).toISOString().slice(0, 16);
+    }
+
+
 
     const ajustarRamalPorHospital = (hospitalSelecionado, destinoTransferencia) => {
         const ramais = {

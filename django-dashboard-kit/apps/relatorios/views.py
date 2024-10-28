@@ -62,7 +62,7 @@ class LigacoesAbandonadasView(LoginRequiredMixin, TemplateView):
         return render(request, self.template_name)
 
 
-class UraJornadaView(TemplateView):
+class UraJornadaView(LoginRequiredMixin, TemplateView):
     template_name = 'relatorios/jornada_ura.html'
 
     def post(self, request, *args, **kwargs):
@@ -95,6 +95,7 @@ class UraJornadaView(TemplateView):
             # Formatação final para a API
             dt_start_formatted = dt_start_obj.strftime('%Y-%m-%d %H:%M:%S')
             dt_finish_formatted = dt_finish_obj.strftime('%Y-%m-%d %H:%M:%S')
+            print(f'Data inicial: {dt_start_formatted} Data final: {dt_finish_formatted}')
         except ValueError:
             error_message = "Formato de data inválido. Use o formato correto."
             return render(request, self.template_name, {'error_message': error_message})
