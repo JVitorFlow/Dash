@@ -110,14 +110,29 @@ document.addEventListener('DOMContentLoaded', () => {
     
         data.jornadas.forEach(jornada => {
             const row = document.createElement('tr');
-            const dataInicio = new Date(jornada.data_hora_inicio);
-            const dataFim = new Date(jornada.data_hora_fim);
-            const duracaoMs = dataFim - dataInicio;
-            const duracaoFormatada = `${Math.floor(duracaoMs / 60000)} min ${(duracaoMs / 1000) % 60} s`;
-            const dataComTempo = `${dataInicio.toLocaleDateString('pt-BR')} ${dataInicio.toTimeString().slice(0, 8)} - ${dataFim.toTimeString().slice(0, 8)}`;
+            
+            // Função para exibir datas em UTC no formato desejado
+            const formatToUTC = (dateString) => {
+                if (!dateString) return 'Data Inválida';
+                const date = new Date(dateString);
+                return date.toISOString().replace('T', ' ').slice(0, 19); // Formato: AAAA-MM-DD HH:MM:SS
+            };
+    
+            // Usando os nomes corretos das propriedades da API
+            const dataInicio = formatToUTC(jornada.data_hora_inicio);
+            const dataFim = formatToUTC(jornada.data_hora_fim);
+            const dataComTempo = `${dataInicio} - ${dataFim}`;
+    
+            // Calcular a duração em milissegundos, se as datas forem válidas
+            const duracaoMs = dataInicio !== 'Data Inválida' && dataFim !== 'Data Inválida' 
+                              ? new Date(jornada.data_hora_fim) - new Date(jornada.data_hora_inicio) 
+                              : NaN;
+            const duracaoFormatada = !isNaN(duracaoMs) ? `${Math.floor(duracaoMs / 60000)} min ${(duracaoMs / 1000) % 60} s` : 'N/A';
+    
             const tipoUraHtml = jornada.tipo_ura === "Tradicional"
                 ? '<i class="fas fa-keyboard" style="color: blue;"></i> Tradicional'
                 : '<i class="fas fa-microphone" style="color: green;"></i> Cognitiva';
+    
             const ramal = jornada.ramal || ajustarRamalPorHospital(elements.selectHospital.value, jornada.destino_transferencia);
     
             row.innerHTML = `
@@ -126,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${jornada.numero_cliente}</td>
                 <td>${jornada.tipo_atendimento || 'N/A'}</td>
                 <td>${jornada.id_chamada}</td>
-                <td>${isNaN(duracaoMs) ? 'N/A' : duracaoFormatada}</td>
+                <td>${duracaoFormatada}</td>
                 <td>${jornada.destino_transferencia || 'N/A'}</td>
                 <td>${tipoUraHtml}</td>
                 <td>${ramal}</td>
@@ -135,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${elements.selectHospital.value}</td>
                 <td><button class="btn btn-primary detalhes-btn" data-jornada='${JSON.stringify(jornada)}'>Detalhes</button></td>
             `;
+    
             tbody.appendChild(row);
         });
     
@@ -167,7 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     };
-
+    
+    
 
     // Vincular eventos ao botão de detalhes
     document.querySelectorAll('.detalhes-btn').forEach(btn => {
