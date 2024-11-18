@@ -2,6 +2,8 @@ import requests
 import logging
 from django.conf import settings
 from datetime import datetime
+from dateutil import parser
+from urllib.parse import urlencode, quote
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +15,11 @@ USERNAME = settings.USERNAME_IVRCALLAPI
 PASSWORD = settings.PASSWORD_IVRCALLAPI
 ORG_ID = settings.ORG_ID
 CAMPAIGN_ID = settings.CAMPAING_ID
+
+BASE_URL_LEIA = "https://api.leia.digitalcontact.cloud"
+FILES_DIRECTORY = "wtime"
+TOKEN_LEIA = "FR4IyuofvNekAPa16UEUAc92s6h1Ilkw"
+
 
 
 EVENTOS_LEGIVEIS = {
@@ -296,9 +303,9 @@ def calcular_tempo_execucao_entre_eventos(evento_atual, evento_anterior):
     Calcula o tempo de execução entre dois eventos usando o campo 'executed_at'.
     """
     try:
-        # Converter o campo 'executed_at' para um objeto datetime
-        data_hora_atual = datetime.strptime(evento_atual['executed_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        data_hora_anterior = datetime.strptime(evento_anterior['executed_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        # Tenta analisar automaticamente o formato da data com parser do dateutil
+        data_hora_atual = parser.parse(evento_atual['executed_at'])
+        data_hora_anterior = parser.parse(evento_anterior['executed_at'])
         
         # Calcular a diferença de tempo em segundos
         tempo_execucao = (data_hora_atual - data_hora_anterior).total_seconds()
@@ -395,3 +402,46 @@ def processar_chamadas_abandonadas(dados_pagina):
         'abandonos_cognitivos': chamadas_abandonadas_cognitivo,
         'interrompidas_cliente': chamadas_interrompidas_cliente
     }
+
+def captura_informacoes_leia_ia(tag, data_inicio, data_fim):
+    base_url = "https://api.leia.digitalcontact.cloud/requests/wtime"
+    # print(f"Base URL: {base_url}")
+
+    try:
+        # Ajusta as datas para o formato esperado pela API
+        formatted_data_inicio = data_inicio
+        formatted_data_fim = data_fim
+        print(f"Datas formatadas: start_date={formatted_data_inicio}, end_date={formatted_data_fim}")
+
+        # Codifica apenas a tag
+        tag_encoded = quote(tag, safe="")
+        # print(f"Tag codificada: {tag_encoded}")
+
+        # Constrói manualmente a query string na ordem necessária
+        query_string = (
+            f"token={TOKEN_LEIA}"
+            f"&tag={tag_encoded}"
+            f"&start_date={formatted_data_inicio}"
+            f"&end_date={formatted_data_fim}"
+        )
+        full_url = f"{base_url}?{query_string}"
+
+        # Exibe a URL completa para verificação
+        # print(f"URL gerada (para replicar o curl): {full_url}")
+
+        # Faz a requisição usando requests.get
+        response = requests.get(full_url)
+
+        # Verifica se a resposta foi bem-sucedida
+        # print(f"Status Code da resposta: {response.status_code}")
+        response.raise_for_status()
+
+        # Retorna os dados em JSON
+        json_response = response.json()
+        # print(f"Resposta JSON recebida: {json_response}")
+        return json_response
+
+    except requests.RequestException as e:
+        # Captura e exibe erros na requisição
+        print(f"Erro ao fazer a requisição para a API: {e}")
+        return None

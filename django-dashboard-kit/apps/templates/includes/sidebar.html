@@ -76,55 +76,6 @@
 					<li><a class="link_name" href="{% url 'relatorios:jornada_ura' %}">Jornada da URA</a></li>
 				</ul>
 			</li>
-			
-			
-			{% comment %} <li>
-				<a href="#">
-					<i class="material-icons-two-tone">chat_bubble</i>
-					<span class="link_name">Chatbots</span>
-				</a>
-				<ul class="sub-menu blank">
-					<li><a class="link_name" href="#">Chatbots</a></li>
-				</ul>
-			</li> {% endcomment %}
-			{% comment %} <li>
-				<div class="iocn-link">
-					<a href="#">
-						<i class="material-icons-two-tone">table_rows</i>
-						<span class="link_name">Tabela</span>
-					</a>
-					<i class="bx bxs-chevron-down arrow"></i>
-				</div>
-				<ul class="sub-menu">
-					<li><a href="{% url 'ligobots:tbl_bootstrap' %}">Bootstrap Table</a></li>
-				</ul>
-			</li> {% endcomment %}
-			{% comment %} <li>
-				<div class="iocn-link">
-					<a href="#">
-						<i class="material-icons-two-tone">bubble_chart</i>
-						<span class="link_name">Gráficos e Mapas</span>
-					</a>
-					<i class="bx bxs-chevron-down arrow"></i>
-				</div>
-				<ul class="sub-menu">
-					<li><a href="{% url 'ligobots:chart_apex' %}">Gráficos</a></li>
-					<li><a href="{% url 'ligobots:map_google' %}">Mapas</a></li>
-				</ul>
-			</li> {% endcomment %}
-			{% comment %} <li>
-				<div class="iocn-link">
-					<a href="#">
-						<i class="material-icons-two-tone">https</i>
-						<span class="link_name">Autenticação</span>
-					</a>
-					<i class="bx bxs-chevron-down arrow"></i>
-				</div>
-				<ul class="sub-menu">
-					<li><a href="/auth-signup.html">Registrar</a></li>
-					<li><a href="/auth-signin.html">Entrar</a></li>
-				</ul>
-			</li> {% endcomment %}
 			<li>
 				<div class="profile-details">
 					<div class="profile-content">
@@ -136,6 +87,16 @@
 					</div>
 					<i class="bx bx-log-out"></i>
 				</div>
+			</li>
+			<!-- Nova opção para Curadoria de Fala -->
+			<li>
+				<a href="{% url 'relatorios:leia' %}"> 
+					<i class="fas fa-brain"></i> 
+					<span class="link_name">Le-IA</span> 
+				</a>
+				<ul class="sub-menu blank">
+					<li><a class="link_name" href="{% url 'relatorios:leia' %}">Le-IA</a></li>
+				</ul>
 			</li>
 		</ul>
 	</div>

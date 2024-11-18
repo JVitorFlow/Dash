@@ -399,3 +399,8 @@ canvas {
     font-weight: bold;
     color: #000; /* Ou qualquer outra cor desejada */
 }
+
+#colunasChartContainer {
+    width: 100%;
+    height: auto;
+}
