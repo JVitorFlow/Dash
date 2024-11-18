@@ -2,11 +2,11 @@ from django.views.generic import TemplateView
 from celery.result import AsyncResult
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
-from .services import obter_token_autenticacao
+from .services import obter_token_autenticacao, captura_informacoes_leia_ia
 from .tasks import processar_chamadas_async, processar_jornada_ura_async
 from django.http import JsonResponse
 from datetime import datetime
-
+from django.contrib import messages
 
 class LigacoesAbandonadasView(LoginRequiredMixin, TemplateView):
     template_name = 'relatorios/chamadas_abandonadas.html'
@@ -132,10 +132,96 @@ class UraJornadaView(LoginRequiredMixin, TemplateView):
             status = task_result.status
             print(f"Status da task {task_id}: {status}")  # Log para depuração
         return render(request, self.template_name)
+    
+class LeiaView(LoginRequiredMixin, TemplateView):
+    template_name = 'relatorios/leia.html'
+
+    def format_date_to_api(self, date_str):
+        """
+        Converte uma data de entrada (YYYY-MM-DD) para o formato esperado pela API (YYYY-MM-DDTHH:MM:SS).
+        Se a data já estiver no formato correto, retorna sem modificações.
+        """
+        try:
+            # Retorna diretamente se o valor já está no formato esperado
+            if date_str.endswith("T00:00:00"):
+                return date_str
+
+            # Converte do formato YYYY-MM-DD para o formato esperado pela API
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+            return date_obj.strftime("%Y-%m-%dT00:00:00")
+        except ValueError as e:
+            print(f"Erro na formatação da data: {e}")
+            return None
+
+
+
+    def get(self, request, *args, **kwargs):
+        """
+        Renderiza a página inicial com o formulário sem resultados.
+        """
+        context = self.get_context_data(**kwargs)
+        context['dados_api'] = None  # Nenhum dado inicial
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Processa os filtros e exibe os resultados.
+        """
+        context = self.get_context_data(**kwargs)
+
+        # Obtém os parâmetros do POST
+        data_inicio = request.POST.get('dt_start')
+        data_fim = request.POST.get('dt_finish')
+        hospital = request.POST.get('nm_flow_ivr')
+
+        # print(f"Dados recebidos no POST: {request.POST}")
+
+        hospital_tags = {
+            "HSJC": "Setores HSJC v3",
+            "HM": "Setores HM v3",
+            "HSOR": "Setores HSOR v3",
+        }
+
+        # Verifica se o hospital selecionado tem uma tag válida
+        tag = hospital_tags.get(hospital)
+        if not (data_inicio and data_fim and tag):
+            messages.warning(request, "Por favor, preencha todos os campos obrigatórios para realizar a busca.")
+            context['dados_api'] = None
+            return self.render_to_response(context)
+
+        # Converte as datas para o formato esperado pela API
+        formatted_data_inicio = self.format_date_to_api(data_inicio)
+        formatted_data_fim = self.format_date_to_api(data_fim)
+
+        # print(f"Datas formatadas para API: start_date={formatted_data_inicio}, end_date={formatted_data_fim}")
+
+        if not (formatted_data_inicio and formatted_data_fim):
+            messages.error(request, "Datas inválidas. Verifique e tente novamente.")
+            context['dados_api'] = None
+            return self.render_to_response(context)
+
+        try:
+            # Faz a requisição para a API
+            # print(f"Chamando a API com tag: {tag}, start_date: {formatted_data_inicio}, end_date: {formatted_data_fim}")
+            dados = captura_informacoes_leia_ia(tag, formatted_data_inicio, formatted_data_fim)
+            if dados:
+                context['dados_api'] = dados.get('result', [])
+            else:
+                context['dados_api'] = []
+                messages.error(request, "Não foi possível obter os dados da API.")
+        except Exception as e:
+            # print(f"Erro ao buscar dados da API Leia: {e}")
+            context['dados_api'] = []
+            messages.error(request, "Ocorreu um erro ao buscar os dados. Tente novamente mais tarde.")
+
+        return self.render_to_response(context)
+
+
+
 
 def verificar_status_task(request, task_id):
     task = AsyncResult(task_id)  # Recuperar o status da task pelo task_id
-    print(f"Status atual da task {task_id}: {task.status}")
+    # print(f"Status atual da task {task_id}: {task.status}")
 
     # Verificar o status da task
     if task.state == 'PENDING':

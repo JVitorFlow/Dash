@@ -127,8 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const duracaoMs = dataInicio !== 'Data Inválida' && dataFim !== 'Data Inválida' 
                               ? new Date(jornada.data_hora_fim) - new Date(jornada.data_hora_inicio) 
                               : NaN;
-            const duracaoFormatada = !isNaN(duracaoMs) ? `${Math.floor(duracaoMs / 60000)} min ${(duracaoMs / 1000) % 60} s` : 'N/A';
-    
+            const minutos = Math.floor(duracaoMs / 60000);
+            const segundos = ((duracaoMs % 60000) / 1000).toFixed(2); // Arredonda os segundos para duas casas
+                          
+            const duracaoFormatada = !isNaN(duracaoMs) ? `${minutos} min ${segundos} s` : 'N/A';
+
             const tipoUraHtml = jornada.tipo_ura === "Tradicional"
                 ? '<i class="fas fa-keyboard" style="color: blue;"></i> Tradicional'
                 : '<i class="fas fa-microphone" style="color: green;"></i> Cognitiva';
