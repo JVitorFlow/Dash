@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const ramais = {
             HM: {
                 TransfAgendamentos: 11650,
-                TransfReclamacoesElogios: 11651,
+                TransfRamalServicoAtendimentoUsuarioSAU: 11651,
                 TransfTrabalharConosco: 11653,
                 TransfVitimaViolencia: 11652
             },

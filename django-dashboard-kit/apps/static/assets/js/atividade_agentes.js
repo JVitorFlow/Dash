@@ -8,7 +8,7 @@ export function buscarDadosAgentes(isManualSearch = false) {
 
     // Caso a busca seja manual, utilize as datas dos campos manuais
     if (isManualSearch) {
-        // console.log("[INFO] Realizando busca manual");
+        console.log("[INFO] Realizando busca manual");
 
         startDate = document.getElementById('startDate').value;
         endDate = document.getElementById('endDate').value;
@@ -49,8 +49,8 @@ export function buscarDadosAgentes(isManualSearch = false) {
         }
     }
 
-    //console.log("[DEBUG] Data de Início (sem ajuste para UTC):", startDate);
-    // console.log("[DEBUG] Data de Fim (sem ajuste para UTC):", endDate);
+    console.log("[DEBUG] Data de Início (sem ajuste para UTC):", startDate);
+    console.log("[DEBUG] Data de Fim (sem ajuste para UTC):", endDate);
 
 
     mostrarLoadingSpinner('loadingSpinnerMedidores');
@@ -70,16 +70,16 @@ export function buscarDadosAgentes(isManualSearch = false) {
     if (urlElement) {
         try {
             atividadesAgentesUrl = urlElement.textContent.trim();
-            // console.log("[INFO] URL da API carregada:", atividadesAgentesUrl);
+            console.log("[INFO] URL da API carregada:", atividadesAgentesUrl);
         } catch (e) {
-            // console.error("[ERROR] Falha ao parsear a URL da API:", e);
+            console.error("[ERROR] Falha ao parsear a URL da API:", e);
             toggleButtons(true);
             esconderLoadingSpinner('loadingSpinner');
             esconderLoadingSpinner('loadingSpinnerMedidores');
             return;
         }
     } else {
-        // console.error("[ERROR] Elemento 'atividadesAgentesUrlData' não encontrado no documento.");
+        console.error("[ERROR] Elemento 'atividadesAgentesUrlData' não encontrado no documento.");
         toggleButtons(true);
         esconderLoadingSpinner('loadingSpinner');
         esconderLoadingSpinner('loadingSpinnerMedidores');
@@ -103,19 +103,21 @@ export function buscarDadosAgentes(isManualSearch = false) {
         body: JSON.stringify(payload)
     })
     .then(response => {
-        // console.log("[INFO] HTTP Status da resposta:", response.status);
+        console.log("[INFO] HTTP Status da resposta:", response.status);
         return response.json();
     })
     .then(data => {
         console.log("[INFO] Dados recebidos do JSON:", data);
         if (data.errcode === 0) {
+            console.log("[INFO] Dados da API válidos. Processando...");
             const dadosProcessados = processarDadosParaGrafico(data.agent_activity_list);
             
             
             const dadosConsolidados = consolidarDadosPorAgenteEData(data.agent_activity_list);
+            console.log("[INFO] Dados consolidados:", dadosConsolidados);
             const disponibilidadePorDia = calcularDisponibilidadeDiariaPorAgente(dadosConsolidados);
             // console.log("[INFO] Dados processados para o gráfico TENDENCIA:", disponibilidadePorDia);
-            
+            console.log("[INFO] Disponibilidade por dia:", disponibilidadePorDia);
             renderizarGraficoTendencia('1101', disponibilidadePorDia);
 
             // Renderizar o gráfico de colunas
@@ -154,20 +156,6 @@ function toggleButtons(enable) {
     filterButton.disabled = !enable;
 }
 
-// Função para formatar horas decimais em HH:mm:ss
-function formatarHorasEmHHMMSS(horasDecimais) {
-    const horas = Math.floor(horasDecimais);
-    const minutosDecimais = (horasDecimais - horas) * 60;
-    const minutos = Math.floor(minutosDecimais);
-    const segundos = Math.round((minutosDecimais - minutos) * 60);
-    
-    return [
-        horas.toString().padStart(2, '0'),
-        minutos.toString().padStart(2, '0'),
-        segundos.toString().padStart(2, '0')
-    ].join(':');
-}
-
 function calcularOcupacaoTotalEExibir(dados) {
     // Utilize a função processarDadosParaGrafico para obter os dados já calculados
     const resultado = processarDadosParaGrafico(dados);
@@ -199,7 +187,7 @@ function preencherTabelaAgentes(dados) {
         const ocupacaoPercentual = agente.ocupacaoPercentual;
 
         // Converte o tempo logado efetivo para o formato HH:MM:SS para exibição
-        const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS_nova(tempoLogadoEfetivoSegundos);
+        const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS(tempoLogadoEfetivoSegundos);
 
         table.row.add([
             agente.nome || 'N/A',
@@ -218,12 +206,19 @@ function preencherTabelaAgentes(dados) {
     table.draw();
 }
 
-
 function consolidarDadosPorAgenteEData(dados) {
     const agentesConsolidados = [];
     const emailsParaIgnorar = ["homolog.inovasaude@mail.com", "yara.bezerra@wtime.com.br"];
 
     dados.forEach(item => {
+
+        // Verificar se o item tem os campos necessários
+        if (!item || !item.login || !item.logoff || !item.nome) {
+            console.warn('[AVISO] Item com dados inválidos:', item);
+            return; // Ignora este item
+        }
+
+
         if (emailsParaIgnorar.includes(item.nome)) {
             console.warn('[AVISO] Ignorando dados do usuário:', item.nome);
             return;
@@ -370,14 +365,14 @@ function consolidarDadosPorAgenteEData(dados) {
         const tempoLogadoEfetivoSegundos = tempoTotalLogadoSegundos - ag.tempoTotalPausaSegundos;
 
         const tempoLogadoEfetivoHoras = tempoLogadoEfetivoSegundos / 3600;
-        const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS_nova(tempoLogadoEfetivoSegundos);
+        const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS(tempoLogadoEfetivoSegundos);
 
         const ocupacaoPercentual = ((tempoLogadoEfetivoSegundos / TEMPO_EFETIVO_ATENDIMENTO_SEGUNDOS) * 100).toFixed(2);
 
         ag.tempoTotalLogin = `${tempoLogadoEfetivoHoras.toFixed(6)} horas`;
         ag.tempoTotalLoginHoras = tempoLogadoEfetivoHoras.toFixed(6);
         ag.tempoTotalLoginFormatado = tempoLogadoEfetivoFormatado;
-        ag.tempoTotalPausa = formatarHorasEmHHMMSS_nova(ag.tempoTotalPausaSegundos);
+        ag.tempoTotalPausa = formatarHorasEmHHMMSS(ag.tempoTotalPausaSegundos);
         ag.horarioDeLogin = ag.periodosLogin[0].loginDate.toLocaleTimeString('pt-BR');
         ag.horarioDeLogoff = ag.periodosLogin[ag.periodosLogin.length - 1].logoffDate.toLocaleTimeString('pt-BR');
         ag.ocupacaoPercentual = ocupacaoPercentual;
@@ -388,18 +383,16 @@ function consolidarDadosPorAgenteEData(dados) {
 }
 
 
-// Função auxiliar para formatar tempo em HH:MM:SS
-function formatarHorasEmHHMMSS_nova(segundosTotais) {
+// Função para formatar tempo em HH:MM:SS
+function formatarHorasEmHHMMSS(segundosTotais) {
+    if (segundosTotais <= 0) return "00:00:00";
+
     const horas = Math.floor(segundosTotais / 3600);
     const minutos = Math.floor((segundosTotais % 3600) / 60);
     const segundos = Math.floor(segundosTotais % 60);
 
-    return [horas, minutos, segundos]
-        .map(valor => valor < 10 ? `0${valor}` : valor) // Adiciona zero à esquerda se necessário
-        .join(':');
+    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
 }
-
-
 
 
 
@@ -437,7 +430,7 @@ function processarDadosParaGrafico(dados) {
         totalSegundosPausa += agente.tempoTotalPausaSegundos;
 
         // Log para verificar os valores
-        // console.log(`[LOG] Agente: ${agente.nome} | Horas Trabalhadas: ${agente.tempoTotalLoginHoras} horas | Horas Pausa: ${agente.tempoTotalPausa}`);
+        console.log(`[LOG] Agente: ${agente.nome} | Horas Trabalhadas: ${agente.tempoTotalLoginHoras} horas | Horas Pausa: ${agente.tempoTotalPausa}`);
     });
 
     // Cálculo da carga horária para o gráfico
@@ -526,6 +519,12 @@ function calcularDisponibilidadeDiariaPorAgente(dadosConsolidados) {
 // Listeners de evento e configuração inicial
 document.addEventListener('DOMContentLoaded', function() {
     const searchButton = document.getElementById('kpiSearchButton');
+    if (searchButton) {
+        searchButton.addEventListener('click', function() {
+            toggleButtons(false);
+            buscarDadosAgentes(false);
+        });
+    }
     const filterButton = document.getElementById('filterButton');
 
     filterButton.addEventListener('click', function() {
