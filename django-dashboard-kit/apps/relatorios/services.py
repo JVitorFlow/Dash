@@ -97,7 +97,7 @@ def obter_chamadas_ivr(token, dt_start, dt_finish, call_filter_list):
         'Accept': 'application/json'
     }
 
-    print(f"Headers: {headers}")
+    # print(f"Headers: {headers}")
 
     todas_chamadas = []
     page = 1
@@ -115,7 +115,7 @@ def obter_chamadas_ivr(token, dt_start, dt_finish, call_filter_list):
                 "call_filter_list": call_filter_list
             }
 
-            print(f"Corpo da requisição sendo enviado: {body}")
+            # print(f"Corpo da requisição sendo enviado: {body}")
             response = requests.post(url, headers=headers, json=body)
 
             response.raise_for_status()
@@ -133,7 +133,7 @@ def obter_chamadas_ivr(token, dt_start, dt_finish, call_filter_list):
             total_pages = metadata.get('page_total', 1)
             page += 1
 
-        print(f"Total de chamadas obtidas: {len(todas_chamadas)}")
+        # print(f"Total de chamadas obtidas: {len(todas_chamadas)}")
         return todas_chamadas
 
     except requests.HTTPError as http_err:
@@ -208,6 +208,9 @@ def analisar_jornada_ura_tradicional_com_tempo(chamada):
     """
     call_data = chamada.get('call_data', {})
     ivr_events = chamada.get('ivr_event_list', [])
+    variables = call_data.get('variables', {})
+
+
     numero_cliente = call_data.get('variables', {}).get('global', {}).get('contactphonefull', 'Número desconhecido')
     did_number = chamada.get('did_number', 'Desconhecido')
     dt_start = call_data.get('start_ivr')
@@ -227,6 +230,8 @@ def analisar_jornada_ura_tradicional_com_tempo(chamada):
     captura_audio = False
     destino_transferencia = None
 
+    
+
     # Lista de eventos com tempo de execução
     eventos_com_tempo_execucao = []
 
@@ -244,10 +249,13 @@ def analisar_jornada_ura_tradicional_com_tempo(chamada):
                 foi_transferido = True
                 destino_transferencia = ivr_events[i + 1].get('step_name', 'Desconhecido')
 
-        # Verifica se houve transferência em qualquer momento (captura geral de transferências)
-        if step_type == "IvrTransferCall" and not foi_transferido:  # Não sobrescreve se já foi identificado acima
+        # Verifica se houve transferência e busca o ramal transferido
+        if step_type == "IvrTransferCall" and event.get('step_name') == "TransfRamalCliente":
             foi_transferido = True
-            destino_transferencia = event.get('step_name', 'Desconhecido')
+            destino_transferencia = "TransfRamalCliente"
+
+            # Atualiza o ramal com o valor de "RamalDesejadoDTMFCliente" ou "RamalCapturado"
+            ramal = variables.get("RamalDesejadoDTMFCliente") or variables.get("RamalCapturado", "N/A")
 
         # Verifica se houve captura de áudio (URA cognitiva)
         if step_type == "IvrVoiceTranscriptionAudio":
@@ -311,7 +319,7 @@ def calcular_tempo_execucao_entre_eventos(evento_atual, evento_anterior):
         tempo_execucao = (data_hora_atual - data_hora_anterior).total_seconds()
     except Exception as e:
         # Caso não seja possível calcular, retorna None e exibe o erro
-        print(f"Erro ao calcular tempo de execução: {e}")
+        # print(f"Erro ao calcular tempo de execução: {e}")
         tempo_execucao = None
 
     return tempo_execucao
@@ -411,7 +419,7 @@ def captura_informacoes_leia_ia(tag, data_inicio, data_fim):
         # Ajusta as datas para o formato esperado pela API
         formatted_data_inicio = data_inicio
         formatted_data_fim = data_fim
-        print(f"Datas formatadas: start_date={formatted_data_inicio}, end_date={formatted_data_fim}")
+        # print(f"Datas formatadas: start_date={formatted_data_inicio}, end_date={formatted_data_fim}")
 
         # Codifica apenas a tag
         tag_encoded = quote(tag, safe="")
@@ -443,5 +451,5 @@ def captura_informacoes_leia_ia(tag, data_inicio, data_fim):
 
     except requests.RequestException as e:
         # Captura e exibe erros na requisição
-        print(f"Erro ao fazer a requisição para a API: {e}")
+        # print(f"Erro ao fazer a requisição para a API: {e}")
         return None
