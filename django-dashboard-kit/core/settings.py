@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.home',
     'apps.ligobots',
     'apps.relatorios',
+    'apps.analise_pico',
     'rest_framework',
     'crispy_forms',
     'crispy_bootstrap4',
