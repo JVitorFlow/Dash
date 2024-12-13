@@ -1,0 +1,114 @@
+{% extends "layouts/base.html" %}
+
+{% load static %}
+{% load custom_filters %}
+
+{% block title %} Jornada URA {% endblock %}
+
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static 'assets/css/analise_pico.css' %}">
+    <script src="{% static 'assets/js/pico_movimento/pico.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+
+{% endblock extrahead %}
+
+{% block content %}
+    <div class="pc-container">
+        <div class="pcoded-content">
+            <!-- Cabeçalho -->
+            <div class="page-header mb-2" style="padding-bottom: 0px;">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="page-header-title">
+                                <h5 class="m-b-5">Análise de pico de movimento</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="{% url 'home:home' %}"><i class="fas fa-home"></i> Home</a>
+                                </li>
+                                <li class="breadcrumb-item"><i class="fas fa-chart-line"></i> Análise de pico de movimento</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <form id="filter-form" method="POST" action="{% url 'analise_pico:pico_movimento' %}">
+                {% csrf_token %}
+                <div class="row mb-3"> <!-- Alterado para mb-3 para mais espaçamento -->
+                    <div class="col-md-3 mb-2"> <!-- Adicionada classe mb-2 para dar espaçamento -->
+                        <label for="select-periodo" class="form-label">Selecione o Período</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <select class="form-select" id="select-periodo" name="select_periodo">
+                                <option selected disabled>Selecione</option>
+                                <option value="today">Hoje</option>
+                                <option value="yesterday">Ontem</option>
+                                <option value="7">Últimos 7 dias</option>
+                                <option value="15">Últimos 15 dias</option>
+                                <option value="30">Últimos 30 dias</option>
+                            </select>
+                        </div>
+                    </div>
+            
+                    <!-- Novo campo de seleção de hospital -->
+                    <div class="col-md-3 mb-2"> <!-- Adicionada classe mb-2 para espaçamento -->
+                        <label for="select-hospital" class="form-label">Selecione o Hospital</label>
+                        <select class="form-select" id="select-hospital" name="nm_flow_ivr_pico">
+                            <option value="" selected>Selecione o Hospital</option>
+                            <option value="HM">Hospital da Mulher</option>
+                            <option value="HSOR">Hospital Sorocaba</option>
+                            <option value="HSJC">Hospital São José dos Campos</option>
+                        </select>
+                    </div>
+            
+                    <div class="col-md-3 mb-2"> <!-- Adicionada classe mb-2 para espaçamento -->
+                        <label for="startDate" class="form-label">De</label>
+                        <input type="datetime-local" class="form-control" id="startDate" name="dt_start">
+                    </div>
+            
+                    <div class="col-md-3 mb-2"> <!-- Adicionada classe mb-2 para espaçamento -->
+                        <label for="endDate" class="form-label">Até</label>
+                        <input type="datetime-local" class="form-control" id="endDate" name="dt_finish">
+                    </div>
+            
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary w-100" id="filter-button">Filtrar</button>
+                    </div>
+                </div>
+                <!-- Local para a mensagem de erro -->
+                <div class="col-md-12 mt-2">
+                    <div id="hospital-error" class="alert alert-danger d-none" role="alert">
+                        Por favor, selecione um hospital antes de filtrar.
+                    </div>
+                </div>
+            </form>
+
+
+            <!-- Mensagens de Erro -->
+            {% if error_message %}
+            <div class="alert alert-danger mt-3" role="alert">
+                {{ error_message }}
+            </div>
+            {% endif %}
+
+
+            <!-- Resultado -->
+            <div id="results-container" class="mt-4">
+                <!-- Loading Spinner -->
+                <div id="loading-spinner" class="loading-spinner d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-primary mt-2">Processando, por favor aguarde...</p>
+                </div>
+            </div> 
+            
+            <!-- Controles de Paginação -->
+            <div id="pagination-container"></div>
+        </div>
+    </div>
+{% endblock content %}

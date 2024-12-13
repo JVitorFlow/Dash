@@ -11,6 +11,7 @@ urlpatterns = [
     path("", include("apps.home.urls")),
     path('ligobots/', include('apps.ligobots.urls', namespace='ligobots')),
     path('relatorios/', include('apps.relatorios.urls', namespace='relatorios')),
+    path('analise-pico/', include('apps.analise_pico.urls')),
 ]
 
 if settings.DEBUG:
