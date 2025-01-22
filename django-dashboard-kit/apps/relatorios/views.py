@@ -107,7 +107,6 @@ class UraJornadaView(LoginRequiredMixin, TemplateView):
             return render(request, self.template_name, {'error_message': error_message})
 
         call_filter_list = {
-            'call_data.code_status_ivr': 10002,
             'call_data.nm_flow_ivr': nm_flow_ivr
         }
         
