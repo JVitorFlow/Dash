@@ -66,6 +66,7 @@ input:checked + .slider:before {
 .d-flex {
     background-color: #f8f9fa;
     padding: 1rem;
-    border-radius: 8px;
+    border-radius: 8px
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    margin-top:20px;
 }
