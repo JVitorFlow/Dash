@@ -8,18 +8,16 @@ from urllib.parse import urlencode, quote
 logger = logging.getLogger(__name__)
 
 # URL da API para gerar o token
-TOKEN_API_URL = "https://api.reports.digitalcontact.cloud/Security/CreateToken"
-IVR_TRACE_CALL_API_URL = "https://api.reports.digitalcontact.cloud/IVREvent/GetIVRTraceCall"
-
+TOKEN_API_URL = settings.TOKEN_API_URL
+IVR_TRACE_CALL_API_URL = settings.IVR_TRACE_CALL_API_URL
 USERNAME = settings.USERNAME_IVRCALLAPI
 PASSWORD = settings.PASSWORD_IVRCALLAPI
 ORG_ID = settings.ORG_ID
 CAMPAIGN_ID = settings.CAMPAING_ID
 
-BASE_URL_LEIA = "https://api.leia.digitalcontact.cloud"
-FILES_DIRECTORY = "wtime"
-TOKEN_LEIA = "FR4IyuofvNekAPa16UEUAc92s6h1Ilkw"
-
+BASE_URL_LEIA = settings.BASE_URL_LEIA
+FILES_DIRECTORY = settings.FILES_DIRECTORY
+TOKEN_LEIA = settings.TOKEN_LEIA
 
 
 EVENTOS_LEGIVEIS = {
@@ -33,22 +31,33 @@ EVENTOS_LEGIVEIS = {
     "CapturaAudio": "Captura de Áudio",
     "IvrAudioDTMF": "Detecção de DTMF",
     "IvrRedirect": "Transferência",
-    "finishIvr": "Fim do IVR"
+    "finishIvr": "Fim do IVR",
     # Adicione outros mapeamentos conforme necessário
 }
 
+
 def obter_lista_eventos_legiveis(ivr_events):
-    return [EVENTOS_LEGIVEIS.get(event.get('step_name', ''), event.get('step_name', '')) for event in ivr_events]
+    return [
+        EVENTOS_LEGIVEIS.get(event.get("step_name", ""), event.get("step_name", ""))
+        for event in ivr_events
+    ]
+
 
 def verificar_abandono_cognitivo(ivr_events):
     eventos_legiveis = obter_lista_eventos_legiveis(ivr_events)
-    if "Log de Abandono Cognitivo" in eventos_legiveis and "Captura de Áudio" not in eventos_legiveis:
+    if (
+        "Log de Abandono Cognitivo" in eventos_legiveis
+        and "Captura de Áudio" not in eventos_legiveis
+    ):
         return True
     return False
 
+
 def verificar_interrompida_ura_tradicional(ivr_events):
     eventos_legiveis = obter_lista_eventos_legiveis(ivr_events)
-    if "Áudio de Saudação" in eventos_legiveis and not any(evento in eventos_legiveis for evento in ["Detecção de DTMF", "Transferência"]):
+    if "Áudio de Saudação" in eventos_legiveis and not any(
+        evento in eventos_legiveis for evento in ["Detecção de DTMF", "Transferência"]
+    ):
         return True
     return False
 
@@ -58,23 +67,17 @@ def obter_token_autenticacao():
     Função que faz uma requisição para obter o token de autenticação da API.
     """
     url = TOKEN_API_URL
-    headers = {
-        'Accept': 'text/plain',
-        'Content-Type': 'application/json'
-    }
-    body = {
-        'userName': USERNAME,
-        'password': PASSWORD
-    }
-    
+    headers = {"Accept": "text/plain", "Content-Type": "application/json"}
+    body = {"userName": USERNAME, "password": PASSWORD}
+
     try:
         response = requests.post(TOKEN_API_URL, headers=headers, json=body)
         response.raise_for_status()  # Verifica se a resposta foi bem-sucedida (status 2xx)
-        
+
         # Se a resposta foi bem-sucedida, processa o resultado
         data = response.json()
-        token = data.get('value', None)  # Pega o token da resposta
-        
+        token = data.get("value", None)  # Pega o token da resposta
+
         if token:
             logger.info(f"Token obtido com sucesso: {token}")
             return token
@@ -89,12 +92,13 @@ def obter_token_autenticacao():
 
     return None  # Em caso de erro, retorna None
 
+
 def obter_chamadas_ivr(token, dt_start, dt_finish, call_filter_list):
     url_base = IVR_TRACE_CALL_API_URL
     headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
     }
 
     # print(f"Headers: {headers}")
@@ -112,7 +116,7 @@ def obter_chamadas_ivr(token, dt_start, dt_finish, call_filter_list):
                 "dt_finish": dt_finish,
                 "org_id": ORG_ID,
                 "campaign_id": CAMPAIGN_ID,
-                "call_filter_list": call_filter_list
+                "call_filter_list": call_filter_list,
             }
 
             # print(f"Corpo da requisição sendo enviado: {body}")
@@ -125,12 +129,12 @@ def obter_chamadas_ivr(token, dt_start, dt_finish, call_filter_list):
 
             # Handle case where data is a list
             if isinstance(data, list):
-                data = {'data': data, 'metadata': {}}
+                data = {"data": data, "metadata": {}}
 
-            todas_chamadas.extend(data.get('data', []))
+            todas_chamadas.extend(data.get("data", []))
 
-            metadata = data.get('metadata', {})
-            total_pages = metadata.get('page_total', 1)
+            metadata = data.get("metadata", {})
+            total_pages = metadata.get("page_total", 1)
             page += 1
 
         # print(f"Total de chamadas obtidas: {len(todas_chamadas)}")
@@ -147,26 +151,27 @@ def obter_chamadas_ivr(token, dt_start, dt_finish, call_filter_list):
 def obter_jornada_ura(token, dt_start, dt_finish, call_filter_list):
     url_base = IVR_TRACE_CALL_API_URL
     headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
     }
 
     todas_chamadas = []
     page = 1
     total_pages = 1
     limit = 200
+    MAX_PAGES = 10
 
     try:
         # Enquanto a página atual for menor ou igual ao total de páginas
-        while page <= total_pages:
+        while page <= total_pages and page <= MAX_PAGES:
             url = f"{url_base}?limit={limit}&page={page}"
             body = {
                 "dt_start": dt_start,
                 "dt_finish": dt_finish,
                 "org_id": ORG_ID,
                 "campaign_id": CAMPAIGN_ID,
-                "call_filter_list": call_filter_list
+                "call_filter_list": call_filter_list,
             }
 
             logger.info(f"Enviando requisição para a página {page}: {body}")
@@ -175,24 +180,45 @@ def obter_jornada_ura(token, dt_start, dt_finish, call_filter_list):
 
             data = response.json()
 
+            # Validação do formato da resposta
+            if not isinstance(data, dict):
+                logger.error(f"Resposta da API não é um dicionário: {data}")
+                return {"status": "erro", "mensagem": "Formato da resposta da API inválido."}
+
+
             # Armazena as chamadas da página atual
-            chamadas_pagina = data.get('data', [])
+            chamadas_pagina = data.get("data", [])
+            if not isinstance(chamadas_pagina, list):
+                logger.error(f"O campo 'data' na resposta da API não é uma lista: {chamadas_pagina}")
+                return {"status": "erro", "mensagem": "Campo 'data' na resposta da API inválido."}
+
             todas_chamadas.extend(chamadas_pagina)
 
             # Recupera informações de metadados, como o total de páginas
-            metadata = data.get('metadata', {})
-            total_pages = metadata.get('page_total', 1)  # Total de páginas
+            metadata = data.get("metadata", {})
+            total_pages = metadata.get("page_total", 1)  # Total de páginas
             page += 1  # Próxima página
 
+            # Verifica se a página atual retornou dados
+            if not chamadas_pagina:
+                logger.warning(f"Página {page - 1} retornou uma lista vazia ou dados ausentes.")
+
+
+         # Verifica se o limite de páginas foi atingido
+        if page > MAX_PAGES:
+            logger.warning(f"Limite de páginas atingido ({MAX_PAGES}). Interrompendo a execução.")
+
+
+
         logger.info(f"Total de chamadas obtidas: {len(todas_chamadas)}")
-        
+
         # Retornar como um dicionário com dados e metadados
         return {
-            'data': todas_chamadas,
-            'metadata': {
-                'total_chamadas': len(todas_chamadas),
-                'total_pages': total_pages
-            }
+            "data": todas_chamadas,
+            "metadata": {
+                "total_chamadas": len(todas_chamadas),
+                "total_pages": total_pages,
+            },
         }
 
     except requests.HTTPError as http_err:
@@ -202,128 +228,285 @@ def obter_jornada_ura(token, dt_start, dt_finish, call_filter_list):
         logger.error(f"Ocorreu um erro ao obter a jornada da URA: {err}")
         return {"status": "erro", "mensagem": str(err)}
 
+
 def analisar_jornada_ura_tradicional_com_tempo(chamada):
     """
     Analisa uma jornada da URA, calcula o tempo de execução de cada bloco e determina se passou pela URA tradicional ou cognitiva.
     """
-    call_data = chamada.get('call_data', {})
-    ivr_events = chamada.get('ivr_event_list', [])
-    variables = call_data.get('variables', {})
+
+    # Mapeamento específico para HM
+    step_to_ramal_map_hm = {
+        "TransfVitimaViolencia": "RamalVitimaViolencia",
+        "TransfAgendamentos": "RamalAgendamentos",
+        "TransfTrabalharConosco": "RamalTrabalharConosco",
+        "TransfRamalServicoAtendimentoUsuarioSAU": "RamalReclamacoesElogios",
+    }
+
+    step_to_ramal_map_hsjc = {
+        "TransfOuvidoria": "RamalOuvidoria",
+        "TransfAgendamentos": "RamalAgendamentos",
+        "TransfFilaCirurgica": "RamalFilaCirurgica",
+        "TransfRecepcaoInternacao": "RamalRecepcaoInternacao",
+        "TransfAmbulatorio": "RamalAmbulatorio",
+        "TransfGestaoPessoasISG":"RamalGestaoPessoasISG",
+        "TransfAdministracaoISG": "RamalAdministracaoISG",
+        "TransfResultadoExames": "RamalResultadoExames",
+        "TransfAdministracaoRHInova" : "RamalAdministracaoRHInova",
+        "TransfComprasISG" : "RamalComprasISG"
+    }
+
+    step_to_ramal_map_hsor = {
+        "TransfRecepcaoInternacao": "RamalRecepcaoInternacao",
+        "TransfOuvidoria": "RamalOuvidoria",
+        "TransfAmbulatorio": "RamalAmbulatorio",
+        "TransfAgendamentos": "RamalAgendamentos",
+        "TransfFilaCirurgica": "RamalFilaCirurgica",
+    }
+
+    # Mapeamento de ramais para setores
+    ramal_to_setor_map_hospitais = {
+        "HM": {
+            "11775": "Recepção Internação",
+            "11651": "S.A.U.",
+            "11730": "Centro Cirúrgico",
+            "11261": "Serviço Social",
+            "11650": "Agendamento",
+            "11780": "Reprodução Humana",
+            "10000": "T.I. - Tecnologia",
+            "11009": "Prontuario Eletrônico",
+            "11740": "Engenharia Clínica",
+            "11750": "Manutenção.",
+            "11760": "Quimioterapia",
+            "11770": "Urgência - Emergência",
+            "11776": "Recepção Imagem SADT",
+            "11777": "SÉSMITI SECONCI",
+            "11778": "SÉSMITI Inova Saúde",
+            "11780": "Reprodução Humana",
+        },
+        "HSJC": {
+            "12400":"RH Inova Bata Cinza",
+            "12200": "Agendamento",
+            "12300": "Resultado de Exame",
+            "12400": "RH Inova Beta Cinza",
+            "12700": "Administração",
+            "12800": "Compras",
+            "12900": "Ouvidoria",
+            "12980": "Manutenção",
+            "12246": "Agência Transfusional Banco De Sangue",
+            "12080": "Farmácia",
+            "12920": "Internação",
+            "12970": "Engenharia Clínica",
+            "12650": "RH ISG Bata Branca",
+            "12625": "Rouparia",
+            "12376": "Secretaria Medica",
+            "12617": "Segurança do Trabalho",
+            "12983": "Serviço Social",
+            "10000": "Tecnologia da Informação",
+            "12051": "Achados e Perdidos",
+            "12349": "Almoxarifado e suprimentos",
+            "12950": "NIR",
+        },
+        "HSOR": {
+            "10000": "T.I. - Tecnologia",
+            "15007": "Recepção Urgência - Emergência",
+            "15012": "Pronto Atendimento - Serviço Social",
+            "15017": "Chefia de Enfermagem",
+            "15051": "Gestão de Hotelaria",
+            "15065": "Sodexo - Operacional Higiene e Limpeza",
+            "15095": "Farmácia Central",
+            "15098": "ONET - CFTV",
+            "15099": "Inova - CFTV",
+            "15165": "Banco de Sangue",
+            "15200": "Agendamento",
+            "15235": "Compras",
+            "15237": "Coordenação Suprimentos",
+            "15300": "Fila Cirúrgica",
+            "15400": "Ambulatório",
+            "15500": "Recepção de Internação",
+            "15604": "Portaria",
+            "15700": "Ouvidoria",
+            "15710": "Engenharia Clínica",
+            "15720": "Manutenção",
+            "15725": "Recursos Humanos - SPDM",
+            "15730": "Recursos Humanos - Inova Saúde",
+            "15735": "SÉSMITI SPDM",
+            "15740": "SÉSMITI INOVA",
+            "15900": "5º Andar",
+            "15950": "Núcleo Interno de Vagas",
+            "15960": "BB - Secretaria da Diretoria ADM",
+            "15970": "BB - Secretaria da Diretoria Técnica",
+        },
+    }
 
 
-    numero_cliente = call_data.get('variables', {}).get('global', {}).get('contactphonefull', 'Número desconhecido')
-    did_number = chamada.get('did_number', 'Desconhecido')
-    dt_start = call_data.get('start_ivr')
-    dt_finish = call_data.get('finish_ivr')
-    tipo_atendimento = call_data.get('variables', {}).get('TipoAtendimento', 'Desconhecido')
+    def obter_ramal_e_setor(step_name, variables, hospital_code, tipo_ura):
+        """
+        Retorna o ramal e setor com base no step_name e nas variáveis disponíveis.
+        """
+        # Prioridade para o ramal baseado no step_name
+        if hospital_code == "HM":
+            ramal = (
+                variables.get(step_to_ramal_map_hm.get(step_name))  # Pelo mapeamento
+                or variables.get("Ramal")  # Ramal geral
+                or variables.get("RamalCapturado")  # Pelo ramal capturado
+                or variables.get("RamalDesejadoDTMFCliente")  # Por DTMF
+                or "N/A"  # Fallback padrão
+            )
+            # Para URA Tradicional, usa o mapeamento de ramais para setores
+            if tipo_ura == "Tradicional":
+                setor = ramal_to_setor_map_hospitais.get(hospital_code, {}).get(ramal, "N/A")
+            else:  # Para URA Cognitiva, utiliza diretamente o valor da variável "Setor"
+                setor = variables.get("Setor", "N/A")
+            return ramal, setor
+        
+        # Para HSJC
+        elif hospital_code == "HSJC":
+            ramal = (
+                variables.get(step_to_ramal_map_hsjc.get(step_name))  # Pelo mapeamento
+                or variables.get("Ramal")  # Ramal geral
+                or "N/A"  # Fallback padrão
+            )
+            # Para URA Tradicional, usa o mapeamento de ramais para setores
+            if tipo_ura == "Tradicional":
+                setor = ramal_to_setor_map_hospitais.get(hospital_code, {}).get(ramal, "N/A")
+            else:  # Para URA Cognitiva, utiliza diretamente o valor da variável "Setor"
+                setor = variables.get("Setor", "N/A")
+            return ramal, setor
+        
+        elif hospital_code == "HSOR":
+            ramal = (
+                variables.get(step_to_ramal_map_hsor.get(step_name))  # Pelo mapeamento
+                or variables.get("Ramal")  # Ramal geral
+                or "N/A"  # Fallback padrão
+            )
+            # Para URA Tradicional, usa o mapeamento de ramais para setores
+            if tipo_ura == "Tradicional":
+                setor = ramal_to_setor_map_hospitais.get(hospital_code, {}).get(ramal, "N/A")
+            else:  # Para URA Cognitiva, utiliza diretamente o valor da variável "Setor"
+                setor = variables.get("Setor", "N/A")
+            return ramal, setor
 
-    # Adicionando informações de Ramal e Setor
-    ramal = call_data.get('variables', {}).get('Ramal', 'N/A')
-    setor = call_data.get('variables', {}).get('Setor', 'N/A')
+
+    def calcular_tempo_execucao_entre_eventos(evento_atual, evento_anterior):
+        try:
+            tempo_atual = parser.parse(evento_atual["executed_at"])
+            tempo_anterior = parser.parse(evento_anterior["executed_at"])
+            return (tempo_atual - tempo_anterior).total_seconds()
+        except Exception as e:
+            logger.info(f"Falha ao calcular tempo entre eventos: {e}")
+            return None
+
+    ivr_events = chamada.get("ivr_event_list", [])
+
+    if (
+        not isinstance(ivr_events, list)
+        or chamada.get("call_data", {}).get("code_status_ivr") in (10003, 10004)
+    ):
+        logger.info(f"Chamada descartada com code_status_ivr: {chamada.get('call_data', {}).get('code_status_ivr')}")
+        return None
     
-    # Adicionando o áudio capturado
-    audio_capturado = call_data.get('variables', {}).get('AudioCapturado', '')
+    # Determina o hospital e coleta as variáveis
+    hospital_code = chamada.get("call_data", {}).get("nm_flow_ivr", "N/A")
+    call_data = chamada.get("call_data", {})
+    variables = call_data.get("variables", {})
 
-    # Eventos chave
-    interacao_dtmf = False
-    foi_transferido = False
-    captura_audio = False
-    destino_transferencia = None
+    estado = {
+        "menu_fluxo_agendamento_detectado": False,
+        "interacao_dtmf": False,
+        "foi_transferido": False,
+        "captura_audio": False,
+        "destino_transferencia": None,
+        "ramal": None,
+        "setor": None,
+    }
 
-    
-
-    # Lista de eventos com tempo de execução
     eventos_com_tempo_execucao = []
 
-
-    # Analisar os eventos do IVR
     for i, event in enumerate(ivr_events):
-        step_type = event.get('step_type')
+        step_name = event.get("step_name", "")
+        step_type = event.get("step_type", "")
 
-        # Verifica se houve interação por DTMF (URA tradicional)
-        if step_type == "IvrAudioDTMF":
-            interacao_dtmf = True
-
-            # Verifica se o próximo evento é uma transferência
-            if i + 1 < len(ivr_events) and ivr_events[i + 1].get('step_type') == "IvrTransferCall":
-                foi_transferido = True
-                destino_transferencia = ivr_events[i + 1].get('step_name', 'Desconhecido')
-
-        # Verifica se houve transferência e busca o ramal transferido
-        if step_type == "IvrTransferCall" and event.get('step_name') == "TransfRamalCliente":
-            foi_transferido = True
-            destino_transferencia = "TransfRamalCliente"
-
-            # Atualiza o ramal com o valor de "RamalDesejadoDTMFCliente" ou "RamalCapturado"
-            ramal = variables.get("RamalDesejadoDTMFCliente") or variables.get("RamalCapturado", "N/A")
-
-        # Verifica se houve captura de áudio (URA cognitiva)
-        if step_type == "IvrVoiceTranscriptionAudio":
-            captura_audio = True
-
-        # Se não for o primeiro evento, calcular o tempo de execução entre eventos
         if i > 0:
-            tempo_execucao = calcular_tempo_execucao_entre_eventos(event, ivr_events[i - 1])
+            tempo_execucao = calcular_tempo_execucao_entre_eventos(
+                event, ivr_events[i - 1]
+            )
         else:
             tempo_execucao = None
 
-        # Adiciona o evento com o tempo de execução
-        eventos_com_tempo_execucao.append({
-            'step_name': event.get('step_name'),
-            'step_type': event.get('step_type'),
-            'executed_at': event.get('executed_at'),
-            'tempo_execucao': tempo_execucao
-        })
+        eventos_com_tempo_execucao.append(
+            {
+                "step_name": step_name,
+                "step_type": step_type,
+                "executed_at": event.get("executed_at"),
+                "tempo_execucao": tempo_execucao,
+            }
+        )
 
+        if step_name == "MenuFluxoAgendamento":
+            estado["menu_fluxo_agendamento_detectado"] = True
+        elif estado["menu_fluxo_agendamento_detectado"]:
+            if step_name == "BlocoAudioAgendamentoWhatsApp":
+                estado.update(
+                    destino_transferencia="Transferência Agendamento WhatsApp",
+                    ramal="WhatsApp",
+                    setor="WhatsApp",
+                    foi_transferido=True,
+                )
+            elif step_name == "TransfAgendamentos":
+                estado.update(
+                    destino_transferencia="TransfAgendamentos",
+                    ramal="11730",
+                    foi_transferido=True,
+                )
 
-    # Critério para identificar uma URA cognitiva (se houve captura de áudio)
-    passou_pela_ura_cognitiva = captura_audio
+        if step_type == "IvrAudioDTMF":
+            estado["interacao_dtmf"] = True
+        if step_type == "IvrVoiceTranscriptionAudio":
+            estado["captura_audio"] = True
 
-    # Critério para identificar uma URA tradicional (se houve interação DTMF e transferência)
-    passou_pela_ura_tradicional = interacao_dtmf and foi_transferido
+        if step_type == "IvrTransferCall":
+            estado["foi_transferido"] = True
+            estado["destino_transferencia"] = step_name or "Desconhecido"
 
-    # Determina o tipo de URA
-    tipo_ura = "Cognitiva" if passou_pela_ura_cognitiva else "Tradicional"
+            # Passar o tipo de URA aqui para o mapeamento
+            tipo_ura = "Cognitiva" if estado["captura_audio"] else "Tradicional"
+            ramal, setor = obter_ramal_e_setor(step_name, variables, hospital_code, tipo_ura)
+            estado["ramal"] = ramal
+            estado["setor"] = setor
 
-    # Montar o resultado final
-    resultado = {
-        'id_chamada': chamada.get('id_call'),
-        'numero_cliente': numero_cliente,
-        'did_number': did_number,
-        'data_hora_inicio': dt_start,
-        'data_hora_fim': dt_finish,
-        'tipo_atendimento': tipo_atendimento,
-        'foi_transferido': foi_transferido,
-        'destino_transferencia': destino_transferencia,
-        'tipo_ura': tipo_ura,  # Adicionando o tipo de URA
-        'ramal': ramal,  # Incluindo o ramal
-        'setor': setor,  # Incluindo o setor
-        'audio_capturado': audio_capturado,  # Incluindo o áudio capturado
-        'eventos': eventos_com_tempo_execucao  # Inclui os eventos com o tempo de execução calculado
+    tipo_ura = "Cognitiva" if estado["captura_audio"] else "Tradicional"
+
+    # Adiciona captura de áudio apenas se a URA for cognitiva
+    audio_capturado = (
+        chamada.get("call_data", {})
+        .get("variables", {})
+        .get("AudioCapturado", "Não disponível")
+        if tipo_ura == "Cognitiva"
+        else "Não disponível"
+    )
+
+    return {
+        "id_chamada": chamada.get("id_call"),
+        "numero_cliente": (
+            chamada.get("call_data", {})
+            .get("variables", {})
+            .get("global", {})
+            .get("contactphonefull", "Número desconhecido")
+        ),
+        "did_number": chamada.get("did_number", "Desconhecido"),
+        "data_hora_inicio": chamada.get("call_data", {}).get("start_ivr"),
+        "data_hora_fim": chamada.get("call_data", {}).get("finish_ivr"),
+        "tipo_atendimento": chamada.get("call_data", {})
+        .get("variables", {})
+        .get("TipoAtendimento", "Desconhecido"),
+        "foi_transferido": estado["foi_transferido"],
+        "destino_transferencia": estado["destino_transferencia"],
+        "tipo_ura": tipo_ura,
+        "ramal": estado["ramal"],
+        "setor": estado["setor"],
+        'audio_capturado': audio_capturado,
+        "eventos": eventos_com_tempo_execucao,
     }
-
-    return resultado
-
-
-
-def calcular_tempo_execucao_entre_eventos(evento_atual, evento_anterior):
-    """
-    Calcula o tempo de execução entre dois eventos usando o campo 'executed_at'.
-    """
-    try:
-        # Tenta analisar automaticamente o formato da data com parser do dateutil
-        data_hora_atual = parser.parse(evento_atual['executed_at'])
-        data_hora_anterior = parser.parse(evento_anterior['executed_at'])
-        
-        # Calcular a diferença de tempo em segundos
-        tempo_execucao = (data_hora_atual - data_hora_anterior).total_seconds()
-    except Exception as e:
-        # Caso não seja possível calcular, retorna None e exibe o erro
-        # print(f"Erro ao calcular tempo de execução: {e}")
-        tempo_execucao = None
-
-    return tempo_execucao
-    
 
 # Função auxiliar para verificar chamadas abandonadas cognitivamente
 def verificar_abandono_cognitivo(ivr_events):
@@ -331,7 +514,7 @@ def verificar_abandono_cognitivo(ivr_events):
     captura_audio = False
 
     for event in ivr_events:
-        step_name = event.get('step_name', '')
+        step_name = event.get("step_name", "")
 
         if step_name == "LogAbandonoCognitivo":
             log_abandono = True
@@ -352,7 +535,7 @@ def verificar_interrompida_ura_tradicional(ivr_events):
     dtmf_ou_transferencia = False
 
     for event in ivr_events:
-        step_name = event.get('step_name', '')
+        step_name = event.get("step_name", "")
 
         if step_name == "AudioSaudacao":
             saudacao_passada = True
@@ -368,48 +551,54 @@ def verificar_interrompida_ura_tradicional(ivr_events):
     return False
 
 
-
-
-
 # Função para processar chamadas e separar abandonos cognitivos e interrompidas
 def processar_chamadas_abandonadas(dados_pagina):
     chamadas_abandonadas_cognitivo = []
     chamadas_interrompidas_cliente = []
 
     for chamada in dados_pagina:
-        call_data = chamada.get('call_data', {})
-        ivr_events = chamada.get('ivr_event_list', [])
-        numero_cliente = call_data.get('variables', {}).get('global', {}).get('contactphonefull', 'Número desconhecido')
-        data_hora_inicio = call_data.get('start_ivr')
-        data_hora_fim = call_data.get('finish_ivr')
-        nome_ura = call_data.get('nm_flow_ivr', 'Desconhecido')
+        call_data = chamada.get("call_data", {})
+        ivr_events = chamada.get("ivr_event_list", [])
+        numero_cliente = (
+            call_data.get("variables", {})
+            .get("global", {})
+            .get("contactphonefull", "Número desconhecido")
+        )
+        data_hora_inicio = call_data.get("start_ivr")
+        data_hora_fim = call_data.get("finish_ivr")
+        nome_ura = call_data.get("nm_flow_ivr", "Desconhecido")
 
         # Verifica se é um abandono cognitivo
         if verificar_abandono_cognitivo(ivr_events):
-            chamadas_abandonadas_cognitivo.append({
-                'id_chamada': chamada.get('id_call'),
-                'numero_cliente': numero_cliente,
-                'data_hora_inicio': data_hora_inicio,
-                'data_hora_fim': data_hora_fim,
-                'tipo_abandono': 'cognitivo',
-                'nome_ura': nome_ura
-            })
+            chamadas_abandonadas_cognitivo.append(
+                {
+                    "id_chamada": chamada.get("id_call"),
+                    "numero_cliente": numero_cliente,
+                    "data_hora_inicio": data_hora_inicio,
+                    "data_hora_fim": data_hora_fim,
+                    "tipo_abandono": "cognitivo",
+                    "nome_ura": nome_ura,
+                }
+            )
 
         # Verifica se foi interrompida pelo cliente na URA Tradicional
         elif verificar_interrompida_ura_tradicional(ivr_events):
-            chamadas_interrompidas_cliente.append({
-                'id_chamada': chamada.get('id_call'),
-                'numero_cliente': numero_cliente,
-                'data_hora_inicio': data_hora_inicio,
-                'data_hora_fim': data_hora_fim,
-                'tipo_abandono': 'interrompida_pelo_cliente',
-                'nome_ura': nome_ura
-            })
+            chamadas_interrompidas_cliente.append(
+                {
+                    "id_chamada": chamada.get("id_call"),
+                    "numero_cliente": numero_cliente,
+                    "data_hora_inicio": data_hora_inicio,
+                    "data_hora_fim": data_hora_fim,
+                    "tipo_abandono": "interrompida_pelo_cliente",
+                    "nome_ura": nome_ura,
+                }
+            )
 
     return {
-        'abandonos_cognitivos': chamadas_abandonadas_cognitivo,
-        'interrompidas_cliente': chamadas_interrompidas_cliente
+        "abandonos_cognitivos": chamadas_abandonadas_cognitivo,
+        "interrompidas_cliente": chamadas_interrompidas_cliente,
     }
+
 
 def captura_informacoes_leia_ia(tag, data_inicio, data_fim):
     base_url = "https://api.leia.digitalcontact.cloud/requests/wtime"
