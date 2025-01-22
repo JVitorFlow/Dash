@@ -240,7 +240,11 @@ USERNAME_IVRCALLAPI = config('USERNAME_IVRCALLAPI')
 PASSWORD_IVRCALLAPI = config('PASSWORD_IVRCALLAPI')
 ORG_ID = config('ORG_ID')
 CAMPAING_ID = config('CAMPAIGN_ID')
-
+TOKEN_API_URL = config("TOKEN_API_URL")
+IVR_TRACE_CALL_API_URL = config("IVR_TRACE_CALL_API_URL")
+BASE_URL_LEIA = config("BASE_URL_LEIA")
+FILES_DIRECTORY= config("FILES_DIRECTORY")
+TOKEN_LEIA= config("TOKEN_LEIA")
 
 # Configurações do RabbitMQ
 CELERY_BROKER_URL = 'amqp://guest:guest@rabbitmq:5672//'
@@ -250,3 +254,44 @@ CELERY_RESULT_BACKEND = 'django-db'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'America/Sao_Paulo'  # Ajuste conforme sua localização
 CELERY_ENABLE_UTC = False  # Ajuste se o seu projeto não for usar UTC
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'django_debug.log',  # Substitua pelo caminho desejado
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'custom_logger': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}

@@ -5466,7 +5466,10 @@ textarea.form-control-lg {
   align-items: flex-end !important; }
 
 .align-items-center {
-  align-items: center !important; }
+  align-items: center !important;
+  margin-left: 20px;
+
+}
 
 .align-items-baseline {
   align-items: baseline !important; }
@@ -10475,7 +10478,8 @@ body:not(.minimenu) .pc-sidebar .pc-submenu {
   color: #525b69;
   min-height: 70px;
   position: fixed;
-  left: 280px;
+  left: 80px;
+  top: 0px;
   right: 0;
   z-index: 1025; }
   .pc-header ul {
@@ -10734,7 +10738,7 @@ body:not(.minimenu) .pc-sidebar .pc-submenu {
 .pc-container {
   position: relative;
   top: 70px;
-  margin-left: 280px;
+  margin-left: 90px;
   min-height: calc(100vh - 70px); }
   .pc-container .pcoded-content {
     padding-left: 30px;
@@ -10757,8 +10761,8 @@ body:not(.minimenu) .pc-sidebar .pc-submenu {
   position: fixed;
   display: flex;
   align-items: center;
-  top: 70px;
-  left: 280px;
+  top: 60px;
+  left: 80px;
   right: 0;
   z-index: 1023;
   min-height: 55px;

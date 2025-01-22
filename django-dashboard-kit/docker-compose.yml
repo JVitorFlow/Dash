@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   dashboard_app:
@@ -11,22 +11,22 @@ services:
       - db_network
       - web_network
     environment:
-      POSTGRES_NAME: sgwtime         
-      POSTGRES_USER: wtime     
-      POSTGRES_PASSWORD: wtimepassword
-      POSTGRES_HOST: postgres_db
+      POSTGRES_NAME: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: 5432
     depends_on:
-      - postgres_db 
+      - postgres_db
 
   postgres_db:
     container_name: postgres_db
     image: postgres:13
     restart: always
     environment:
-      POSTGRES_DB: sgwtime         
-      POSTGRES_USER: wtime     
-      POSTGRES_PASSWORD: wtimepassword
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -40,18 +40,18 @@ services:
       - "85:85"
     volumes:
       - ./nginx:/etc/nginx/conf.d
-      - ./staticfiles:/app/staticfiles 
+      - ./staticfiles:/app/staticfiles
     networks:
       - web_network
-    depends_on: 
+    depends_on:
       - dashboard_app
 
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3-management
     ports:
-    - "15672:15672"
-    - "5672:5672"
+      - "15672:15672"
+      - "5672:5672"
     networks:
       - db_network
       - web_network
@@ -69,7 +69,7 @@ services:
     networks:
       - db_network
       - web_network
-    
+
   celery_beat:
     container_name: celery_beat
     build: .
@@ -84,6 +84,33 @@ services:
       - db_network
       - web_network
 
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5050:80" # Porta para acessar o pgAdmin
+    depends_on:
+      - postgres_db
+    networks:
+      - db_network
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    ports:
+      - "9000:9000" # Porta para acessar o Portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - web_network
+
 networks:
   db_network:
     driver: bridge
@@ -92,4 +119,6 @@ networks:
 
 volumes:
   postgres_data:
+    driver: local
+  portainer_data:
     driver: local

@@ -1,242 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     {% load static %}
-    <title>
-        Wtime DashboardX - {% block title %}{% endblock %} | AppSeed
-    </title>
+    <title>Wtime DashboardX - {% block title %}{% endblock %} | AppSeed</title>
 
     <!-- HTML5 Shim and Respond.js IE11 support of HTML5 elements and media queries -->
 
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 11]>
-    	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    	<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    	<![endif]-->
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
     <!-- Meta -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui"
+    />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="description" content="Wtime Dashboardx is made using Bootstrap 5 design framework. Download the free admin template & use it for your project.">
-    <meta name="keywords" content="Wtime Dashboardx, Dashboardx Wtime, Dashboard UI, Bootstrap 5, Admin Template, Admin Dashboard, CRM, CMS, Free Bootstrap Admin Template">
-    <meta name="author" content="DashboardKit ">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="Wtime Dashboardx is made using Bootstrap 5 design framework. Download the free admin template & use it for your project."
+    />
+    <meta
+      name="keywords"
+      content="Wtime Dashboardx, Dashboardx Wtime, Dashboard UI, Bootstrap 5, Admin Template, Admin Dashboard, CRM, CMS, Free Bootstrap Admin Template"
+    />
+    <meta name="author" content="DashboardKit " />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Favicon icon -->
-    <link rel="icon" href="{% static 'assets/images/user/LogoVertical_Wtime_EscritoBranco.png' %}" type="image/x-icon">
+    <link
+      rel="icon"
+      href="{% static 'assets/images/user/LogoVertical_Wtime_EscritoBranco.png' %}"
+      type="image/x-icon"
+    />
 
-    <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
-    
+    <link
+      href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+
     <!-- font css -->
-    <link rel="stylesheet" href="/static/assets/fonts/feather.css">
-    <link rel="stylesheet" href="/static/assets/fonts/fontawesome.css">
-    <link rel="stylesheet" href="/static/assets/fonts/material.css">
+    <link rel="stylesheet" href="/static/assets/fonts/feather.css" />
+    <link rel="stylesheet" href="/static/assets/fonts/fontawesome.css" />
+    <link rel="stylesheet" href="/static/assets/fonts/material.css" />
 
     <!-- vendor css -->
-    <link rel="stylesheet" href="/static/assets/css/style.css" id="main-style-link">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+    <link
+      rel="stylesheet"
+      href="/static/assets/css/style.css"
+      id="main-style-link"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
     <!-- Flatpickr CSS -->
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
 
     <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+    />
 
     <!-- Sidebar CSS -->
-    <link rel="stylesheet" href="{% static 'assets/css/sidebar.css' %}"> <!-- Caminho para o sidebar.css -->
-    
+    <link rel="stylesheet" href="{% static 'assets/css/sidebar.css' %}" />
+    <!-- Caminho para o sidebar.css -->
+
     <!-- jQuery (necessário para o DataTables) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+
     <!-- DataTables JS -->
-    <script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"
+    ></script>
     <!-- Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+    />
     <!-- Bootstrap JS and Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 
-    
     {% block extrahead %}{% endblock extrahead %}
 
     <!-- Specific CSS goes HERE -->
     {% block stylesheets %}{% endblock stylesheets %}
 
-
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
-
-</head>
-<body class="">
-
-	{% include 'includes/preloader.html' %}
-4
-	<!-- [ Mobile header ] start -->
-	<div class="pc-mob-header pc-header">
-		<div class="pcm-logo">
-			<img src="{% static 'assets/images/user/LogoHorizontal_Wtime_CorOficial-1.png' %}" alt="" class="logo logo-lg">
-		</div>
-		<div class="pcm-toolbar">
-			<a href="#!" class="pc-head-link" id="mobile-collapse">
-				<div class="hamburger hamburger--arrowturn">
-					<div class="hamburger-box">
-						<div class="hamburger-inner"></div>
-					</div>
-				</div>
-			</a>
-			<a href="#!" class="pc-head-link" id="headerdrp-collapse">
-				<i data-feather="align-right"></i>
-			</a>
-			<a href="#!" class="pc-head-link" id="header-collapse">
-				<i data-feather="more-vertical"></i>
-			</a>
-		</div>
-	</div>
-	<!-- [ Mobile header ] End -->
+  </head>
+  <body class="">
+    {% include 'includes/preloader.html' %} 4
+    <!-- [ Mobile header ] start -->
+    <div class="pc-mob-header pc-header">
+      <div class="pcm-logo">
+        <img
+          src="{% static 'assets/images/user/LogoHorizontal_Wtime_CorOficial-1.png' %}"
+          alt=""
+          class="logo logo-lg"
+        />
+      </div>
+      <div class="pcm-toolbar">
+        <a href="#!" class="pc-head-link" id="mobile-collapse">
+          <div class="hamburger hamburger--arrowturn">
+            <div class="hamburger-box">
+              <div class="hamburger-inner"></div>
+            </div>
+          </div>
+        </a>
+        <a href="#!" class="pc-head-link" id="headerdrp-collapse">
+          <i data-feather="align-right"></i>
+        </a>
+        <a href="#!" class="pc-head-link" id="header-collapse">
+          <i data-feather="more-vertical"></i>
+        </a>
+      </div>
+    </div>
+    <!-- [ Mobile header ] End -->
 
     <!-- Contêiner Principal -->
     <div class="main-container">
-        <!-- Sidebar -->
-        {% include 'includes/sidebar.html' %}
+      <!-- Sidebar -->
+      {% include 'includes/sidebar.html' %}
 
-        <!-- Seção de Conteúdo -->
-        <div class="content-section">
-            <!-- Header/Navegação -->
-            {% include 'includes/navigation.html' %}
+      <!-- Seção de Conteúdo -->
+      <div class="content-section">
+        <!-- Header/Navegação -->
+        {% include 'includes/navigation.html' %}
 
-            <!-- Conteúdo Principal -->
-            <main>
-                {% block content %}{% endblock content %}
-            </main>
-        </div>
+        <!-- Conteúdo Principal -->
+        <main>{% block content %}{% endblock content %}</main>
+      </div>
     </div>
-
-
 
     <!--
     {% include 'includes/promo-fixed-button.html' %}
     -->
-    
+
     {% include 'includes/scripts.html' %}
 
     <!-- Specific Page JS goes HERE  -->
     {% block javascripts %}{% endblock javascripts %}
-    <script>
-        // Seletores
-        const sidebar = document.querySelector(".sidebar");
-        const sidebarBtn = document.querySelector(".bx-menu");
-        const contentSection = document.querySelector(".content-section");
-        const header = document.querySelector(".pc-header");
-    
-        // Evento de Clique para Toggle da Sidebar
-        sidebarBtn.addEventListener("click", () => {
-            sidebar.classList.toggle("close");
-            contentSection.classList.toggle("content-section-close");
-            header.classList.toggle("pc-header-close");
-        });
-    
-        // Evento para expandir e recolher sub-menus
-        const arrows = document.querySelectorAll(".arrow");
-        arrows.forEach(arrow => {
-            arrow.addEventListener("click", (e) => {
-                const arrowParent = e.target.parentElement.parentElement; // Seleciona o elemento pai do menu
-                arrowParent.classList.toggle("showMenu");
-            });
-        });
-    </script>
-    <style>
-        /* Seção de Conteúdo */
-        .content-section {
-            margin-left: 65px; /* Espaço reservado quando a sidebar está aberta */
-            margin-right: 20px;
-            transition: all 0.3s ease;
-            min-height: 100vh; /* Garante que o conteúdo preencha a altura da tela */
-        }
 
-        /* Header */
-        .pc-header {
-            position: fixed;
-            width: calc(100% - 260px); /* Largura do header quando a sidebar está aberta */
-            margin-left: 260px;
-            top: 0;
-            left: 0;
-            z-index: 1001;
-            background-color: #fff;
-            transition: all 0.3s ease;
-        }
-
-        /* Container Principal */
-        .pc-container {
-            position: relative;
-            margin-left: 260px; /* Espaço reservado quando a sidebar está aberta */
-            width: calc(100% - 260px); /* Largura do conteúdo principal */
-            padding-top: 20px; /* Espaço reservado para o header fixo */
-            transition: all 0.3s ease;
-        }
-
-        /* Conteúdo Principal */
-        .pc-container .pcoded-content {
-            max-width: 100%; /* Altera para 100% para usar toda a largura disponível */
-            margin-left: auto;
-            margin-right: auto;
-            padding-left: 15px;
-            padding-right: 15px;
-        }
-
-        /* Header da Página */
-        .page-header {
-            position: fixed;
-            width: calc(100% - 260px); /* Largura do header quando a sidebar está aberta */
-            padding: 13px 30px; /* Padding conforme mostrado na imagem */
-            top: 70px; /* Considerando que o .pc-header tem 70px de altura */
-            left: 260px;
-            background-color: #fff; /* Cor de fundo para destacar o header */
-            z-index: 1000;
-            transition: all 0.3s ease; /* Transição suave para mudanças */
-        }
-
-        /* Ajuste de margem quando a Sidebar estiver fechada */
-        .sidebar.close ~ .content-section .page-header {
-            margin-left: 1px; /* Ajusta a margem quando a sidebar está fechada */
-            width: calc(100% - 78px); /* Ajusta a largura do header quando a sidebar está fechada */
-            left: 78px; /* Ajuste o alinhamento horizontal */
-        }
-
-        .sidebar.close ~ .content-section .pc-header {
-            width: calc(100% - 78px); /* Ajusta a largura do header quando a sidebar está fechada */
-            margin-left: 78px;
-        }
-
-        .sidebar.close ~ .content-section .pc-container {
-            margin-left: 78px; /* Ajusta a margem quando a sidebar está fechada */
-            width: calc(100% - 78px); /* Ajusta a largura do conteúdo principal quando a sidebar está fechada */
-        }
-
-        .sidebar.close ~ .content-section .page-header {
-            margin-left: 1px; /* Ajusta a margem quando a sidebar está fechada */
-            width: calc(100% - 78px); /* Ajusta a largura do header quando a sidebar está fechada */
-            left: 78px;
-        }
-        /* Ajuste do ícone de menu na sidebar */
-        .sidebar .bx-menu {
-            font-size: 24px; /* Tamanho do ícone */
-            color: #ffffff; /* Cor branca para contraste com o fundo escuro */
-            margin: 15px auto; /* Margem superior e inferior para centralizar */
-            display: block; /* Garante que o ícone ocupe uma linha completa */
-            text-align: center; /* Centraliza o ícone na linha */
-            cursor: pointer; /* Cursor de ponteiro para indicar que é clicável */
-        }
-
-        .sidebar .bx-menu:hover {
-            color: #00aaff; /* Cor de destaque ao passar o mouse */
-        }
-
-        .sidebar.close .bx-menu {
-            margin: 10px auto; /* Ajusta a margem para quando a sidebar está fechada */
-        }
-
-    </style>
-    
-    
-</body>
+  </body>
 </html>

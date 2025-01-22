@@ -1,0 +1,101 @@
+/* Seção de Conteúdo */
+.content-section {
+  margin-left: 65px; /* Espaço reservado quando a sidebar está aberta */
+  margin-right: 20px;
+  transition: all 0.3s ease;
+  min-height: 100vh; /* Garante que o conteúdo preencha a altura da tela */
+}
+
+/* Header */
+.pc-header {
+  position: fixed;
+  width: calc(
+    100% - 260px
+  ); /* Largura do header quando a sidebar está aberta */
+  margin-left: 260px;
+  top: 0;
+  left: 0;
+  z-index: 1001;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.pc-container {
+  margin-top: 70px; /* Adicione espaço para evitar sobreposição com o header */
+  padding-top: 20px; /* Mantém o espaçamento interno */
+  margin-left: 260px;
+  width: calc(100% - 260px);
+  transition: all 0.3s ease;
+}
+
+
+/* Conteúdo Principal */
+.pc-container .pcoded-content {
+  max-width: 100%; /* Altera para 100% para usar toda a largura disponível */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Header da Página */
+.page-header {
+  position: fixed;
+  width: calc(
+    100% - 260px
+  ); /* Largura do header quando a sidebar está aberta */
+  padding: 13px 30px; /* Padding conforme mostrado na imagem */
+  top: 70px; /* Considerando que o .pc-header tem 70px de altura */
+  left: 260px;
+  background-color: #fff; /* Cor de fundo para destacar o header */
+  z-index: 1000;
+  transition: all 0.3s ease; /* Transição suave para mudanças */
+}
+
+/* Ajuste de margem quando a Sidebar estiver fechada */
+.sidebar.close ~ .content-section .page-header {
+  margin-left: 1px; /* Ajusta a margem quando a sidebar está fechada */
+  width: calc(
+    100% - 78px
+  ); /* Ajusta a largura do header quando a sidebar está fechada */
+  left: 78px; /* Ajuste o alinhamento horizontal */
+}
+
+.sidebar.close ~ .content-section .pc-header {
+  width: calc(
+    100% - 78px
+  ); /* Ajusta a largura do header quando a sidebar está fechada */
+  margin-left: 78px;
+}
+
+.sidebar.close ~ .content-section .pc-container {
+  margin-left: 78px; /* Ajusta a margem quando a sidebar está fechada */
+  width: calc(
+    100% - 78px
+  ); /* Ajusta a largura do conteúdo principal quando a sidebar está fechada */
+}
+
+.sidebar.close ~ .content-section .page-header {
+  margin-left: 1px; /* Ajusta a margem quando a sidebar está fechada */
+  width: calc(
+    100% - 78px
+  ); /* Ajusta a largura do header quando a sidebar está fechada */
+  left: 78px;
+}
+/* Ajuste do ícone de menu na sidebar */
+.sidebar .bx-menu {
+  font-size: 24px; /* Tamanho do ícone */
+  color: #ffffff; /* Cor branca para contraste com o fundo escuro */
+  margin: 15px auto; /* Margem superior e inferior para centralizar */
+  display: block; /* Garante que o ícone ocupe uma linha completa */
+  text-align: center; /* Centraliza o ícone na linha */
+  cursor: pointer; /* Cursor de ponteiro para indicar que é clicável */
+}
+
+.sidebar .bx-menu:hover {
+  color: #00aaff; /* Cor de destaque ao passar o mouse */
+}
+
+.sidebar.close .bx-menu {
+  margin: 10px auto; /* Ajusta a margem para quando a sidebar está fechada */
+}
