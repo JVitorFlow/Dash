@@ -268,7 +268,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <li><i class="fas fa-check-circle text-success"></i> Em Navegação: ${dia.resumo_geral.categorias.navegacao}</li>
                                     <li><i class="fas fa-tasks text-info"></i> Processadas: ${dia.resumo_geral.categorias.processadas}</li>
                                     <li><i class="fas fa-phone-alt text-primary"></i> Direcionadas para Ramal: ${dia.resumo_geral.categorias.transferidas}</li>
-                                    <li><i class="fas fa-exclamation-triangle text-warning"></i> Abandonadas: ${dia.resumo_geral.categorias.abandonadas}</li>
+                                    <li><i class="fas fa-exclamation-triangle text-warning"></i> Paciente interrompeu a navegação: ${dia.resumo_geral.categorias.abandonadas}</li>
                                     <li><i class="fas fa-user-friends text-secondary"></i> Direcionadas para Humano: ${dia.resumo_geral.categorias.derivadas}</li>
                                     <!--
                                       <li><i class="fas fa-bug text-danger"></i> Erros de Transferência: ${dia.resumo_geral.categorias.erros_transferencia}</li>
