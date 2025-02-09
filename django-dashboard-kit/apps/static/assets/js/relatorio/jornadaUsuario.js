@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+
   // Global State
   const globalState = {
     data: null,
@@ -20,15 +21,13 @@ document.addEventListener("DOMContentLoaded", () => {
     loadingMessage: document.getElementById("loadingMessage"),
   };
 
-  // Initialize Session Storage after Page Load
+  // Inicializa os filtros salvos no sessionStorage
   const SESSION_KEYS = [
     "selectPeriodo",
     "selectHospital",
     "startDate",
     "endDate",
   ];
-
-  // Function to restore session storage state
   const restoreSessionStorage = (keys) => {
     keys.forEach((key) => {
       if (sessionStorage.getItem(key)) {
@@ -36,18 +35,188 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   };
-
   restoreSessionStorage(SESSION_KEYS);
 
-  // Save and Submit Form on Button Click
-  elements.filterButton.addEventListener("click", () => {
-    SESSION_KEYS.forEach((key) => {
-      if (elements[key].value) sessionStorage.setItem(key, elements[key].value);
-    });
-    elements.form.submit();
-  });
+  // ---- Funções Auxiliares de Tabela ----
 
-  // Progress bar functions
+  // Preserva o estado atual da DataTable
+  const preserveTableState = (tableId) => {
+    const tableElement = document.querySelector(tableId);
+    if (!tableElement) {
+      return {}; // Retorna um objeto vazio se o elemento não existir
+    }
+    const table = $(tableId).DataTable();
+    return {
+      page: table.page.info().page,
+      order: table.order(),
+      search: table.search(),
+      length: table.page.len(),
+    };
+  };
+
+  // Restaura o estado da DataTable
+  const restoreTableState = (tableId, state) => {
+    const table = $(tableId).DataTable();
+    table
+      .page(state.page)
+      .order(state.order)
+      .search(state.search)
+      .page.len(state.length)
+      .draw(false);
+  };
+
+  // ---- Função para exibir resultados na tabela ----
+  function exibirResultados(data) {
+    // Salva os dados no sessionStorage
+    sessionStorage.setItem("jornadaUraData", JSON.stringify(data));
+    globalState.data = data;
+    globalState.hospitalSelected = elements.selectHospital.value;
+  
+    const tableElement = document.querySelector("#jornadaUraTable");
+    const tbody = document.getElementById("jornadaUraBody");
+  
+    if (!tableElement || !tbody) {
+      console.error(
+        "Tabela ou tbody não encontrada no DOM. Verifique o HTML e IDs."
+      );
+      return;
+    }
+
+  
+    // --- [1] Verifica e destrói a DataTable, se existir ---
+    if ($.fn.DataTable.isDataTable("#jornadaUraTable")) {
+      try {
+        console.log("Destruindo DataTable existente...");
+        $("#jornadaUraTable").DataTable().clear().destroy();
+      } catch (error) {
+        console.warn("Erro ao destruir a DataTable:", error);
+      }
+    }
+  
+    // --- [2] Limpa o conteúdo do <tbody> ---
+    tbody.innerHTML = "";
+  
+    // --- [3] Preenche os dados na tabela ---
+    data.jornadas.forEach((jornada) => {
+      const row = document.createElement("tr");
+  
+      const formatToUTC = (dateString) => {
+        if (!dateString) return "Data Inválida";
+        const date = new Date(dateString);
+        return date.toISOString().replace("T", " ").slice(0, 19);
+      };
+  
+      const dataInicio = formatToUTC(jornada.data_hora_inicio);
+      const dataFim = formatToUTC(jornada.data_hora_fim);
+      const dataComTempo = `${dataInicio} - ${dataFim}`;
+  
+      const duracaoMs =
+        dataInicio !== "Data Inválida" && dataFim !== "Data Inválida"
+          ? new Date(jornada.data_hora_fim) - new Date(jornada.data_hora_inicio)
+          : NaN;
+      const minutos = Math.floor(duracaoMs / 60000);
+      const segundos = ((duracaoMs % 60000) / 1000).toFixed(2);
+      const duracaoFormatada = !isNaN(duracaoMs)
+        ? `${minutos} min ${segundos} s`
+        : "N/A";
+  
+      const tipoUraHtml =
+        jornada.tipo_ura === "Tradicional"
+          ? '<i class="fas fa-keyboard" style="color: blue;"></i> Tradicional'
+          : '<i class="fas fa-microphone" style="color: green;"></i> Cognitiva';
+  
+      const ramal =
+        jornada.ramal ||
+        ajustarRamalPorHospital(
+          elements.selectHospital.value,
+          jornada.destino_transferencia
+        );
+  
+      row.innerHTML = `
+        <td>${dataComTempo}</td>
+        <td>${jornada.did_number || "N/A"}</td>
+        <td>${jornada.numero_cliente}</td>
+        <td>${jornada.tipo_atendimento || "N/A"}</td>
+        <td>${jornada.id_chamada}</td>
+        <td>${duracaoFormatada}</td>
+        <td>${jornada.destino_transferencia || "N/A"}</td>
+        <td>${tipoUraHtml}</td>
+        <td>${ramal}</td>
+        <td>${jornada.setor || "N/A"}</td>
+        <td>${
+          jornada.audio_capturado
+            ? jornada.audio_capturado
+            : "Sem áudio capturado"
+        }</td>
+        <td>${elements.selectHospital.value}</td>
+        <td><button class="btn btn-primary detalhes-btn" data-jornada='${JSON.stringify(
+          jornada
+        )}'>Detalhes</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+  
+    // --- [4] Inicializa a nova DataTable ---
+    $("#jornadaUraTable").DataTable({
+      paging: true,
+      searching: true,
+      ordering: true,
+      info: true,
+      pageLength: 10,
+      deferRender: true,
+      language: {
+        url: "https://cdn.datatables.net/plug-ins/1.10.24/i18n/Portuguese-Brasil.json",
+      },
+      columnDefs: [
+        { orderable: true, targets: 0 },
+        { width: "15%", targets: [0, 4] },
+      ],
+      order: [[0, "asc"]],
+      orderMulti: false,
+    });
+  
+    // --- [5] Vincula os eventos para os botões de detalhes ---
+    document.querySelectorAll(".detalhes-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        exibirDetalhes(JSON.parse(this.getAttribute("data-jornada")));
+      });
+    });
+  }
+  
+
+  // ---- Função para verificar o status da task (assíncrona) ----
+
+  const verificarStatusTask = async (taskId) => {
+    try {
+      const response = await fetch(`/relatorios/celery-status/${taskId}/`);
+      if (!response.ok) {
+        throw new Error(`Erro HTTP! status: ${response.status}`);
+      }
+      const data = await response.json();
+
+      elements.statusMessage.innerHTML = {
+        SUCCESS: "Relatório concluído!",
+        FAILURE: "Erro no processamento!",
+        PENDING: "Processando seu relatório...",
+        STARTED: "Processando seu relatório...",
+      }[data.status];
+
+      if (data.status === "SUCCESS") {
+        exibirResultados(data.result);
+      } else if (["PENDING", "STARTED"].includes(data.status)) {
+        iniciarBarraProgresso();
+        setTimeout(() => verificarStatusTask(taskId), 2000);
+        return;
+      }
+    } catch (error) {
+      console.error("Erro ao verificar o status da task:", error);
+      elements.statusMessage.innerHTML = "Erro ao verificar o status da task.";
+    }
+    finalizarBarraProgresso();
+  };
+
+  // ---- Outras funções auxiliares: progress bar e exibir detalhes ----
+
   const updateProgressBar = (width, showLoading = false) => {
     elements.progressBar.style.width = width;
     elements.progressBarContainer.style.display =
@@ -59,205 +228,68 @@ document.addEventListener("DOMContentLoaded", () => {
   const finalizarBarraProgresso = () =>
     setTimeout(() => updateProgressBar("100%"), 1000);
 
-  // Refactored Async Function to Check Task Status
-  const verificarStatusTask = async (taskId) => {
-    try {
-      const response = await fetch(`/relatorios/celery-status/${taskId}/`);
-      if (!response.ok)
-        throw new Error(`Erro HTTP! status: ${response.status}`);
-      const data = await response.json();
-
-      elements.statusMessage.innerHTML = {
-        SUCCESS: "Relatório concluído!",
-        FAILURE: "Erro no processamento!",
-        PENDING: "Processando seu relatório...",
-        STARTED: "Processando seu relatório...",
-      }[data.status];
-
-      if (data.status === "SUCCESS") {
-        finalizarBarraProgresso();
-        exibirResultados(data.result);
-      } else if (["PENDING", "STARTED"].includes(data.status)) {
-        iniciarBarraProgresso();
-        setTimeout(() => verificarStatusTask(taskId), 2000);
-      } else {
-        finalizarBarraProgresso();
-      }
-    } catch (error) {
-      console.error("Erro ao verificar o status da task:", error);
-      elements.statusMessage.innerHTML = "Erro ao verificar o status da task.";
-    }
-  };
-
-  if (typeof taskId !== "undefined" && taskId) {
-    // console.log("Task ID:", taskId);
-    verificarStatusTask(taskId);
-  } else {
-    console.warn("Nenhum Task ID foi encontrado.");
-  }
-
-  const exibirResultados = (data) => {
-    //console.log("Exibindo os resultados na tabela:", data);
-
-    // Salvando os dados no globalState para serem usados na contagem de transferências
-    globalState.data = data;
-    globalState.hospitalSelected =
-      document.getElementById("select-hospital").value;
-
-    const tbody = document.getElementById("jornadaUraBody");
-    if (!tbody)
-      return console.error("Tabela 'jornadaUraBody' não encontrada no DOM.");
-
-    // Preservar o estado atual da tabela antes de destruí-la
-    const state = preserveTableState("#jornadaUraTable");
-
-    if ($.fn.DataTable.isDataTable("#jornadaUraTable")) {
-      $("#jornadaUraTable").DataTable().clear().destroy();
-    }
-
-    tbody.innerHTML = "";
-
-    data.jornadas.forEach((jornada) => {
-      const row = document.createElement("tr");
-
-      // Função para exibir datas em UTC no formato desejado
-      const formatToUTC = (dateString) => {
-        if (!dateString) return "Data Inválida";
-        const date = new Date(dateString);
-        return date.toISOString().replace("T", " ").slice(0, 19); // Formato: AAAA-MM-DD HH:MM:SS
-      };
-
-      // Usando os nomes corretos das propriedades da API
-      const dataInicio = formatToUTC(jornada.data_hora_inicio);
-      const dataFim = formatToUTC(jornada.data_hora_fim);
-      const dataComTempo = `${dataInicio} - ${dataFim}`;
-
-      // Calcular a duração em milissegundos, se as datas forem válidas
-      const duracaoMs =
-        dataInicio !== "Data Inválida" && dataFim !== "Data Inválida"
-          ? new Date(jornada.data_hora_fim) - new Date(jornada.data_hora_inicio)
-          : NaN;
-      const minutos = Math.floor(duracaoMs / 60000);
-      const segundos = ((duracaoMs % 60000) / 1000).toFixed(2); // Arredonda os segundos para duas casas
-
-      const duracaoFormatada = !isNaN(duracaoMs)
-        ? `${minutos} min ${segundos} s`
-        : "N/A";
-
-      const tipoUraHtml =
-        jornada.tipo_ura === "Tradicional"
-          ? '<i class="fas fa-keyboard" style="color: blue;"></i> Tradicional'
-          : '<i class="fas fa-microphone" style="color: green;"></i> Cognitiva';
-
-      const ramal =
-        jornada.ramal ||
-        ajustarRamalPorHospital(
-          elements.selectHospital.value,
-          jornada.destino_transferencia
-        );
-
-      row.innerHTML = `
-                <td>${dataComTempo}</td>
-                <td>${jornada.did_number || "N/A"}</td>
-                <td>${jornada.numero_cliente}</td>
-                <td>${jornada.tipo_atendimento || "N/A"}</td>
-                <td>${jornada.id_chamada}</td>
-                <td>${duracaoFormatada}</td>
-                <td>${jornada.destino_transferencia || "N/A"}</td>
-                <td>${tipoUraHtml}</td>
-                <td>${ramal}</td>
-                <td>${jornada.setor || "N/A"}</td>
-                <td>${
-                  jornada.audio_capturado
-                    ? jornada.audio_capturado
-                    : "Sem áudio capturado"
-                }</td>
-                <td>${elements.selectHospital.value}</td>
-                <td><button class="btn btn-primary detalhes-btn" data-jornada='${JSON.stringify(
-                  jornada
-                )}'>Detalhes</button></td>
-            `;
-
-      tbody.appendChild(row);
-    });
-
-    // Reinicializa a DataTable com a opção deferRender e sem destruir o estado anterior
-    const table = $("#jornadaUraTable").DataTable({
-      paging: true,
-      searching: true,
-      ordering: true,
-      info: true,
-      pageLength: 10,
-      deferRender: true, // Melhorar performance
-      language: {
-        url: "https://cdn.datatables.net/plug-ins/1.10.24/i18n/Portuguese-Brasil.json",
-      },
-      columnDefs: [
-        { orderable: true, targets: 0 },
-        { width: "15%", targets: [0, 4] },
-      ],
-      order: [[0, "asc"]],
-      orderMulti: false,
-    });
-
-    // Restaurar o estado da tabela após a atualização dos dados
-    restoreTableState("#jornadaUraTable", state);
-
-    // Adicionar eventos de clique nos botões de detalhes
-    document.querySelectorAll(".detalhes-btn").forEach((btn) => {
-      btn.addEventListener("click", function () {
-        exibirDetalhes(JSON.parse(this.getAttribute("data-jornada")));
-      });
-    });
-  };
-
-  // Vincular eventos ao botão de detalhes
-  document.querySelectorAll(".detalhes-btn").forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const jornada = JSON.parse(this.getAttribute("data-jornada"));
-      exibirDetalhes(jornada); // Passa a jornada diretamente para exibir os detalhes
-    });
-  });
-
-  // Função para exibir os detalhes da jornada
   function exibirDetalhes(jornada) {
-    //console.log("Exibindo detalhes para a chamada:", jornada);
-
     const detalhesJornada = document.getElementById("detalhesJornada");
     if (!detalhesJornada) {
-      console.error("Elemento 'detalhesJornada' não encontrado.");
-      return;
+      return console.error("Elemento 'detalhesJornada' não encontrado.");
     }
-
-    // Limpar o conteúdo anterior
     detalhesJornada.innerHTML = "";
-
-    // Criar uma lista ordenada para os eventos
     const ol = document.createElement("ol");
-    ol.style.paddingLeft = "20px"; // Para criar espaço à esquerda
+    ol.style.paddingLeft = "20px";
 
     jornada.eventos.forEach((evento) => {
       const li = document.createElement("li");
       li.innerHTML = `
-                <div>
-                    <strong>Etapa:</strong> ${evento.step_name} <br>
-                    <strong>Data:</strong> ${new Date(
-                      evento.executed_at
-                    ).toLocaleString()} <br>
-                    <hr>
-                </div>
-            `;
+        <div>
+          <strong>Etapa:</strong> ${evento.step_name} <br>
+          <strong>Data:</strong> ${new Date(
+            evento.executed_at
+          ).toLocaleString()} <br>
+          <hr>
+        </div>
+      `;
       ol.appendChild(li);
     });
-
     detalhesJornada.appendChild(ol);
-
-    // Exibir o modal
     const modal = new bootstrap.Modal(document.getElementById("detalhesModal"));
     modal.show();
   }
 
-  // Adiciona funcionalidade para preenchimento automático ao selecionar o período
+  // ---- Evento do botão de filtro ----
+
+  elements.filterButton.addEventListener("click", () => {
+    const previousFilters = {
+      selectPeriodo: sessionStorage.getItem("selectPeriodo"),
+      selectHospital: sessionStorage.getItem("selectHospital"),
+      startDate: sessionStorage.getItem("startDate"),
+      endDate: sessionStorage.getItem("endDate"),
+    };
+
+    const currentFilters = {
+      selectPeriodo: elements.selectPeriodo.value,
+      selectHospital: elements.selectHospital.value,
+      startDate: elements.startDate.value,
+      endDate: elements.endDate.value,
+    };
+
+    const filtersChanged =
+      JSON.stringify(previousFilters) !== JSON.stringify(currentFilters);
+
+    if (filtersChanged) {
+      SESSION_KEYS.forEach((key) => {
+        if (elements[key].value)
+          sessionStorage.setItem(key, elements[key].value);
+      });
+      // Remove dados antigos para forçar a atualização
+      sessionStorage.removeItem("jornadaUraData");
+      elements.form.submit();
+    } else {
+      console.log("Os filtros não foram alterados.");
+    }
+  });
+
+  // ---- Preenchimento automático dos campos de data conforme o período selecionado ----
+
   elements.selectPeriodo.addEventListener("change", function () {
     const periodo = this.value;
     const now = new Date();
@@ -305,7 +337,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Função para ajustar a data local sem UTC
   function ajustarDataLocal(data) {
     const timezoneOffset = data.getTimezoneOffset() * 60000;
     return new Date(data.getTime() - timezoneOffset).toISOString().slice(0, 16);
@@ -341,64 +372,21 @@ document.addEventListener("DOMContentLoaded", () => {
     return ramais[hospitalSelecionado]?.[destinoTransferencia] || "N/A";
   };
 
-  // Função para preservar o estado da tabela
-  const preserveTableState = (tableId) => {
-    const table = $(tableId).DataTable();
-    return {
-      page: table.page.info().page,
-      order: table.order(),
-      search: table.search(),
-      length: table.page.len(),
-    };
-  };
+  // ---- Inicialização das DataTables e Exportação para Excel ----
 
-  // Função para restaurar o estado da tabela
-  const restoreTableState = (tableId, state) => {
-    const table = $(tableId).DataTable();
-    table
-      .page(state.page)
-      .order(state.order)
-      .search(state.search)
-      .page.len(state.length)
-      .draw(false); // false evita o recarregamento completo
-  };
-
-  // Função de inicialização das tabelas com DataTables
   const initializeDataTables = () => {
-    // Inicializar DataTables com a opção deferRender
     $("#tabelaRamal, #tabelaSetor, #tabelaDestino").DataTable({
       paging: true,
       pageLength: 5,
       searching: false,
       lengthChange: false,
       ordering: true,
-      deferRender: true, // Melhorar performance com deferRender
+      deferRender: true,
     });
 
-    // Inicializar a tabela jornadaUra com tradução e configuração
-    $("#jornadaUraTable").DataTable({
-      paging: true,
-      searching: true,
-      ordering: true,
-      info: true,
-      pageLength: 10,
-      deferRender: true, // Melhorar performance
-      language: {
-        url: "https://cdn.datatables.net/plug-ins/1.10.24/i18n/Portuguese-Brasil.json",
-      },
-      columnDefs: [
-        { orderable: true, targets: 0 },
-        { width: "15%", targets: [0, 4] },
-      ],
-      order: [[0, "asc"]],
-      orderMulti: false,
-    });
   };
-
-  // Chamar a função de inicialização das tabelas
   initializeDataTables();
 
-  // Export table to Excel using SheetJS
   const exportTableToExcel = (
     tableID,
     filename = "relatorio_jornada_ura.xlsx"
@@ -430,16 +418,15 @@ document.addEventListener("DOMContentLoaded", () => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório");
     XLSX.writeFile(workbook, filename);
   };
-
   elements.downloadExcelButton.addEventListener("click", () =>
     exportTableToExcel("jornadaUraTable")
   );
 
-  // Event listener for opening the transfer modal and generating transfer data
+  // ---- Modal de Transferências e Geração de Dados ----
+
   document
     .getElementById("abrirModalTransferencias")
     .addEventListener("click", () => {
-      // console.log("Dados no globalState:", globalState);
       if (globalState.data && globalState.hospitalSelected) {
         gerarContagemTransferencias(
           globalState.data,
@@ -448,15 +435,12 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         console.warn("Os dados de transferências não estão disponíveis.");
       }
-      // Certifique-se de que o modal está sendo aberto corretamente
       const modalElement = document.getElementById("transferenciasModal");
       const transferenciasModal = new bootstrap.Modal(modalElement);
-      transferenciasModal.show(); // Isso deve abrir o modal
+      transferenciasModal.show();
     });
 
-  // Function to generate transfer counts
   const gerarContagemTransferencias = (data, hospitalSelecionado) => {
-    // Garantindo que globalState tenha os dados corretos
     if (!globalState.data || !globalState.hospitalSelected) {
       console.warn("Os dados de transferências não estão disponíveis.");
       return;
@@ -476,7 +460,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const tipoUra = jornada.tipo_ura;
       const destino = jornada.destino_transferencia || "N/A";
 
-      // Caso especial: Transferência Agendamento WhatsApp (apenas para HM)
       if (
         hospitalSelecionado === "HM" &&
         destino === "Transferência Agendamento WhatsApp"
@@ -484,12 +467,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ramal = "WhatsApp";
       }
 
-      // Corrigir Ramal N/A para URA Tradicional
       if (tipoUra === "Tradicional" && (ramal === "N/A" || !ramal)) {
         ramal = mapRamal(hospitalSelecionado, destino);
       }
 
-      // Update counts for Ramal, Setor, and Destino
       transferenciasPorRamal[ramal] = transferenciasPorRamal[ramal] || {
         Cognitiva: 0,
         Tradicional: 0,
@@ -518,7 +499,6 @@ document.addEventListener("DOMContentLoaded", () => {
     encontrarRecorrenciasDeChamadas(globalState.data.jornadas);
   };
 
-  // Function to map ramal based on hospital and destination
   const mapRamal = (hospital, destino) => {
     const ramalMapping = {
       HM: {
@@ -546,7 +526,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return ramalMapping[hospital]?.[destino] || "N/A";
   };
 
-  // Function to display transfer counts in the tables
   const exibirContagemTransferencias = (
     transferenciasPorRamal,
     transferenciasPorSetor,
@@ -556,35 +535,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabelaSetorBody = document.getElementById("tabelaSetorBody");
     const tabelaDestinoBody = document.getElementById("tabelaDestinoBody");
 
-    // Função para capturar e restaurar o estado do DataTable
-    const preserveTableState = (tableId) => {
-      const table = $(tableId).DataTable();
-      const page = table.page.info().page; // Captura a página atual
-      const order = table.order(); // Captura a ordenação
-      const search = table.search(); // Captura a pesquisa
-      const length = table.page.len(); // Captura o número de registros por página
-
-      return { page, order, search, length };
-    };
-
-    // Função para restaurar o estado do DataTable
-    const restoreTableState = (tableId, state) => {
-      const table = $(tableId).DataTable();
-      table
-        .page(state.page)
-        .order(state.order)
-        .search(state.search)
-        .page.len(state.length)
-        .draw(false);
-    };
-
     const updateDataTable = (tableId, data, columns) => {
-      const tableBody = document.getElementById(tableId + "Body"); // Corrigir para pegar o corpo da tabela corretamente
+      const tableBody = document.getElementById(tableId + "Body");
       if (tableBody) {
         const table = $("#" + tableId).DataTable();
         const tableState = preserveTableState("#" + tableId);
 
-        // Destruir a tabela apenas se ela existir e tiver sido inicializada corretamente
         if ($.fn.DataTable.isDataTable("#" + tableId)) {
           try {
             table.clear().destroy();
@@ -593,7 +549,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        // Atualiza a tabela com novos dados
         tableBody.innerHTML = "";
         data.forEach((item) => {
           const row = document.createElement("tr");
@@ -603,18 +558,15 @@ document.addEventListener("DOMContentLoaded", () => {
           tableBody.appendChild(row);
         });
 
-        // Reinicializa o DataTable com paginação e ordenação
         const newTable = $("#" + tableId).DataTable({
           paging: true,
           pageLength: 5,
           searching: false,
           ordering: true,
           order: [[1, "desc"]],
-          deferRender: true, // Melhorar performance com deferRender
-          destroy: true, // Garante que a tabela seja destruída e recriada
+          deferRender: true,
+          destroy: true,
         });
-
-        // Restaurar o estado da tabela após a recriação
         restoreTableState("#" + tableId, tableState);
       } else {
         console.warn("Tabela não encontrada no DOM:", tableId);
@@ -651,33 +603,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const tabelaRecorrenciasBody = document.getElementById(
       "tabelaRecorrenciasBody"
     );
-
-    // Limpar o conteúdo anterior da tabela apenas uma vez
     if (tabelaRecorrenciasBody) {
       tabelaRecorrenciasBody.innerHTML = "";
     }
-
-    // Exibir mensagem se não houver recorrências
     if (recorrenciasArray.length === 0) {
       tabelaRecorrenciasBody.innerHTML = `<tr><td colspan="5">Nenhuma reincidência encontrada.</td></tr>`;
       return;
     }
-
-    // Preencher a tabela com os dados de recorrências
     recorrenciasArray.forEach((recorrencia) => {
       const row = document.createElement("tr");
       const duracaoTotalMinutos = Math.floor(recorrencia.duracaoTotal / 60);
       row.innerHTML = `
-                <td>${recorrencia.telefone}</td>
-                <td>${recorrencia.totalChamadas}</td>
-                <td>${recorrencia.chamadasCognitivas}</td>
-                <td>${recorrencia.chamadasTradicionais}</td>
-                <td>${duracaoTotalMinutos} min</td>
-            `;
+        <td>${recorrencia.telefone}</td>
+        <td>${recorrencia.totalChamadas}</td>
+        <td>${recorrencia.chamadasCognitivas}</td>
+        <td>${recorrencia.chamadasTradicionais}</td>
+        <td>${duracaoTotalMinutos} min</td>
+      `;
       tabelaRecorrenciasBody.appendChild(row);
     });
 
-    // Verificar se DataTable já foi inicializado, se não, inicialize
     if (!$.fn.DataTable.isDataTable("#tabelaRecorrencias")) {
       $("#tabelaRecorrencias").DataTable({
         paging: true,
@@ -686,10 +631,9 @@ document.addEventListener("DOMContentLoaded", () => {
         order: [[1, "desc"]],
         searching: false,
         lengthChange: false,
-        destroy: true, // Permitir que a tabela seja destruída quando recarregar dados
+        destroy: true,
       });
     } else {
-      // Apenas limpar e adicionar novos dados, sem destruir a tabela
       const table = $("#tabelaRecorrencias").DataTable();
       table
         .clear()
@@ -706,7 +650,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Function to find recurring calls
   const encontrarRecorrenciasDeChamadas = (jornadas) => {
     const recorrencias = {};
     jornadas.forEach((jornada) => {
@@ -719,9 +662,11 @@ document.addEventListener("DOMContentLoaded", () => {
         duracaoTotal: 0,
       };
       recorrencias[telefone].totalChamadas += 1;
-      if (jornada.tipo_ura === "Cognitiva")
+      if (jornada.tipo_ura === "Cognitiva") {
         recorrencias[telefone].chamadasCognitivas += 1;
-      else recorrencias[telefone].chamadasTradicionais += 1;
+      } else {
+        recorrencias[telefone].chamadasTradicionais += 1;
+      }
       recorrencias[telefone].duracaoTotal += calcularDuracaoEmSegundos(
         jornada.data_hora_inicio,
         jornada.data_hora_fim
@@ -739,4 +684,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const dataFim = new Date(fim);
     return (dataFim - dataInicio) / 1000;
   };
+
+  // ---- Verifica se há dados persistidos ou um taskId para buscar dados ----
+
+  const persistedData = sessionStorage.getItem("jornadaUraData");
+  if (persistedData) {
+    console.log("Dados persistidos encontrados. Exibindo resultados.");
+    exibirResultados(JSON.parse(persistedData));
+  } else if (typeof taskId !== "undefined" && taskId) {
+    console.log("Nenhum dado persistido encontrado. Verificando task:", taskId);
+    verificarStatusTask(taskId);
+  } else {
+    console.warn("Nenhum Task ID foi encontrado e não há dados persistidos.");
+  }
+
+  // ---- Fim do DOMContentLoaded ----
 });
