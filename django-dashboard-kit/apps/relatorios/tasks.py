@@ -1,39 +1,28 @@
-import json
 from celery import shared_task
 from .services import (
-    obter_token_autenticacao,
     obter_chamadas_ivr,
     processar_chamadas_abandonadas,
     obter_jornada_ura,
     analisar_jornada_ura_tradicional_com_tempo,
 )
-from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 @shared_task
-def processar_chamadas_async(token, dt_start, dt_finish, call_filter_list):
-    # Autenticação e obtenção do token
-    token = obter_token_autenticacao()
-    if not token:
-        return {"status": "erro", "mensagem": "Falha ao obter o token."}
-
+def processar_chamadas_async(token, dt_start, dt_finish, code_flow_ivr):
+    """
+    Processa as chamadas IVR de forma assíncrona e separa os abandonos cognitivos e interrompidos.
+    """
     # Chamar diretamente a função para obter as chamadas
-    chamadas_ivr = obter_chamadas_ivr(token, dt_start, dt_finish, call_filter_list)
+    chamadas_ivr = obter_chamadas_ivr(token, dt_start, dt_finish, code_flow_ivr)
 
     if isinstance(chamadas_ivr, dict) and chamadas_ivr.get("status") == "erro":
         return {"status": "erro", "mensagem": chamadas_ivr["mensagem"]}
 
     # Processar as chamadas abandonadas
     resultado_abandonos = processar_chamadas_abandonadas(chamadas_ivr)
-
-    if (
-        isinstance(resultado_abandonos, dict)
-        and resultado_abandonos.get("status") == "erro"
-    ):
-        return {"status": "erro", "mensagem": resultado_abandonos["mensagem"]}
 
     # Retornar o resultado do processamento
     return {
@@ -44,16 +33,14 @@ def processar_chamadas_async(token, dt_start, dt_finish, call_filter_list):
 
 
 @shared_task
-def processar_jornada_ura_async(token, dt_start, dt_finish, call_filter_list):
+def processar_jornada_ura_async(token, dt_start, dt_finish, code_flow_ivr):
     """
     Task assíncrona para processar a jornada do usuário na URA.
+    Processa as chamadas da URA e retorna os detalhes da jornada.
     """
-    # Verifica se o token é válido
-    if not token:
-        return {'status': 'erro', 'mensagem': 'Falha ao obter o token.'}
 
     # Obter as chamadas da URA via API
-    chamadas_ivr_response = obter_jornada_ura(token, dt_start, dt_finish, call_filter_list)
+    chamadas_ivr_response = obter_jornada_ura(token, dt_start, dt_finish, code_flow_ivr)
 
     # Verifica se a resposta contém um erro
     if isinstance(chamadas_ivr_response, dict) and chamadas_ivr_response.get('status') == 'erro':
@@ -69,36 +56,9 @@ def processar_jornada_ura_async(token, dt_start, dt_finish, call_filter_list):
     # Processamento das chamadas
     resultado_jornada = []
     for chamada in chamadas_ivr:
-        # Verifica se a chamada está no formato correto
-        if not isinstance(chamada, dict):
-            logger.warning(f"Chamada mal formatada encontrada e ignorada: {chamada}")
-            continue
-
-        call_data = chamada.get('call_data', {})
-        ivr_event_list = chamada.get('ivr_event_list', [])
-
-        # Certifica-se de que call_data seja um dicionário
-        if not isinstance(call_data, dict):
-            logger.warning(f"Chamada com call_data inválido ou ausente ignorada: {chamada}")
-            continue
-
-        # Verifica se variables existe e é um dicionário
-        variables = call_data.get('variables', {})
-        if not isinstance(variables, dict):
-            logger.warning(f"Chamada ignorada devido a variables inválido: {chamada}")
-            continue
-
-        # Processa a jornada
-        detalhes_jornada = analisar_jornada_ura_tradicional_com_tempo(chamada)
-
-        # Verifica se detalhes_jornada foi retornado corretamente
-        if detalhes_jornada is None:
-            logger.warning(f"Detalhes da jornada não processados para a chamada: {chamada.get('id_call')}")
-            continue
-
-        # Adiciona os eventos ao resultado da jornada
-        detalhes_jornada['eventos'] = ivr_event_list if isinstance(ivr_event_list, list) else []
-        resultado_jornada.append(detalhes_jornada)
+        detalhes_jornada = _processar_chamada_jornada(chamada)
+        if detalhes_jornada:
+            resultado_jornada.append(detalhes_jornada)
 
     # Retorna o resultado da jornada processada
     return {
@@ -106,3 +66,37 @@ def processar_jornada_ura_async(token, dt_start, dt_finish, call_filter_list):
         'jornadas': resultado_jornada
     }
 
+
+def _processar_chamada_jornada(chamada):
+    """
+    Função auxiliar para processar uma chamada individual na jornada da URA.
+    """
+    if not isinstance(chamada, dict):
+        logger.warning(f"Chamada mal formatada encontrada e ignorada: {chamada}")
+        return None
+
+    call_data = chamada.get('call_data', {})
+    ivr_event_list = chamada.get('ivr_event_list', [])
+
+    # Certifica-se de que call_data seja um dicionário
+    if not isinstance(call_data, dict):
+        logger.warning(f"Chamada com call_data inválido ou ausente ignorada: {chamada}")
+        return None
+
+    # Verifica se variables existe e é um dicionário
+    variables = call_data.get('variables', {})
+    if not isinstance(variables, dict):
+        logger.warning(f"Chamada ignorada devido a variables inválido: {chamada}")
+        return None
+
+    # Processa a jornada
+    detalhes_jornada = analisar_jornada_ura_tradicional_com_tempo(chamada)
+
+    # Verifica se detalhes_jornada foi retornado corretamente
+    if detalhes_jornada is None:
+        logger.warning(f"Detalhes da jornada não processados para a chamada: {chamada.get('id_call')}")
+        return None
+
+    # Adiciona os eventos ao resultado da jornada
+    detalhes_jornada['eventos'] = ivr_event_list if isinstance(ivr_event_list, list) else []
+    return detalhes_jornada
