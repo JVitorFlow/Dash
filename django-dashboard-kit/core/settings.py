@@ -271,22 +271,32 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'INFO',  # Menos verboso
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'simple',
         },
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'django_debug.log',  # Substitua pelo caminho desejado
+            'filename': 'django_debug.log',
             'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
+        },
+        'django.db.backends': {  # Silenciar logs de consultas SQL
+            'handlers': ['file'],
+            'level': 'WARNING',  # Alterado para WARNING para esconder DEBUG
+            'propagate': False,
+        },
+        'django.server': {  # Logs de requisições HTTP
+            'handlers': ['console'],
+            'level': 'INFO',  # Mostrar apenas informações importantes
+            'propagate': False,
         },
         'custom_logger': {
             'handlers': ['console', 'file'],
