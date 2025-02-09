@@ -68,9 +68,9 @@
                         <label for="endDate" class="form-label">Até</label>
                         <input type="datetime-local" class="form-control" id="endDate" name="dt_finish">
                     </div>
-            
+                    
                     <div class="col-md-3 d-flex align-items-end">
-                        <button type="button" class="btn btn-primary w-100 me-2" id="filter-button">Filtrar</button> <!-- Alterado de submit para button -->
+                        <button type="submit" class="btn btn-primary w-100 me-2" id="filter-button">Filtrar</button> <!-- Alterado de submit para button -->
                     </div>
                 </div>
             </form>
@@ -78,10 +78,15 @@
             <!-- [ Filtros ] end -->
 
             <!-- [ Mensagem de Erro ] start -->
-            {% if error_message %}
-            <div class="alert alert-danger mt-3" role="alert">
-                {{ error_message }}
-            </div>
+            {% if messages %}
+                <div id="error-messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} mt-3" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" onclick="this.parentElement.style.display='none';" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
             <!-- [ Mensagem de Erro ] end -->
              <!-- [ Mensagem de Status ] start -->
