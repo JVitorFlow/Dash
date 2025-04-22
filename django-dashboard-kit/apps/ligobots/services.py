@@ -6,9 +6,9 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 # URLs das APIs
-OMNI_API_URL = "https://apicode7docs.omni.code7.cloud/v1/Login/loginApi"
-BOTERIA_API_BASE_URL = "https://api.boteria.com.br/api/v1/dashboard"
-CCPAASSCII_API_BASE_URL = "https://ccpaasscii.code7.com/AYTY/AppInovaSaude/AytyTechInovaAPI/v1/ura"
+OMNI_API_URL = settings.OMNI_API_URL
+BOTERIA_API_BASE_URL = settings.BOTERIA_API_BASE_URL
+CCPAASSCII_API_BASE_URL = settings.CCPAASSCII_API_BASE_URL
 
 def request_post(url, headers=None, data=None):
     try:

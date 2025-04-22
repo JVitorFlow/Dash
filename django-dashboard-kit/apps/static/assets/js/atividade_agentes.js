@@ -8,7 +8,7 @@ export function buscarDadosAgentes(isManualSearch = false) {
 
     // Caso a busca seja manual, utilize as datas dos campos manuais
     if (isManualSearch) {
-        console.log("[INFO] Realizando busca manual");
+        // console.log("[INFO] Realizando busca manual");
 
         startDate = document.getElementById('startDate').value;
         endDate = document.getElementById('endDate').value;
@@ -49,8 +49,8 @@ export function buscarDadosAgentes(isManualSearch = false) {
         }
     }
 
-    console.log("[DEBUG] Data de Início (sem ajuste para UTC):", startDate);
-    console.log("[DEBUG] Data de Fim (sem ajuste para UTC):", endDate);
+    // console.log("[DEBUG] Data de Início (sem ajuste para UTC):", startDate);
+    // console.log("[DEBUG] Data de Fim (sem ajuste para UTC):", endDate);
 
 
     mostrarLoadingSpinner('loadingSpinnerMedidores');
@@ -62,7 +62,7 @@ export function buscarDadosAgentes(isManualSearch = false) {
         dtFinish: endDate
     };
 
-    console.log("[INFO] Payload enviado:", payload);
+    // console.log("[INFO] Payload enviado:", payload);
 
     const urlElement = document.getElementById('atividadesAgentesUrlData');
     let atividadesAgentesUrl = null;
@@ -70,7 +70,7 @@ export function buscarDadosAgentes(isManualSearch = false) {
     if (urlElement) {
         try {
             atividadesAgentesUrl = urlElement.textContent.trim();
-            console.log("[INFO] URL da API carregada:", atividadesAgentesUrl);
+            // console.log("[INFO] URL da API carregada:", atividadesAgentesUrl);
         } catch (e) {
             console.error("[ERROR] Falha ao parsear a URL da API:", e);
             toggleButtons(true);
@@ -103,21 +103,21 @@ export function buscarDadosAgentes(isManualSearch = false) {
         body: JSON.stringify(payload)
     })
     .then(response => {
-        console.log("[INFO] HTTP Status da resposta:", response.status);
+        // console.log("[INFO] HTTP Status da resposta:", response.status);
         return response.json();
     })
     .then(data => {
-        console.log("[INFO] Dados recebidos do JSON:", data);
+        // console.log("[INFO] Dados recebidos do JSON:", data);
         if (data.errcode === 0) {
             console.log("[INFO] Dados da API válidos. Processando...");
             const dadosProcessados = processarDadosParaGrafico(data.agent_activity_list);
             
             
             const dadosConsolidados = consolidarDadosPorAgenteEData(data.agent_activity_list);
-            console.log("[INFO] Dados consolidados:", dadosConsolidados);
+            // console.log("[INFO] Dados consolidados:", dadosConsolidados);
             const disponibilidadePorDia = calcularDisponibilidadeDiariaPorAgente(dadosConsolidados);
             // console.log("[INFO] Dados processados para o gráfico TENDENCIA:", disponibilidadePorDia);
-            console.log("[INFO] Disponibilidade por dia:", disponibilidadePorDia);
+            // console.log("[INFO] Disponibilidade por dia:", disponibilidadePorDia);
             renderizarGraficoTendencia('1101', disponibilidadePorDia);
 
             // Renderizar o gráfico de colunas
@@ -507,7 +507,7 @@ function calcularDisponibilidadeDiariaPorAgente(dadosConsolidados) {
         // console.log(`[DEBUG] Resultados para ${data}: CargaHorariaTotal=${diaData.cargaHorariaTotal}, TempoDisponivel=${tempoDisponivel}, DisponibilidadePercentual=${diaData.disponibilidadePercentual}`);
     });
 
-    console.log("[DEBUG] Resultado final por dia:", resultadoPorDia);
+    // console.log("[DEBUG] Resultado final por dia:", resultadoPorDia);
     return resultadoPorDia;
 }
 

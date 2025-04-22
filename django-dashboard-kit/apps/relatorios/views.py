@@ -124,7 +124,7 @@ class UraJornadaView(LoginRequiredMixin, TemplateView):
             ivr_code_mapping = {
                 "HM": "66843e52abdc46987483f3e5",
                 "HSJC": "6687ec45abdc469874751b5c",
-                "HSOR": "6687ec45abdc469874751b5c",
+                "HSOR": "668bcab7abdc469874a5afbc",
             }
 
             # Dados validados do formulário
@@ -133,13 +133,14 @@ class UraJornadaView(LoginRequiredMixin, TemplateView):
             nm_flow_ivr = form.cleaned_data["nm_flow_ivr"]
 
             # Definir o code_flow_ivr com base no mapeamento
-            code_flow_ivr = ivr_code_mapping.get(nm_flow_ivr, nm_flow_ivr)  # Se não estiver no mapeamento, mantém o valor original
-
+            code_flow_ivr = ivr_code_mapping.get(
+                nm_flow_ivr, nm_flow_ivr
+            )  # Se não estiver no mapeamento, mantém o valor original
 
             # Obter token de autenticação
             token = obter_token_autenticacao()
             if not token:
-                
+
                 return self.render_to_response(
                     {
                         "form": form,
@@ -301,4 +302,3 @@ def verificar_status_task(request, task_id):
             },
             status=500,
         )
- 
