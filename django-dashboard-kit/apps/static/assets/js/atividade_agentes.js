@@ -107,11 +107,31 @@ export function buscarDadosAgentes(isManualSearch = false) {
         return response.json();
     })
     .then(data => {
-        // console.log("[INFO] Dados recebidos do JSON:", data);
+        console.log("[INFO] Dados recebidos do JSON:", data);
+        
         if (data.errcode === 0) {
+            // Validar se agent_activity_list existe e não é null/undefined
+            if (!data.agent_activity_list || !Array.isArray(data.agent_activity_list)) {
+                console.warn("[AVISO] Nenhum dado encontrado para o período selecionado.");
+                alert('Nenhum dado encontrado para o período selecionado. Tente outro mês/ano.');
+                document.getElementById('exportExcel').style.display = 'none';
+                esconderLoadingSpinner('loadingSpinner');
+                esconderLoadingSpinner('loadingSpinnerMedidores');
+                return;
+            }
+            
+            // Validar se há dados no array
+            if (data.agent_activity_list.length === 0) {
+                console.warn("[AVISO] Lista de atividades vazia.");
+                alert('Nenhuma atividade registrada no período selecionado.');
+                document.getElementById('exportExcel').style.display = 'none';
+                esconderLoadingSpinner('loadingSpinner');
+                esconderLoadingSpinner('loadingSpinnerMedidores');
+                return;
+            }
+            
             console.log("[INFO] Dados da API válidos. Processando...");
             const dadosProcessados = processarDadosParaGrafico(data.agent_activity_list);
-            
             
             const dadosConsolidados = consolidarDadosPorAgenteEData(data.agent_activity_list);
             // console.log("[INFO] Dados consolidados:", dadosConsolidados);
@@ -123,14 +143,13 @@ export function buscarDadosAgentes(isManualSearch = false) {
             // Renderizar o gráfico de colunas
             // console.log("[INFO] Dados processados para o gráfico:", dadosProcessados);
             renderizarGraficoColunas('1101', dadosProcessados);
-
-
             
             preencherTabelaAgentes(data.agent_activity_list);
             calcularOcupacaoTotalEExibir(data.agent_activity_list);
-            document.getElementById('exportExcel').style.display = data.agent_activity_list.length > 0 ? 'block' : 'none';
+            document.getElementById('exportExcel').style.display = 'block';
         } else {
             console.error("[ERROR] Erro ao buscar dados:", data.errmsg);
+            alert(`Erro ao buscar dados: ${data.errmsg}`);
             document.getElementById('exportExcel').style.display = 'none';
         }
         esconderLoadingSpinner('loadingSpinner');
@@ -157,6 +176,14 @@ function toggleButtons(enable) {
 }
 
 function calcularOcupacaoTotalEExibir(dados) {
+    // Validação defensiva
+    if (!dados || !Array.isArray(dados) || dados.length === 0) {
+        console.warn("[AVISO] Nenhum dado para calcular ocupação");
+        const dadosParaGraficoPonteiro = { ocupacaoPercentual: "0.00" };
+        renderizarGraficoPonteiro('1101', dadosParaGraficoPonteiro);
+        return;
+    }
+
     // Utilize a função processarDadosParaGrafico para obter os dados já calculados
     const resultado = processarDadosParaGrafico(dados);
 
@@ -164,7 +191,9 @@ function calcularOcupacaoTotalEExibir(dados) {
     const horasDisponiveis = resultado.carga_horaria - resultado.horas_pausa;
 
     // Calculando a ocupação com base nas horas trabalhadas e nas horas disponíveis
-    const ocupacaoTotalPercent = ((resultado.horas_trabalhadas / horasDisponiveis) * 100).toFixed(2);
+    const ocupacaoTotalPercent = horasDisponiveis > 0 
+        ? ((resultado.horas_trabalhadas / horasDisponiveis) * 100).toFixed(2)
+        : "0.00";
     console.log("(calcularOcupacaoTotalEExibir)[INFO] Ocupação total calculada (percentual):", ocupacaoTotalPercent);
 
     // Enviando o valor formatado dentro de um objeto para o gráfico de ponteiro
@@ -178,6 +207,13 @@ function preencherTabelaAgentes(dados) {
     const table = $('#tabelaAgentes').DataTable();
 
     table.clear();
+
+    // Validação defensiva
+    if (!dados || !Array.isArray(dados) || dados.length === 0) {
+        console.warn("[AVISO] Nenhum dado para preencher a tabela");
+        table.draw();
+        return;
+    }
 
     const agentesConsolidados = consolidarDadosPorAgenteEData(dados);
 
@@ -209,6 +245,12 @@ function preencherTabelaAgentes(dados) {
 function consolidarDadosPorAgenteEData(dados) {
     const agentesConsolidados = [];
     const emailsParaIgnorar = ["homolog.inovasaude@mail.com", "yara.bezerra@wtime.com.br"];
+
+    // Validação defensiva
+    if (!dados || !Array.isArray(dados)) {
+        console.error("[ERROR] Dados inválidos passados para consolidarDadosPorAgenteEData:", dados);
+        return agentesConsolidados;
+    }
 
     dados.forEach(item => {
 
@@ -405,6 +447,12 @@ function processarDadosParaGrafico(dados) {
         horas_pausa_formatadas: ''
     };
 
+    // Validação defensiva
+    if (!dados || !Array.isArray(dados) || dados.length === 0) {
+        console.warn("[AVISO] Nenhum dado para processar no gráfico");
+        return resultado;
+    }
+
     const TEMPO_TRABALHO_ESPERADO_HORAS = 6;
     const agentesConsolidados = consolidarDadosPorAgenteEData(dados);
 
@@ -468,6 +516,12 @@ function calcularDisponibilidadeDiariaPorAgente(dadosConsolidados) {
     console.log("[DEBUG] Carga horária por agente (segundos):", cargaHorariaAgente);
 
     const resultadoPorDia = {};
+
+    // Validação defensiva
+    if (!dadosConsolidados || !Array.isArray(dadosConsolidados) || dadosConsolidados.length === 0) {
+        console.warn("[AVISO] Nenhum dado consolidado para calcular disponibilidade");
+        return resultadoPorDia;
+    }
 
     dadosConsolidados.forEach((agente, index) => {
         console.log(`[DEBUG] Estrutura do agente ${index}:`, agente);
