@@ -87,5 +87,6 @@ jobs:
 
             # Limpeza básica
             docker image prune -f
+          request_pty: false
 
 
