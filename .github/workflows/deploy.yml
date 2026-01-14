@@ -32,12 +32,12 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./django-dashboard-kit
+          file: ./django-dashboard-kit/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/dash:latest
+            ghcr.io/${{ github.repository_owner }}/dash:sha-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -59,13 +59,14 @@ jobs:
             cd "$DEPLOY_PATH"
 
             # Atualiza arquivos de compose/nginx caso você opte por manter o repo clonado no servidor.
-            # Se você não quiser git no servidor, remova as 2 linhas abaixo e garanta que os arquivos
-            # docker-compose.yml, docker-compose.prod.yml e nginx/ existam em $DEPLOY_PATH.
             git fetch --prune
             git reset --hard origin/master
 
+            # Entrar na pasta do projeto Django
+            cd django-dashboard-kit
+
             # A imagem que será implantada (tag por commit)
-            export APP_IMAGE="ghcr.io/${{ github.repository }}:sha-${{ github.sha }}"
+            export APP_IMAGE="ghcr.io/${{ github.repository_owner }}/dash:sha-${{ github.sha }}"
 
             # Pull das imagens novas (apenas serviços de app)
             docker compose -f docker-compose.prod.yml pull dashboard_app celery celery_beat
