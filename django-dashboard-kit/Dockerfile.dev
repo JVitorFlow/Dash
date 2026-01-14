@@ -1,0 +1,97 @@
+# ==============================================================================
+# DOCKERFILE PARA DESENVOLVIMENTO LOCAL - VERSÃO MELHORADA
+# ==============================================================================
+# Otimizações para produtividade:
+# - Ferramentas de debug (ipython, ipdb, django-extensions)
+# - Utilitários de sistema (vim, curl, htop, etc)
+# - Hot reload configurado
+# - Limpeza APT completa
+# - Cache otimizado
+# ==============================================================================
+
+FROM python:3.11
+
+# Metadados
+LABEL maintainer="JVitorFlow"
+LABEL description="Django Dashboard Kit - Development Environment"
+LABEL environment="development"
+
+# Definir variáveis de ambiente para desenvolvimento
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DJANGO_SETTINGS_MODULE=core.settings \
+    PYTHONPATH=/app \
+    TERM=xterm-256color
+
+# Criar diretório de trabalho
+WORKDIR /app
+
+# Instalar dependências do sistema + ferramentas de desenvolvimento
+# - Básicas: libpq-dev, gcc (para psycopg2)
+# - Debug: vim, nano, curl, wget, htop, less
+# - Git: para operações dentro do container
+# - PostgreSQL client: psql para debug do banco
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Dependências essenciais
+    libpq-dev \
+    gcc \
+    # Ferramentas de editor
+    vim \
+    nano \
+    # Ferramentas de rede
+    curl \
+    wget \
+    netcat-traditional \
+    # Ferramentas de sistema
+    htop \
+    less \
+    tree \
+    # Git
+    git \
+    # PostgreSQL client
+    postgresql-client \
+    # Bash completion
+    bash-completion \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copiar APENAS requirements.txt primeiro (cache eficiente)
+COPY requirements.txt /app/
+
+# Instalar dependências Python principais
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Instalar ferramentas extras de desenvolvimento
+# - ipython: shell Python melhorado
+# - ipdb: debugger interativo
+# - django-extensions: comandos úteis do Django
+# - django-debug-toolbar: barra de debug no navegador (se ainda não estiver)
+# - watchdog: file watcher para hot reload
+RUN pip install --no-cache-dir \
+    ipython \
+    ipdb \
+    django-extensions \
+    watchdog[watchmedo]
+
+# Copiar o restante do código
+# Nota: Com bind mount, isso será sobrescrito em runtime
+COPY . /app/
+
+# Criar diretórios úteis
+RUN mkdir -p /app/logs /app/tmp && \
+    chmod -R 777 /app/logs /app/tmp
+
+# Expor porta do Gunicorn
+EXPOSE 5005
+
+# Comando de execução com hot reload
+# --reload: reinicia automaticamente quando código muda
+# --reload-extra-file: monitora arquivos adicionais
+CMD ["gunicorn", \
+     "--config", "gunicorn-cfg.py", \
+     "--reload", \
+     "--reload-engine=auto", \
+     "--timeout", "3600", \
+     "--log-level", "debug", \
+     "core.wsgi"]
