@@ -8,7 +8,7 @@ services:
   dashboard_app:
     container_name: dashboard_app
     restart: always
-    image: ${APP_IMAGE:?APP_IMAGE não definido (ex: ghcr.io/<org>/<repo>:sha-<commit>)}
+    image: "${APP_IMAGE:?APP_IMAGE não definido (ex: ghcr.io/<org>/<repo>:sha-<commit>)}"
     env_file:
       - .env
     networks:
@@ -67,7 +67,7 @@ services:
   celery:
     container_name: celery
     restart: always
-    image: ${APP_IMAGE:?APP_IMAGE não definido (ex: ghcr.io/<org>/<repo>:sha-<commit>)}
+    image: "${APP_IMAGE:?APP_IMAGE não definido (ex: ghcr.io/<org>/<repo>:sha-<commit>)}"
     env_file:
       - .env
     command: celery -A core worker -l info
@@ -84,7 +84,7 @@ services:
   celery_beat:
     container_name: celery_beat
     restart: always
-    image: ${APP_IMAGE:?APP_IMAGE não definido (ex: ghcr.io/<org>/<repo>:sha-<commit>)}
+    image: "${APP_IMAGE:?APP_IMAGE não definido (ex: ghcr.io/<org>/<repo>:sha-<commit>)}"
     env_file:
       - .env
     command: celery -A core beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
