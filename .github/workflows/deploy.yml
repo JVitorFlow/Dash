@@ -70,6 +70,7 @@ jobs:
             cd django-dashboard-kit
 
             # A imagem que será implantada (tag por commit)
+            export IMAGE_NS="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
             export APP_IMAGE="ghcr.io/${IMAGE_NS}/dash:sha-${{ github.sha }}"
 
             # Pull das imagens novas (apenas serviços de app)
