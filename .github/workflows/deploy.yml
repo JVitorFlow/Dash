@@ -78,8 +78,11 @@ jobs:
             mkdir -p staticfiles media
             
             # Ajustar permissões para que o container (UID 1000) possa escrever
-            # Se o usuário SSH não é UID 1000, precisamos garantir permissões adequadas
-            chmod -R 777 staticfiles media
+            # Usar || true para não falhar se alguns arquivos não puderem ser modificados
+            chmod -R 777 staticfiles media || true
+            
+            # Garantir que pelo menos os diretórios principais têm permissão
+            chmod 777 staticfiles media || true
 
             # Pull das imagens novas (apenas serviços de app)
             docker compose -f docker-compose.prod.yml pull dashboard_app celery celery_beat
