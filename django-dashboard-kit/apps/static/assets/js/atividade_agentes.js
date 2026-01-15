@@ -4,8 +4,6 @@ import { renderizarGraficoColunas, renderizarGraficoPonteiro, renderizarGraficoT
 
 // Função principal para buscar os dados de atividade dos agentes
 export function buscarDadosAgentes(isManualSearch = false) {
-    console.log("[DEBUG] ===== buscarDadosAgentes iniciada =====");
-    console.log("[DEBUG] isManualSearch:", isManualSearch);
     let startDate, endDate;
 
     // Caso a busca seja manual, utilize as datas dos campos manuais
@@ -109,12 +107,9 @@ export function buscarDadosAgentes(isManualSearch = false) {
         return response.json();
     })
     .then(data => {
-        console.log("[INFO] Dados recebidos do JSON:", data);
-        
         if (data.errcode === 0) {
             // Validar se agent_activity_list existe e não é null/undefined
             if (!data.agent_activity_list || !Array.isArray(data.agent_activity_list)) {
-                console.warn("[AVISO] Nenhum dado encontrado para o período selecionado.");
                 alert('Nenhum dado encontrado para o período selecionado. Tente outro mês/ano.');
                 document.getElementById('exportExcel').style.display = 'none';
                 esconderLoadingSpinner('loadingSpinner');
@@ -124,25 +119,11 @@ export function buscarDadosAgentes(isManualSearch = false) {
             
             // Validar se há dados no array
             if (data.agent_activity_list.length === 0) {
-                console.warn("[AVISO] Lista de atividades vazia.");
                 alert('Nenhuma atividade registrada no período selecionado.');
                 document.getElementById('exportExcel').style.display = 'none';
                 esconderLoadingSpinner('loadingSpinner');
                 esconderLoadingSpinner('loadingSpinnerMedidores');
                 return;
-            }
-            
-            console.log("[INFO] Dados da API válidos. Processando...");
-            
-            // Verificar se o container KPI1101 está visível
-            const kpiContainer = document.getElementById('kpi1101');
-            if (kpiContainer) {
-                console.log("[DEBUG] Container KPI1101 encontrado. Display:", kpiContainer.style.display);
-                if (kpiContainer.style.display === 'none') {
-                    console.warn("[WARNING] Container KPI1101 está oculto! Isso pode causar problemas com DataTables.");
-                }
-            } else {
-                console.error("[ERROR] Container #kpi1101 não encontrado!");
             }
             
             const dadosProcessados = processarDadosParaGrafico(data.agent_activity_list);
@@ -192,7 +173,6 @@ function toggleButtons(enable) {
 function calcularOcupacaoTotalEExibir(dados) {
     // Validação defensiva
     if (!dados || !Array.isArray(dados) || dados.length === 0) {
-        console.warn("[AVISO] Nenhum dado para calcular ocupação");
         const dadosParaGraficoPonteiro = { ocupacaoPercentual: "0.00" };
         renderizarGraficoPonteiro('1101', dadosParaGraficoPonteiro);
         return;
@@ -208,7 +188,6 @@ function calcularOcupacaoTotalEExibir(dados) {
     const ocupacaoTotalPercent = horasDisponiveis > 0 
         ? ((resultado.horas_trabalhadas / horasDisponiveis) * 100).toFixed(2)
         : "0.00";
-    console.log("(calcularOcupacaoTotalEExibir)[INFO] Ocupação total calculada (percentual):", ocupacaoTotalPercent);
 
     // Enviando o valor formatado dentro de um objeto para o gráfico de ponteiro
     const dadosParaGraficoPonteiro = { ocupacaoPercentual: ocupacaoTotalPercent };
@@ -218,48 +197,45 @@ function calcularOcupacaoTotalEExibir(dados) {
 
 
 function preencherTabelaAgentes(dados) {
-    console.log("[DEBUG] preencherTabelaAgentes chamada com", dados?.length, "registros");
-    
     // Verificar se o elemento da tabela existe no DOM
     const tabelaElement = document.getElementById('tabelaAgentes');
     if (!tabelaElement) {
-        console.error("[ERROR] Elemento #tabelaAgentes não encontrado no DOM!");
+        console.error("Elemento da tabela não encontrado");
         return;
     }
     
     // Garantir que o container está visível
     const kpiContainer = document.getElementById('kpi1101');
     if (kpiContainer && kpiContainer.style.display === 'none') {
-        console.log("[DEBUG] Forçando exibição do container KPI1101");
         kpiContainer.style.display = 'block';
     }
     
-    console.log("[DEBUG] Elemento da tabela encontrado, verificando visibilidade...");
-    console.log("[DEBUG] Display do container pai:", $('#kpi1101').css('display'));
-    console.log("[DEBUG] Tabela visível:", $(tabelaElement).is(':visible'));
-    
-    // Destruir DataTable existente se houver
+    // Destruir DataTable existente se houver (com verificação de tbody)
     if ($.fn.DataTable.isDataTable('#tabelaAgentes')) {
-        console.log("[DEBUG] Destruindo DataTable existente...");
-        $('#tabelaAgentes').DataTable().destroy();
+        try {
+            const dt = $('#tabelaAgentes').DataTable();
+            dt.clear();
+            dt.destroy();
+        } catch (e) {
+            // Silenciosamente ignora erro de destroy
+        }
     }
     
-    console.log("[DEBUG] Inicializando DataTable...");
+    // Inicializar DataTable
     let table;
     try {
         table = $('#tabelaAgentes').DataTable({
             responsive: true,
             language: {
-                url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/Portuguese-Brasil.json"
+                url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/Portuguese-Brasil.json"
             },
-            order: [[1, 'desc']], // Ordenar por data (coluna 1) decrescente
+            order: [[1, 'desc']],
             pageLength: 25,
             dom: 'Bfrtip',
             buttons: []
         });
-        console.log("[DEBUG] DataTable inicializada com sucesso");
     } catch (e) {
-        console.error("[ERROR] Falha ao inicializar DataTable:", e);
+        console.error("Erro ao inicializar DataTable");
         return;
     }
 
@@ -267,7 +243,6 @@ function preencherTabelaAgentes(dados) {
 
     // Validação defensiva
     if (!dados || !Array.isArray(dados) || dados.length === 0) {
-        console.warn("[AVISO] Nenhum dado para preencher a tabela");
         table.draw();
         return;
     }
@@ -297,38 +272,28 @@ function preencherTabelaAgentes(dados) {
     });
 
     table.draw();
-    console.log("[DEBUG] Tabela preenchida com", agentesConsolidados.length, "linhas");
-    console.log("[DEBUG] Verificar se a tabela está visível na página");
 }
 
 function consolidarDadosPorAgenteEData(dados) {
     const agentesConsolidados = [];
     const emailsParaIgnorar = ["homolog.inovasaude@mail.com", "yara.bezerra@wtime.com.br"];
-    let registrosInvalidos = 0;
-    let registrosIgnorados = 0;
 
     // Validação defensiva
     if (!dados || !Array.isArray(dados)) {
-        console.error("[ERROR] Dados inválidos passados para consolidarDadosPorAgenteEData:", dados);
         return agentesConsolidados;
     }
 
     dados.forEach(item => {
-
         // Verificar se o item tem os campos necessários
         if (!item || !item.login || !item.logoff || !item.nome) {
-            registrosInvalidos++;
             return; // Ignora este item
         }
 
-
         if (emailsParaIgnorar.includes(item.nome)) {
-            registrosIgnorados++;
             return;
         }
 
         if (!item.login || !item.logoff || item.login === item.logoff || item.login === "0" || item.logoff === "0") {
-            console.warn('[AVISO] Login ou logoff inválido para:', item.nome);
             return;
         }
 
@@ -336,7 +301,6 @@ function consolidarDadosPorAgenteEData(dados) {
         let logoffDate = new Date(item.logoff);
 
         if (isNaN(loginDate.getTime()) || isNaN(logoffDate.getTime())) {
-            console.warn('[AVISO] Datas inválidas para:', item.nome);
             return;
         }
 
@@ -482,15 +446,6 @@ function consolidarDadosPorAgenteEData(dados) {
         ag.todosPeriodosFormatados = Array.from(ag.todosPeriodos).join('<br>');
     });
 
-    // Log de resumo do processamento
-    const totalProcessados = agentesConsolidados.length;
-    const totalRegistros = dados.length;
-    console.log(`[INFO] Resumo do processamento:
-    - Total de registros recebidos: ${totalRegistros}
-    - Registros com dados inválidos: ${registrosInvalidos}
-    - Registros ignorados (emails de teste): ${registrosIgnorados}
-    - Agentes processados com sucesso: ${totalProcessados}`);
-
     return agentesConsolidados;
 }
 
@@ -519,7 +474,6 @@ function processarDadosParaGrafico(dados) {
 
     // Validação defensiva
     if (!dados || !Array.isArray(dados) || dados.length === 0) {
-        console.warn("[AVISO] Nenhum dado para processar no gráfico");
         return resultado;
     }
 
@@ -546,9 +500,6 @@ function processarDadosParaGrafico(dados) {
 
         // Somar o tempo de pausa (em segundos)
         totalSegundosPausa += agente.tempoTotalPausaSegundos;
-
-        // Log para verificar os valores
-        console.log(`[LOG] Agente: ${agente.nome} | Horas Trabalhadas: ${agente.tempoTotalLoginHoras} horas | Horas Pausa: ${agente.tempoTotalPausa}`);
     });
 
     // Cálculo da carga horária para o gráfico
@@ -583,24 +534,17 @@ function formatarHorasEmHHMMSS_Grafico(segundos) {
 
 function calcularDisponibilidadeDiariaPorAgente(dadosConsolidados) {
     const cargaHorariaAgente = 6 * 3600; // Convertendo carga horária de horas para segundos
-    console.log("[DEBUG] Carga horária por agente (segundos):", cargaHorariaAgente);
-
     const resultadoPorDia = {};
 
     // Validação defensiva
     if (!dadosConsolidados || !Array.isArray(dadosConsolidados) || dadosConsolidados.length === 0) {
-        console.warn("[AVISO] Nenhum dado consolidado para calcular disponibilidade");
         return resultadoPorDia;
     }
 
     dadosConsolidados.forEach((agente, index) => {
-        console.log(`[DEBUG] Estrutura do agente ${index}:`, agente);
-
         const data = agente.data;
         const tempoLogado = parseFloat(agente.tempoTotalLoginHoras) * 3600; // Convertendo tempo logado de horas para segundos
         const tempoPausa = agente.tempoTotalPausaSegundos || 0;  // Pausa já está em segundos
-
-        console.log(`[DEBUG] Processando agente: Data=${data}, TempoLogado=${tempoLogado}, TempoPausa=${tempoPausa}`);
 
         if (!resultadoPorDia[data]) {
             resultadoPorDia[data] = {
