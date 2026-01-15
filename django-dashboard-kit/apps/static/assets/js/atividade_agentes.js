@@ -210,35 +210,31 @@ function preencherTabelaAgentes(dados) {
         kpiContainer.style.display = 'block';
     }
     
-    // Destruir DataTable existente se houver (com verificação de tbody)
+    // Obter ou criar instância do DataTable
+    let table;
     if ($.fn.DataTable.isDataTable('#tabelaAgentes')) {
+        // Se já existe, apenas obter a instância
+        table = $('#tabelaAgentes').DataTable();
+    } else {
+        // Se não existe, criar nova instância
         try {
-            const dt = $('#tabelaAgentes').DataTable();
-            dt.clear();
-            dt.destroy();
+            table = $('#tabelaAgentes').DataTable({
+                responsive: true,
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/Portuguese-Brasil.json"
+                },
+                order: [[1, 'desc']],
+                pageLength: 25,
+                dom: 'Bfrtip',
+                buttons: []
+            });
         } catch (e) {
-            // Silenciosamente ignora erro de destroy
+            console.error("Erro ao inicializar DataTable");
+            return;
         }
     }
-    
-    // Inicializar DataTable
-    let table;
-    try {
-        table = $('#tabelaAgentes').DataTable({
-            responsive: true,
-            language: {
-                url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/Portuguese-Brasil.json"
-            },
-            order: [[1, 'desc']],
-            pageLength: 25,
-            dom: 'Bfrtip',
-            buttons: []
-        });
-    } catch (e) {
-        console.error("Erro ao inicializar DataTable");
-        return;
-    }
 
+    // Limpar dados existentes
     table.clear();
 
     // Validação defensiva

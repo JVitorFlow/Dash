@@ -25,9 +25,6 @@ export function processarDadosParaGraficoPonteiro1204(dados) {
             ? (chamadasAbandonadasSuperior1Min / uraData.ligacoesRecebidas) * 100 
             : 0;
 
-        // Log do cálculo da porcentagem
-        console.log(`[processarDadosParaGraficoPonteiro1204] URA: ${uraNormalizada}, Porcentagem Abandonadas > 1 Min: ${porcentagem.toFixed(2)}%`);
-
         // Armazenar o resultado para cada hospital/URA
         resultado[uraNormalizada] = {
             ligacoesRecebidas: uraData.ligacoesRecebidas,
@@ -78,11 +75,10 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
     } else {
         // Caso contrário, usa mês e ano para gerar as datas automaticamente
         const selectedKPI = document.getElementById('kpiSelector').value;
-        console.log("[INFO] KPI Selecionado:", selectedKPI);
+
 
         if (selectedKPI === '1204') {
-            console.log("[INFO] Realizando busca automática para KPI 1204");
-
+           
             const selectedMes = document.getElementById('mesSelector').value;
             const selectedAno = document.getElementById('anoSelector').value;
 
@@ -90,17 +86,12 @@ export async function buscarIndicadorChamadasAbandonadasInternas(isManualSearch 
                 startDate = `${selectedAno}-${selectedMes}-01T00:00:00`;
                 endDate = new Date(selectedAno, selectedMes, 0).toISOString().replace(/T.*/, 'T23:59:59');
 
-                /* console.log("[INFO] Datas geradas para o KPI 12.04");
-                console.log("[DEBUG] Data de Início:", startDate);
-                console.log("[DEBUG] Data de Fim:", endDate); */
             } else {
                 alert('Por favor, selecione o mês e o ano.');
-                console.error("[ERROR] Mês ou ano não selecionado.");
                 toggleButtons(true);  // Habilita os botões em caso de erro
                 return;
             }
         } else {
-            console.log("[INFO] KPI não é 1204, abortando buscarIndicadorChamadasAbandonadasInternas.");
             toggleButtons(true); // Habilita os botões se o KPI não for 1204
             return;
         }

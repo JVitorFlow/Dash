@@ -395,7 +395,6 @@ export function renderizarGraficoTendencia(kpiId, dadosProcessados) {
                 return serie.fixedValue !== undefined ? serie.fixedValue : 80; // Linha da Meta (Ajustável)
             }
             const valor = dataItem ? parseFloat(dataItem[serie.dataKey]) : null;
-            console.log(`[DEBUG] Valor para ${serie.name} em ${data}:`, valor);
             return valor !== undefined && !isNaN(valor) ? valor : null;
         });
 
