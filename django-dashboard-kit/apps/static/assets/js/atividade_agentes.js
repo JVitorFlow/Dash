@@ -184,10 +184,11 @@ function calcularOcupacaoTotalEExibir(dados) {
     // Subtraindo as horas de pausa da carga horária para obter o tempo disponível
     const horasDisponiveis = resultado.carga_horaria - resultado.horas_pausa;
 
-    // Calculando a ocupação com base nas horas trabalhadas e nas horas disponíveis
-    const ocupacaoTotalPercent = horasDisponiveis > 0 
-        ? ((resultado.horas_trabalhadas / horasDisponiveis) * 100).toFixed(2)
-        : "0.00";
+    // Calculando a ocupação com base nas horas trabalhadas e nas horas disponíveis com limite de 100%
+    const ocupacaoCalculada = horasDisponiveis > 0 
+        ? (resultado.horas_trabalhadas / horasDisponiveis) * 100
+        : 0;
+    const ocupacaoTotalPercent = Math.min(ocupacaoCalculada, 100).toFixed(2);
 
     // Enviando o valor formatado dentro de um objeto para o gráfico de ponteiro
     const dadosParaGraficoPonteiro = { ocupacaoPercentual: ocupacaoTotalPercent };
@@ -430,7 +431,9 @@ function consolidarDadosPorAgenteEData(dados) {
         const tempoLogadoEfetivoHoras = tempoLogadoEfetivoSegundos / 3600;
         const tempoLogadoEfetivoFormatado = formatarHorasEmHHMMSS(tempoLogadoEfetivoSegundos);
 
-        const ocupacaoPercentual = ((tempoLogadoEfetivoSegundos / TEMPO_EFETIVO_ATENDIMENTO_SEGUNDOS) * 100).toFixed(2);
+        // Calcular ocupação com limite máximo de 100%
+        const ocupacaoCalculada = (tempoLogadoEfetivoSegundos / TEMPO_EFETIVO_ATENDIMENTO_SEGUNDOS) * 100;
+        const ocupacaoPercentual = Math.min(ocupacaoCalculada, 100).toFixed(2);
 
         ag.tempoTotalLogin = `${tempoLogadoEfetivoHoras.toFixed(6)} horas`;
         ag.tempoTotalLoginHoras = tempoLogadoEfetivoHoras.toFixed(6);
@@ -563,9 +566,10 @@ function calcularDisponibilidadeDiariaPorAgente(dadosConsolidados) {
         const diaData = resultadoPorDia[data];
         diaData.cargaHorariaTotal = cargaHorariaAgente * diaData.agentes.size;
 
-        // Revisando a fórmula de disponibilidade
+        // Revisando a fórmula de disponibilidade com limite máximo de 100%
         const tempoDisponivel = diaData.cargaHorariaTotal - diaData.tempoPausaTotal;
-        const disponibilidadePercentual = tempoDisponivel > 0 ? ((diaData.tempoLogadoTotal / tempoDisponivel) * 100) : 0;
+        const disponibilidadeCalculada = tempoDisponivel > 0 ? ((diaData.tempoLogadoTotal / tempoDisponivel) * 100) : 0;
+        const disponibilidadePercentual = Math.min(disponibilidadeCalculada, 100);
         diaData.disponibilidadePercentual = disponibilidadePercentual.toFixed(2);
 
         // console.log(`[DEBUG] Resultados para ${data}: CargaHorariaTotal=${diaData.cargaHorariaTotal}, TempoDisponivel=${tempoDisponivel}, DisponibilidadePercentual=${diaData.disponibilidadePercentual}`);

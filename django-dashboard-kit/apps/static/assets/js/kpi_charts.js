@@ -73,8 +73,6 @@ export function renderizarGraficoColunas(kpiId, dadosProcessados) {
                 }
             });
         });
-    } else {
-        console.warn('Estrutura porURA ausente ou inválida em dadosProcessados:', dadosProcessados.porURA);
     }
 
     //console.log('Dados formatados para o Highcharts:', seriesData);
@@ -355,7 +353,6 @@ export function renderizarGraficoPonteiro(kpiId, dadosProcessados) {
         }
     });
     
-    console.log("[INFO] Gráfico de ponteiro renderizado com sucesso.");
 }
 
 
