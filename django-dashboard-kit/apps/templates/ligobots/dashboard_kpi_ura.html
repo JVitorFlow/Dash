@@ -170,11 +170,11 @@
     
     <!-- Outros scripts personalizados -->
     {% comment %} <script src="{% static 'assets/js/indicador_desempenho_por_fila_URA.js' %}"></script> {% endcomment %}
-    <script src="{% static 'assets/js/tempo_medio_servico_por_atendente.js' %}"></script>
+    {% comment %} <script src="{% static 'assets/js/tempo_medio_servico_por_atendente.js' %}"></script> {% endcomment %}
     <script type="module" src="{% static 'assets/js/tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js' %}"></script>
     <script type="module" src="{% static 'assets/js/Kpi1201.js' %}"></script>
     <script type="module" src="{% static 'assets/js/indicador1204.js' %}"></script>
-    <script type="module" src="{% static 'assets/js/Kpi1202.js' %}"></script>
+    <script type="module" src="{% static 'assets/js/kpi1202.js' %}"></script>
     <script type="module" src="{% static 'assets/js/kpi_charts.js' %}"></script>
 
     <!-- Script principal que chama as funções -->
@@ -184,7 +184,7 @@
         import { buscarIndicadorTempoEspera } from '{% static "assets/js/tempo_esperar_para_iniciar_atendimento_em_ate_1minuto.js" %}';
         import { buscarIndicadorTempoMedio } from '{% static "assets/js/Kpi1201.js" %}';
         import {buscarIndicadorChamadasAbandonadasInternas} from '{% static "assets/js/indicador1204.js" %}';
-        import {buscarIndicadorTempoEsperaKPI1202} from '{% static "assets/js/Kpi1202.js" %}';
+        import {buscarIndicadorTempoEsperaKPI1202} from '{% static "assets/js/kpi1202.js" %}';
 
         document.addEventListener('DOMContentLoaded', function() {
             const toggleKPIView = document.getElementById('toggleKPIView');

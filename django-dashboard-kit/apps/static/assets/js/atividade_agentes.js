@@ -4,6 +4,8 @@ import { renderizarGraficoColunas, renderizarGraficoPonteiro, renderizarGraficoT
 
 // Função principal para buscar os dados de atividade dos agentes
 export function buscarDadosAgentes(isManualSearch = false) {
+    console.log("[DEBUG] ===== buscarDadosAgentes iniciada =====");
+    console.log("[DEBUG] isManualSearch:", isManualSearch);
     let startDate, endDate;
 
     // Caso a busca seja manual, utilize as datas dos campos manuais
@@ -131,6 +133,18 @@ export function buscarDadosAgentes(isManualSearch = false) {
             }
             
             console.log("[INFO] Dados da API válidos. Processando...");
+            
+            // Verificar se o container KPI1101 está visível
+            const kpiContainer = document.getElementById('kpi1101');
+            if (kpiContainer) {
+                console.log("[DEBUG] Container KPI1101 encontrado. Display:", kpiContainer.style.display);
+                if (kpiContainer.style.display === 'none') {
+                    console.warn("[WARNING] Container KPI1101 está oculto! Isso pode causar problemas com DataTables.");
+                }
+            } else {
+                console.error("[ERROR] Container #kpi1101 não encontrado!");
+            }
+            
             const dadosProcessados = processarDadosParaGrafico(data.agent_activity_list);
             
             const dadosConsolidados = consolidarDadosPorAgenteEData(data.agent_activity_list);
@@ -204,7 +218,50 @@ function calcularOcupacaoTotalEExibir(dados) {
 
 
 function preencherTabelaAgentes(dados) {
-    const table = $('#tabelaAgentes').DataTable();
+    console.log("[DEBUG] preencherTabelaAgentes chamada com", dados?.length, "registros");
+    
+    // Verificar se o elemento da tabela existe no DOM
+    const tabelaElement = document.getElementById('tabelaAgentes');
+    if (!tabelaElement) {
+        console.error("[ERROR] Elemento #tabelaAgentes não encontrado no DOM!");
+        return;
+    }
+    
+    // Garantir que o container está visível
+    const kpiContainer = document.getElementById('kpi1101');
+    if (kpiContainer && kpiContainer.style.display === 'none') {
+        console.log("[DEBUG] Forçando exibição do container KPI1101");
+        kpiContainer.style.display = 'block';
+    }
+    
+    console.log("[DEBUG] Elemento da tabela encontrado, verificando visibilidade...");
+    console.log("[DEBUG] Display do container pai:", $('#kpi1101').css('display'));
+    console.log("[DEBUG] Tabela visível:", $(tabelaElement).is(':visible'));
+    
+    // Destruir DataTable existente se houver
+    if ($.fn.DataTable.isDataTable('#tabelaAgentes')) {
+        console.log("[DEBUG] Destruindo DataTable existente...");
+        $('#tabelaAgentes').DataTable().destroy();
+    }
+    
+    console.log("[DEBUG] Inicializando DataTable...");
+    let table;
+    try {
+        table = $('#tabelaAgentes').DataTable({
+            responsive: true,
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/Portuguese-Brasil.json"
+            },
+            order: [[1, 'desc']], // Ordenar por data (coluna 1) decrescente
+            pageLength: 25,
+            dom: 'Bfrtip',
+            buttons: []
+        });
+        console.log("[DEBUG] DataTable inicializada com sucesso");
+    } catch (e) {
+        console.error("[ERROR] Falha ao inicializar DataTable:", e);
+        return;
+    }
 
     table.clear();
 
@@ -240,11 +297,15 @@ function preencherTabelaAgentes(dados) {
     });
 
     table.draw();
+    console.log("[DEBUG] Tabela preenchida com", agentesConsolidados.length, "linhas");
+    console.log("[DEBUG] Verificar se a tabela está visível na página");
 }
 
 function consolidarDadosPorAgenteEData(dados) {
     const agentesConsolidados = [];
     const emailsParaIgnorar = ["homolog.inovasaude@mail.com", "yara.bezerra@wtime.com.br"];
+    let registrosInvalidos = 0;
+    let registrosIgnorados = 0;
 
     // Validação defensiva
     if (!dados || !Array.isArray(dados)) {
@@ -256,13 +317,13 @@ function consolidarDadosPorAgenteEData(dados) {
 
         // Verificar se o item tem os campos necessários
         if (!item || !item.login || !item.logoff || !item.nome) {
-            console.warn('[AVISO] Item com dados inválidos:', item);
+            registrosInvalidos++;
             return; // Ignora este item
         }
 
 
         if (emailsParaIgnorar.includes(item.nome)) {
-            console.warn('[AVISO] Ignorando dados do usuário:', item.nome);
+            registrosIgnorados++;
             return;
         }
 
@@ -420,6 +481,15 @@ function consolidarDadosPorAgenteEData(dados) {
         ag.ocupacaoPercentual = ocupacaoPercentual;
         ag.todosPeriodosFormatados = Array.from(ag.todosPeriodos).join('<br>');
     });
+
+    // Log de resumo do processamento
+    const totalProcessados = agentesConsolidados.length;
+    const totalRegistros = dados.length;
+    console.log(`[INFO] Resumo do processamento:
+    - Total de registros recebidos: ${totalRegistros}
+    - Registros com dados inválidos: ${registrosInvalidos}
+    - Registros ignorados (emails de teste): ${registrosIgnorados}
+    - Agentes processados com sucesso: ${totalProcessados}`);
 
     return agentesConsolidados;
 }
