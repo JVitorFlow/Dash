@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # Produção: roda a partir de imagem publicada no registry (GHCR),
   # evitando build no servidor e evitando bind mount do código.
