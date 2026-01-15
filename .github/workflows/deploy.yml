@@ -73,11 +73,13 @@ jobs:
             export IMAGE_NS="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
             export APP_IMAGE="ghcr.io/${IMAGE_NS}/dash:sha-${{ github.sha }}"
 
-            # Garantir que os diretórios existem e têm as permissões corretas
-            # UID 1000 = appuser no container
+            # Garantir que os diretórios existem com as permissões corretas
+            # Criar diretórios se não existirem
             mkdir -p staticfiles media
-            sudo chown -R 1000:1000 staticfiles media
-            sudo chmod -R 775 staticfiles media
+            
+            # Ajustar permissões para que o container (UID 1000) possa escrever
+            # Se o usuário SSH não é UID 1000, precisamos garantir permissões adequadas
+            chmod -R 777 staticfiles media
 
             # Pull das imagens novas (apenas serviços de app)
             docker compose -f docker-compose.prod.yml pull dashboard_app celery celery_beat
